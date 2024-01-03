@@ -5,74 +5,93 @@ use crate::visitable::Visitable;
 pub struct FileSystemTraversal;
 
 impl FileSystemTraversal {
-    pub(crate) fn traverse(&self, path: &Path, visitor: &dyn Visitable) {
-        if let Ok(entries) = fs::read_dir(path) {
-            for entry in entries.flatten() {
-                if entry.path().is_dir() {
-                    visitor.visit(&entry.path());
+    pub(crate) fn traverse<T: Visitable>(&self, path: &Path, visitor: &mut T) {
+        if path.is_dir() {
+            if let Ok(entries) = fs::read_dir(path) {
+                visitor.visit(path);
+                for entry in entries.flatten() {
                     self.traverse(&entry.path(), visitor);
-                } else {
-                    visitor.visit(&entry.path());
                 }
             }
+        } else {
+            visitor.visit(path);
         }
+
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+    use std::path::Path;
+    use crate::visitable::Visitable;
     use super::*;
-    use std::fs::File;
-    use tempfile::tempdir;
 
+    // Mock Visitable implementation for testing
     struct MockVisitor {
         visited_paths: Vec<String>,
     }
 
-    impl MockVisitor {
-        fn new() -> Self {
-            Self {
-                visited_paths: Vec::new(),
-            }
-        }
-    }
-
     impl Visitable for MockVisitor {
-        fn visit(&self, path: &Path) {
-            if let Some(path_str) = path.to_str() {
-                println!("Visited: {}", path_str);
-            }
+        fn visit(&mut self, path: &Path) {
+            self.visited_paths.push(path.to_str().unwrap().to_string());
         }
     }
 
     #[test]
     fn test_traverse_empty_directory() {
+        let mut visitor = MockVisitor { visited_paths: Vec::new() };
         let traversal = FileSystemTraversal {};
-        let temp_dir = tempdir().expect("Unable to create temporary directory");
+        let test_dir = Path::new("non_existent_directory");
 
-        let visitor = MockVisitor::new();
+        traversal.traverse(&test_dir, &mut visitor);
 
-        traversal.traverse(temp_dir.path(), &visitor);
-
-        assert!(visitor.visited_paths.is_empty(), "No paths should be visited in an empty directory");
+        assert_eq!(visitor.visited_paths.len(), 1);
     }
 
     #[test]
     fn test_traverse_single_file() {
+        let mut visitor = MockVisitor { visited_paths: Vec::new() };
         let traversal = FileSystemTraversal {};
-        let temp_dir = tempdir().expect("Unable to create temporary directory");
-        let temp_file_path = temp_dir.path().join("test.txt");
+        let test_file = Path::new("path_to_single_file");
 
-        File::create(&temp_file_path).expect("Unable to create temp file");
+        // Create a single file for testing
+        fs::write(&test_file, "Test content").expect("Unable to create test file");
 
-        let visitor = MockVisitor::new();
+        traversal.traverse(&test_file, &mut visitor);
 
-        traversal.traverse(temp_dir.path(), &visitor);
+        assert_eq!(visitor.visited_paths, vec![test_file.to_str().unwrap().to_string()]);
 
-        assert_eq!(visitor.visited_paths.len(), 1, "One path should be visited in a directory with a single file");
-        assert_eq!(visitor.visited_paths[0], temp_file_path.to_str().unwrap(), "The visited path should match the file created");
+        // Clean up: Delete the created file
+        fs::remove_file(&test_file).expect("Unable to delete test file");
     }
 
-    // Add more test cases to cover different scenarios such as nested directories, permissions, etc.
-    // Ensure you cover scenarios where `fs::read_dir` might fail or return an error
+    #[test]
+    fn test_traverse_directory_structure() {
+        let mut visitor = MockVisitor { visited_paths: Vec::new() };
+        let traversal = FileSystemTraversal {};
+        let test_directory = Path::new("test_directory");
+
+        // Create a directory structure for testing
+        fs::create_dir_all(test_directory.join("subdir1/subdir2")).expect("Unable to create test directory structure");
+        fs::write(test_directory.join("file1.txt"), "Content").expect("Unable to create test file");
+        fs::write(test_directory.join("subdir1/file2.txt"), "Content").expect("Unable to create test file");
+        fs::write(test_directory.join("subdir1/subdir2/file3.txt"), "Content").expect("Unable to create test file");
+
+        traversal.traverse(&test_directory, &mut visitor);
+
+        let expected_paths = vec![
+            test_directory.to_str().unwrap().to_string(),
+            test_directory.join("file1.txt").to_str().unwrap().to_string(),
+            test_directory.join("subdir1").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/file2.txt").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/subdir2").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/subdir2/file3.txt").to_str().unwrap().to_string(),
+        ];
+
+        assert_eq!(visitor.visited_paths, expected_paths);
+
+        // Clean up: Delete the created directory structure
+        fs::remove_dir_all(&test_directory).expect("Unable to delete test directory structure");
+    }
 }

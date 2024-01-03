@@ -6,7 +6,7 @@ pub struct NodeWriter {
 }
 
 impl Visitable for NodeWriter {
-    fn visit(&self, path: &Path) {
+    fn visit(&mut self, path: &Path) {
         println!("Visiting : {}", path.display());
     }
 }
