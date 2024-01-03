@@ -1,41 +1,11 @@
-use std::{env, fs};
+mod file_system_traversal;
+mod visitable;
+mod node_writer;
+
+use std::env;
 use std::path::Path;
-
-struct FileSystemTraversal;
-
-impl FileSystemTraversal {
-
-    fn traverse(&self, path: &Path, visitor: &NodeWriter) {
-        visitor.visit(&path);
-        if let Ok(entries) = fs::read_dir(path) {
-            for entry in entries.flatten() {
-                if let Ok(entry_path) = entry.path().into_os_string().into_string() {
-
-                    if entry.path().is_dir() {
-                        self.traverse(&path, &visitor);
-
-                    } else {
-                        visitor.visit(&entry.path());
-                    }
-                }
-            }
-        }
-    }
-}
-
-trait Visitable {
-    fn visit(&self, path: &Path);
-}
-
-struct NodeWriter {
-
-}
-
-impl Visitable for NodeWriter {
-    fn visit(&self, path: &Path) {
-        println!("Visiting : {}", path.display());
-    }
-}
+use crate::file_system_traversal::FileSystemTraversal;
+use crate::node_writer::NodeWriter;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
