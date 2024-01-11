@@ -7,8 +7,9 @@ pub struct FileSystemTraversal;
 impl FileSystemTraversal {
     pub(crate) fn traverse<T: Visitable>(&self, path: &Path, visitor: &mut T) {
         if path.is_dir() {
+            visitor.visit(path);
             if let Ok(entries) = fs::read_dir(path) {
-                visitor.visit(path);
+
                 for entry in entries.flatten() {
                     self.traverse(&entry.path(), visitor);
                 }
@@ -16,7 +17,6 @@ impl FileSystemTraversal {
         } else {
             visitor.visit(path);
         }
-
     }
 }
 

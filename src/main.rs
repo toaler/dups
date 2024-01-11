@@ -1,6 +1,8 @@
 mod file_system_traversal;
 mod visitable;
 mod node_writer;
+mod metadata_state;
+mod metadata_collector_visitor;
 
 use std::env;
 use std::path::Path;
