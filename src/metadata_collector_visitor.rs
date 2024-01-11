@@ -1,8 +1,11 @@
+use std::path::Path;
+use std::time::SystemTime;
 use crate::metadata_state::MetadataState;
+use crate::visitable::Visitable;
 
 #[derive(Debug)]
 pub struct MetadataCollectorVisitor {
-    files: Vec<MetadataState>
+    files: Vec<MetadataState>,
 }
 
 impl MetadataCollectorVisitor {
@@ -17,6 +20,27 @@ impl MetadataCollectorVisitor {
     }
 }
 
+// TODO write test case for visit
+impl Visitable for MetadataCollectorVisitor {
+    fn visit(&mut self, path: &Path) {
+        let modified_time = match path.metadata() {
+            Ok(metadata) => {
+                if let Ok(modified_time) = metadata.modified() {
+                    modified_time
+                } else {
+                    SystemTime::now() // Default to current time if modified time retrieval fails
+                }
+            }
+            Err(_) => SystemTime::now(), // Handle metadata retrieval error
+        };
+
+        let metadata = MetadataState::new(path.to_string_lossy().to_string(),
+                                          path.is_dir(), modified_time);
+
+        self.add_metadata_state(metadata);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -28,7 +52,7 @@ mod tests {
         let metadata = MetadataState::new(
             String::from("/path/to/file"),
             false,
-            time
+            time,
         );
 
         // Display trait
@@ -111,8 +135,5 @@ mod tests {
             true,
             time,
         ));
-
-
-
     }
 }
