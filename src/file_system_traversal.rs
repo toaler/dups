@@ -84,9 +84,9 @@ mod tests {
             test_directory.to_str().unwrap().to_string(),
             test_directory.join("file1.txt").to_str().unwrap().to_string(),
             test_directory.join("subdir1").to_str().unwrap().to_string(),
-            test_directory.join("subdir1/file2.txt").to_str().unwrap().to_string(),
             test_directory.join("subdir1/subdir2").to_str().unwrap().to_string(),
             test_directory.join("subdir1/subdir2/file3.txt").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/file2.txt").to_str().unwrap().to_string(),
         ];
 
         assert_eq!(visitor.visited_paths, expected_paths);

@@ -38,9 +38,9 @@ impl Display for MetadataState {
         write!(
             f,
             "MetadataState {{ path: {}, is_dir: {}, modified_time: {:?} }}",
-            self.path,
-            self.is_dir,
-            self.modified_time
+            self.get_path(),
+            self.is_dir(),
+            self.get_modified_time()
         )
     }
 }
