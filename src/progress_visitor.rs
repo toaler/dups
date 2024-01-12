@@ -7,7 +7,7 @@ pub struct ProgressVisitor {
     total_dirs_scanned: usize,
     files_scanned_since_last_recap: usize,
     dirs_scanned_since_last_recap: usize,
-    start_time: Instant,
+    recap_start_time: Instant,
 }
 
 impl ProgressVisitor {
@@ -17,14 +17,14 @@ impl ProgressVisitor {
             total_dirs_scanned: 0,
             files_scanned_since_last_recap: 0,
             dirs_scanned_since_last_recap: 0,
-            start_time: Instant::now(),
+            recap_start_time: Instant::now(),
         }
     }
 
     fn reset_recap_counters(&mut self) {
         self.files_scanned_since_last_recap = 0;
         self.dirs_scanned_since_last_recap = 0;
-        self.start_time = Instant::now();
+        self.recap_start_time = Instant::now();
     }
 }
 
@@ -40,16 +40,16 @@ impl Visitable for ProgressVisitor {
             self.dirs_scanned_since_last_recap += 1;
         }
 
-        // Check if it's time for a recap (every 10000 files)
-        if self.files_scanned_since_last_recap % 10000 == 0 {
+        // Check if it's time for a recap (every 100000 files)
+        if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % 100000 == 0 {
             self.recap();
         }
     }
 
-    fn recap(&mut self) {
-        let elapsed_time = self.start_time.elapsed();
+    fn recap(&mut self) {k
+        let elapsed_time = self.recap_start_time.elapsed();
         println!(
-            "Scanned {} files and {} directories. Time taken for the last 10000 files: {:?}",
+            "Scanned {} files and {} directories. Time taken for the last 100000 files: {:?}",
             self.files_scanned_since_last_recap,
             self.dirs_scanned_since_last_recap,
             elapsed_time

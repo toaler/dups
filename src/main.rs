@@ -9,6 +9,7 @@ mod progress_visitor;
 
 use std::env;
 use std::path::Path;
+use std::time::Instant;
 use crate::file_system_traversal::FileSystemTraversal;
 use crate::node_writer::NodeWriter;
 use crate::progress_visitor::ProgressVisitor;
@@ -38,7 +39,9 @@ fn main() {
     visitors.push(&mut scan_stats_visitor);
     visitors.push(&mut progress_visitor);
 
+    let start_time = Instant::now();
     traverser.traverse(&root, &mut visitors);
+    let elapsed_time = start_time.elapsed();
 
     for visitable_instance in visitors {
         visitable_instance.recap();
@@ -48,4 +51,5 @@ fn main() {
     // let &stats = *visitors[1].get_stats();
 
     println!("Whoop there it is --> {}", scan_stats_visitor.get_stats().get_directory_count());
+    println!("Total elasped time = {:?}", elapsed_time);
 }
