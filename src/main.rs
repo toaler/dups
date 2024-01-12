@@ -24,10 +24,15 @@ fn main() {
     let root_directory = &args[1];
     let root = Path::new(root_directory);
     let traverser = FileSystemTraversal;
-    let node_writer: Box<NodeWriter> = Box::new(NodeWriter {});
-    let scan_stats_visitor: Box<ScanStatsVisitor> = Box::new(ScanStatsVisitor::new());
 
-    let mut visitors: Vec<Box<dyn Visitable>> = vec![node_writer, scan_stats_visitor];
+
+    let mut node_writer = NodeWriter {};
+    let mut scan_stats_visitor = ScanStatsVisitor::new();
+
+    // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
+    let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
+    visitors.push(&mut node_writer);
+    visitors.push(&mut scan_stats_visitor);
 
     traverser.traverse(&root, &mut visitors);
 
@@ -35,7 +40,8 @@ fn main() {
         visitable_instance.recap();
     }
 
+
     // let &stats = *visitors[1].get_stats();
 
-    // println!("{}", stats);
+    println!("Whoop there it is --> {}", scan_stats_visitor.get_stats().get_directory_count());
 }

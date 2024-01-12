@@ -6,9 +6,7 @@ pub struct FileSystemTraversal;
 
 impl FileSystemTraversal {
 
-
-    // pub (crate) fn traverse(&self, path: &Path, visitors: &mut Vec<Box<dyn Visitable>>) {
-    pub (crate) fn traverse<V: Visitable + ?Sized>(&self, path: &Path, visitors: &mut Vec<Box<V>>) {
+    pub (crate) fn traverse(&self, path: &Path, visitors: &mut [&mut dyn Visitable]) {
 
         for visitor in &mut *visitors {
             visitor.visit(&path);
@@ -49,24 +47,12 @@ mod tests {
     }
 
     #[test]
-    fn test_traverse_empty_directory() {
-        let mut visitors = vec![Box::new(MockVisitor { visited_paths: Vec::new() }) as Box<dyn Visitable>];
-
-        let traversal = FileSystemTraversal {};
-        let test_dir = Path::new("non_existent_directory");
-
-        traversal.traverse(&test_dir, &mut visitors);
-
-        // let mock_visitor = visitors.get(0).unwrap().downcast_ref::<MockVisitor>();
-
-        // assert_eq!(mock_visitor.visited_paths.len(), 0);
-    }
-
-
-    #[test]
     fn test_traverse_single_file() {
-        let mut visitor: Box<MockVisitor> = Box::new(MockVisitor { visited_paths: Vec::new() });
-        let visitors: Vec<Box<dyn Visitable>> = vec![visitor];
+        let mut mock_visitor = MockVisitor { visited_paths: Vec::new() };
+
+        // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
+        let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
+        visitors.push(&mut mock_visitor);
 
         let traversal = FileSystemTraversal {};
         let test_file = Path::new("path_to_single_file");
@@ -74,19 +60,22 @@ mod tests {
         // Create a single file for testing
         fs::write(&test_file, "Test content").expect("Unable to create test file");
 
-        // traversal.traverse(&test_file, visitors);
-        //
-        // assert_eq!(visitor.visited_paths, vec![test_file.to_str().unwrap().to_string()]);
-        //
-        // // Clean up: Delete the created file
-        // fs::remove_file(&test_file).expect("Unable to delete test file");
+        traversal.traverse(&test_file, &mut visitors);
+
+        assert_eq!(mock_visitor.visited_paths, vec![test_file.to_str().unwrap().to_string()]);
+
+        // Clean up: Delete the created file
+        fs::remove_file(&test_file).expect("Unable to delete test file");
     }
 
     #[test]
     fn test_traverse_directory_structure() {
 
-        let mut visitor: Box<MockVisitor> = Box::new(MockVisitor { visited_paths: Vec::new() });
-        let visitors: Vec<Box<dyn Visitable>> = vec![visitor];
+        let mut mock_visitor = MockVisitor { visited_paths: Vec::new() };
+
+        // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
+        let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
+        visitors.push(&mut mock_visitor);
 
         let traversal = FileSystemTraversal {};
         let test_directory = Path::new("test_directory");
@@ -97,20 +86,20 @@ mod tests {
         fs::write(test_directory.join("subdir1/file2.txt"), "Content").expect("Unable to create test file");
         fs::write(test_directory.join("subdir1/subdir2/file3.txt"), "Content").expect("Unable to create test file");
 
-        // traversal.traverse(&test_directory, visitors);
-        //
-        // let expected_paths = vec![
-        //     test_directory.to_str().unwrap().to_string(),
-        //     test_directory.join("file1.txt").to_str().unwrap().to_string(),
-        //     test_directory.join("subdir1").to_str().unwrap().to_string(),
-        //     test_directory.join("subdir1/subdir2").to_str().unwrap().to_string(),
-        //     test_directory.join("subdir1/subdir2/file3.txt").to_str().unwrap().to_string(),
-        //     test_directory.join("subdir1/file2.txt").to_str().unwrap().to_string(),
-        // ];
-        //
-        // assert_eq!(visitor.visited_paths, expected_paths);
-        //
-        // // Clean up: Delete the created directory structure
-        // fs::remove_dir_all(&test_directory).expect("Unable to delete test directory structure");
+        traversal.traverse(&test_directory, &mut visitors);
+
+        let expected_paths = vec![
+            test_directory.to_str().unwrap().to_string(),
+            test_directory.join("file1.txt").to_str().unwrap().to_string(),
+            test_directory.join("subdir1").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/file2.txt").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/subdir2").to_str().unwrap().to_string(),
+            test_directory.join("subdir1/subdir2/file3.txt").to_str().unwrap().to_string(),
+        ];
+
+        assert_eq!(mock_visitor.visited_paths, expected_paths);
+
+        // Clean up: Delete the created directory structure
+        fs::remove_dir_all(&test_directory).expect("Unable to delete test directory structure");
     }
 }
