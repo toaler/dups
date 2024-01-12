@@ -3,5 +3,5 @@ use std::path::Path;
 pub trait Visitable {
     fn visit(&mut self, path: &Path);
 
-    fn recap(&self);
+    fn recap(&mut self);
 }

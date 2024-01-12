@@ -42,7 +42,7 @@ mod tests {
             self.visited_paths.push(path.to_str().unwrap().to_string());
         }
 
-        fn recap(&self) {
+        fn recap(&mut self) {
         }
     }
 

@@ -5,11 +5,13 @@ mod metadata_state;
 mod metadata_collector_visitor;
 mod scan_stats;
 mod scan_stats_visitor;
+mod progress_visitor;
 
 use std::env;
 use std::path::Path;
 use crate::file_system_traversal::FileSystemTraversal;
 use crate::node_writer::NodeWriter;
+use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::visitable::Visitable;
 
@@ -26,13 +28,15 @@ fn main() {
     let traverser = FileSystemTraversal;
 
 
-    let mut node_writer = NodeWriter {};
+    // let mut node_writer = NodeWriter {};
     let mut scan_stats_visitor = ScanStatsVisitor::new();
+    let mut progress_visitor = ProgressVisitor::new();
 
     // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
-    visitors.push(&mut node_writer);
+    // visitors.push(&mut node_writer);
     visitors.push(&mut scan_stats_visitor);
+    visitors.push(&mut progress_visitor);
 
     traverser.traverse(&root, &mut visitors);
 

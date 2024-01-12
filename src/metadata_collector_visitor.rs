@@ -40,7 +40,7 @@ impl Visitable for MetadataCollectorVisitor {
         self.add_metadata_state(metadata);
     }
 
-    fn recap(&self) {
+    fn recap(&mut self) {
         todo!()
     }
 }

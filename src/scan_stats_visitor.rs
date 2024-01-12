@@ -15,7 +15,7 @@ impl Visitable for ScanStatsVisitor {
         }
     }
 
-    fn recap(&self) {
+    fn recap(&mut self) {
         println!("");
         println!("Scanning stats:");
         println!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
