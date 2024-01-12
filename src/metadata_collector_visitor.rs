@@ -15,7 +15,7 @@ impl MetadataCollectorVisitor {
     }
 
     // Function to retrieve a read-only reference to the files vector
-    pub fn get_files(&self) -> &Vec<MetadataState> {
+    fn get_files(&self) -> &Vec<MetadataState> {
         &self.files
     }
 }
@@ -38,6 +38,10 @@ impl Visitable for MetadataCollectorVisitor {
                                           path.is_dir(), modified_time);
 
         self.add_metadata_state(metadata);
+    }
+
+    fn recap(&self) {
+        todo!()
     }
 }
 

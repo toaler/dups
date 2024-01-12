@@ -14,6 +14,12 @@ impl Visitable for ScanStatsVisitor {
             self.stats.increment_directory();
         }
     }
+
+    fn recap(&self) {
+        println!("");
+        println!("Scanning stats:");
+        println!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
+    }
 }
 
 impl ScanStatsVisitor {

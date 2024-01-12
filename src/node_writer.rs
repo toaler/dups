@@ -25,4 +25,7 @@ impl Visitable for NodeWriter {
 
         println!("Visiting : {} {}", path.display(), formatted_time);
     }
+
+    fn recap(&self) {
+    }
 }

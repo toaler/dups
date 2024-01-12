@@ -10,8 +10,8 @@ use std::env;
 use std::path::Path;
 use crate::file_system_traversal::FileSystemTraversal;
 use crate::node_writer::NodeWriter;
-use crate::scan_stats::ScanStats;
 use crate::scan_stats_visitor::ScanStatsVisitor;
+use crate::visitable::Visitable;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,13 +24,18 @@ fn main() {
     let root_directory = &args[1];
     let root = Path::new(root_directory);
     let traverser = FileSystemTraversal;
-    let mut nodewriter = NodeWriter {};
-    let mut scan_stats_visitor = ScanStatsVisitor::new();
+    let node_writer: Box<NodeWriter> = Box::new(NodeWriter {});
+    let scan_stats_visitor: Box<ScanStatsVisitor> = Box::new(ScanStatsVisitor::new());
 
-    traverser.traverse(&root, &mut scan_stats_visitor);
+    let mut visitors: Vec<Box<dyn Visitable>> = vec![node_writer, scan_stats_visitor];
 
-    let stats = scan_stats_visitor.get_stats();
+    traverser.traverse(&root, &mut visitors);
 
-    println!("{}", stats);
-    // traverser.traverse(&root, &mut nodewriter);
+    for visitable_instance in visitors {
+        visitable_instance.recap();
+    }
+
+    // let &stats = *visitors[1].get_stats();
+
+    // println!("{}", stats);
 }
