@@ -46,7 +46,7 @@ impl Visitable for ProgressVisitor {
         }
     }
 
-    fn recap(&mut self) {k
+    fn recap(&mut self) {
         let elapsed_time = self.recap_start_time.elapsed();
         println!(
             "Scanned {} files and {} directories. Time taken for the last 100000 files: {:?}",
