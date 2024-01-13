@@ -1,7 +1,8 @@
+use std::fs::Metadata;
 use std::path::Path;
 
 pub trait Visitable {
-    fn visit(&mut self, path: &Path, is_dir: bool);
+    fn visit(&mut self, path: &Path, metadata: &Metadata);
 
     fn recap(&mut self);
 }

@@ -1,3 +1,4 @@
+use std::fs::Metadata;
 use std::path::Path;
 use std::time::SystemTime;
 use crate::metadata_state::MetadataState;
@@ -23,26 +24,15 @@ impl MetadataCollectorVisitor {
 
 // TODO write test case for visit
 impl Visitable for MetadataCollectorVisitor {
-    fn visit(&mut self, _path: &Path, is_dir: bool) {
-        let modified_time = match _path.metadata() {
-            Ok(metadata) => {
-                if let Ok(modified_time) = metadata.modified() {
-                    modified_time
-                } else {
-                    SystemTime::now() // Default to current time if modified time retrieval fails
-                }
-            }
-            Err(_) => SystemTime::now(), // Handle metadata retrieval error
-        };
-
+    fn visit(&mut self, _path: &Path, metadata: &Metadata) {
         let metadata = MetadataState::new(_path.to_string_lossy().to_string(),
-                                          is_dir, modified_time);
+                                          metadata.is_dir(), metadata.modified().unwrap());
 
         self.add_metadata_state(metadata);
     }
 
     fn recap(&mut self) {
-        todo!()
+
     }
 }
 

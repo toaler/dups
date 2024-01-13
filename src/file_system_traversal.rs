@@ -1,4 +1,5 @@
 use std::{fs};
+use std::fs::Metadata;
 use std::path::Path;
 use crate::visitable::Visitable;
 
@@ -6,21 +7,29 @@ pub struct FileSystemTraversal;
 
 impl FileSystemTraversal {
 
-    pub (crate) fn traverse(&self, path: &Path, is_dir: bool, is_symlink: bool, visitors: &mut [&mut dyn Visitable]) {
+    pub (crate) fn traverse(&self, path: &Path, metadata: &Metadata, visitors: &mut [&mut dyn Visitable]) {
 
         for visitor in &mut *visitors {
-            visitor.visit(&path, is_dir);
+            visitor.visit(&path, &metadata);
         }
 
-        if is_dir && !is_symlink {
+        if metadata.is_dir() && !metadata.is_symlink() {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
                     let metadata = entry.metadata().unwrap();
-                    self.traverse(&entry.path(), metadata.is_dir(), metadata.is_symlink(), visitors);
+
+                    let metadata = match entry.metadata() {
+                        Ok(metadata) => {
+                            metadata
+                        }
+                        Err(err) => {
+                            return
+                        }
+                    };
+                    self.traverse(&entry.path(), &metadata, visitors);
                 }
             } else {
-                // Handle the error here if needed
-                eprintln!("Error reading directory: {:?}", path);
+                // Todo do something different here
             }
         }
     }

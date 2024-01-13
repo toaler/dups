@@ -37,21 +37,18 @@ fn main() {
 
     // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
-    visitors.push(&mut scan_stats_visitor);
     visitors.push(&mut progress_visitor);
+    visitors.push(&mut scan_stats_visitor);
     // visitors.push(&mut node_writer);
 
     let start_time = Instant::now();
-    traverser.traverse(&root, true, false, &mut visitors);
+
+    traverser.traverse(&root, &root.metadata().unwrap(), &mut visitors);
     let elapsed_time = start_time.elapsed();
 
     for visitable_instance in visitors {
         visitable_instance.recap();
     }
 
-
-    // let &stats = *visitors[1].get_stats();
-
-    println!("Whoop there it is --> {}", scan_stats_visitor.get_stats().get_directory_count());
     println!("Total elasped time = {:?}", elapsed_time);
 }

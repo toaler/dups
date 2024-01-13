@@ -1,3 +1,4 @@
+use std::fs::Metadata;
 use std::path::Path;
 use crate::scan_stats::ScanStats;
 use crate::visitable::Visitable;
@@ -7,8 +8,8 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, _path: &Path, is_dir: bool) {
-        if is_dir {
+    fn visit(&mut self, _path: &Path, metadata: &Metadata) {
+        if metadata.is_dir() {
             self.stats.increment_directory();
         }  else {
             self.stats.increment_file();
