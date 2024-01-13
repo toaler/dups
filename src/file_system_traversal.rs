@@ -6,17 +6,17 @@ pub struct FileSystemTraversal;
 
 impl FileSystemTraversal {
 
-    pub (crate) fn traverse(&self, path: &Path, is_dir: bool, visitors: &mut [&mut dyn Visitable]) {
+    pub (crate) fn traverse(&self, path: &Path, is_dir: bool, is_symlink: bool, visitors: &mut [&mut dyn Visitable]) {
 
         for visitor in &mut *visitors {
             visitor.visit(&path, is_dir);
         }
 
-        if is_dir {
+        if is_dir && !is_symlink {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
-
-                    self.traverse(&entry.path(), entry.path().is_dir(), visitors);
+                    let metadata = entry.metadata().unwrap();
+                    self.traverse(&entry.path(), metadata.is_dir(), metadata.is_symlink(), visitors);
                 }
             } else {
                 // Handle the error here if needed

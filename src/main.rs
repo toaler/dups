@@ -12,6 +12,7 @@ use std::env;
 use std::path::Path;
 use std::time::Instant;
 use crate::file_system_traversal::FileSystemTraversal;
+use crate::node_writer::NodeWriter;
 use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::visitable::Visitable;
@@ -32,15 +33,16 @@ fn main() {
     // let mut node_writer = NodeWriter {};
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
+    let mut node_writer = NodeWriter::new();
 
     // Create a Vec<&mut dyn Foo> and add mutable references to the implementations
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
-    // visitors.push(&mut node_writer);
     visitors.push(&mut scan_stats_visitor);
     visitors.push(&mut progress_visitor);
+    // visitors.push(&mut node_writer);
 
     let start_time = Instant::now();
-    traverser.traverse(&root, true, &mut visitors);
+    traverser.traverse(&root, true, false, &mut visitors);
     let elapsed_time = start_time.elapsed();
 
     for visitable_instance in visitors {
