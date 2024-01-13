@@ -60,30 +60,3 @@ impl Visitable for ProgressVisitor {
         self.reset_recap_counters();
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // #[test]
-    // fn test_progress_visitor() {
-    //     let mut progress_visitor = ProgressVisitor::new();
-    //
-    //     // Simulate scanning 3000 files and directories
-    //     for i in 0..30000 {
-    //         let path = if i % 2 == 0 {
-    //             PathBuf::from(format!("/dummy/file{}.txt", i))
-    //         } else {
-    //             PathBuf::from(format!("/dummy/dir{}", i))
-    //         };
-    //         progress_visitor.visit(&path);
-    //     }
-    //
-    //     // The recap should occur at 10000, 20000, and 30000 files
-    //     // So, the recap method should be called three times
-    //     assert_eq!(progress_visitor.total_files_scanned, 30000);
-    //     assert_eq!(progress_visitor.total_dirs_scanned, 15000);
-    // }
-
-    // Add more test cases as needed
-}

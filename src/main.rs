@@ -6,6 +6,7 @@ mod metadata_collector_visitor;
 mod scan_stats;
 mod scan_stats_visitor;
 mod progress_visitor;
+mod trie;
 
 use std::env;
 use std::path::Path;

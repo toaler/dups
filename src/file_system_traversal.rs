@@ -39,7 +39,7 @@ mod tests {
     }
 
     impl Visitable for MockVisitor {
-        fn visit(&mut self, path: &Path) {
+        fn visit(&mut self, path: &Path, _is_dir: bool) {
             self.visited_paths.push(path.to_str().unwrap().to_string());
         }
 
@@ -60,8 +60,7 @@ mod tests {
 
         // Create a single file for testing
         fs::write(&test_file, "Test content").expect("Unable to create test file");
-
-        traversal.traverse(&test_file, &mut visitors);
+        traversal.traverse(&test_file, false, &mut visitors);
 
         assert_eq!(mock_visitor.visited_paths, vec![test_file.to_str().unwrap().to_string()]);
 
@@ -87,7 +86,7 @@ mod tests {
         fs::write(test_directory.join("subdir1/file2.txt"), "Content").expect("Unable to create test file");
         fs::write(test_directory.join("subdir1/subdir2/file3.txt"), "Content").expect("Unable to create test file");
 
-        traversal.traverse(&test_directory, &mut visitors);
+        traversal.traverse(&test_directory, true, &mut visitors);
 
         let expected_paths = vec![
             test_directory.to_str().unwrap().to_string(),

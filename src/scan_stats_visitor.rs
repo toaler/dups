@@ -52,8 +52,8 @@ mod tests {
         create_dir_all(&dir_path).unwrap();
 
         let mut visitor = ScanStatsVisitor::new();
-        visitor.visit(&file_path);
-        visitor.visit(&dir_path);
+        visitor.visit(&file_path, false);
+        visitor.visit(&dir_path, true);
 
         assert_eq!(visitor.get_stats().get_file_count(), 1);
         assert_eq!(visitor.get_stats().get_directory_count(), 1);
