@@ -29,15 +29,15 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, path: &Path) {
+    fn visit(&mut self, path: &Path, is_dir: bool) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
-        if path.is_file() {
-            self.total_files_scanned += 1;
-            self.files_scanned_since_last_recap += 1;
-        } else if path.is_dir() {
+        if is_dir {
             self.total_dirs_scanned += 1;
             self.dirs_scanned_since_last_recap += 1;
+        } else {
+            self.total_files_scanned += 1;
+            self.files_scanned_since_last_recap += 1;
         }
 
         // Check if it's time for a recap (every 100000 files)

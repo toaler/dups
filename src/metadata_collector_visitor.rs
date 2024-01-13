@@ -22,7 +22,7 @@ impl MetadataCollectorVisitor {
 
 // TODO write test case for visit
 impl Visitable for MetadataCollectorVisitor {
-    fn visit(&mut self, path: &Path) {
+    fn visit(&mut self, path: &Path, is_dir: bool) {
         let modified_time = match path.metadata() {
             Ok(metadata) => {
                 if let Ok(modified_time) = metadata.modified() {
@@ -35,7 +35,7 @@ impl Visitable for MetadataCollectorVisitor {
         };
 
         let metadata = MetadataState::new(path.to_string_lossy().to_string(),
-                                          path.is_dir(), modified_time);
+                                          is_dir, modified_time);
 
         self.add_metadata_state(metadata);
     }

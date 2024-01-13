@@ -6,7 +6,7 @@ use crate::visitable::Visitable;
 pub struct NodeWriter {}
 
 impl Visitable for NodeWriter {
-    fn visit(&mut self, path: &Path) {
+    fn visit(&mut self, path: &Path, is_dir: bool) {
         let modified_time =     match path.metadata() {
             Ok(metadata) => {
                 if let Ok(modified_time) = metadata.modified() {

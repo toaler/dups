@@ -11,7 +11,6 @@ use std::env;
 use std::path::Path;
 use std::time::Instant;
 use crate::file_system_traversal::FileSystemTraversal;
-use crate::node_writer::NodeWriter;
 use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::visitable::Visitable;
@@ -40,7 +39,7 @@ fn main() {
     visitors.push(&mut progress_visitor);
 
     let start_time = Instant::now();
-    traverser.traverse(&root, &mut visitors);
+    traverser.traverse(&root, true, &mut visitors);
     let elapsed_time = start_time.elapsed();
 
     for visitable_instance in visitors {
