@@ -29,7 +29,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, path: &Path, is_dir: bool) {
+    fn visit(&mut self, _path: &Path, is_dir: bool) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if is_dir {
@@ -48,8 +48,9 @@ impl Visitable for ProgressVisitor {
 
     fn recap(&mut self) {
         let elapsed_time = self.recap_start_time.elapsed();
+
         println!(
-            "Scanned {} files and {} directories. Time taken for the last 100000 files: {:?}",
+            "Entities = 10000, files = {}, dirs = {}, time = {:?}",
             self.files_scanned_since_last_recap,
             self.dirs_scanned_since_last_recap,
             elapsed_time

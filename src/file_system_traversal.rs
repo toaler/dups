@@ -15,6 +15,7 @@ impl FileSystemTraversal {
         if is_dir {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries.flatten() {
+
                     self.traverse(&entry.path(), entry.path().is_dir(), visitors);
                 }
             } else {

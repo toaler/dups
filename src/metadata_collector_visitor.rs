@@ -8,6 +8,7 @@ pub struct MetadataCollectorVisitor {
     files: Vec<MetadataState>,
 }
 
+#[allow(dead_code)]
 impl MetadataCollectorVisitor {
     // Function to add MetadataState to the files vector
     pub fn add_metadata_state(&mut self, metadata_state: MetadataState) {
@@ -22,8 +23,8 @@ impl MetadataCollectorVisitor {
 
 // TODO write test case for visit
 impl Visitable for MetadataCollectorVisitor {
-    fn visit(&mut self, path: &Path, is_dir: bool) {
-        let modified_time = match path.metadata() {
+    fn visit(&mut self, _path: &Path, is_dir: bool) {
+        let modified_time = match _path.metadata() {
             Ok(metadata) => {
                 if let Ok(modified_time) = metadata.modified() {
                     modified_time
@@ -34,7 +35,7 @@ impl Visitable for MetadataCollectorVisitor {
             Err(_) => SystemTime::now(), // Handle metadata retrieval error
         };
 
-        let metadata = MetadataState::new(path.to_string_lossy().to_string(),
+        let metadata = MetadataState::new(_path.to_string_lossy().to_string(),
                                           is_dir, modified_time);
 
         self.add_metadata_state(metadata);
