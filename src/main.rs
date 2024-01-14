@@ -1,8 +1,7 @@
 mod file_system_traversal;
 mod visitable;
 mod node_writer;
-mod metadata_state;
-mod metadata_collector_visitor;
+mod cached_metadata;
 mod scan_stats;
 mod scan_stats_visitor;
 mod progress_visitor;
@@ -11,6 +10,7 @@ mod trie;
 use std::env;
 use std::path::Path;
 use std::time::Instant;
+use crate::cached_metadata::CachedMetadata;
 use crate::file_system_traversal::FileSystemTraversal;
 use crate::node_writer::NodeWriter;
 use crate::progress_visitor::ProgressVisitor;
@@ -18,6 +18,7 @@ use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::visitable::Visitable;
 
 fn main() {
+    println!("Running dups!");
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
@@ -30,6 +31,7 @@ fn main() {
     let traverser = FileSystemTraversal;
 
 
+    println!("Build visitors");
     // let mut node_writer = NodeWriter {};
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
@@ -43,7 +45,11 @@ fn main() {
 
     let start_time = Instant::now();
 
-    traverser.traverse(&root, &root.metadata().unwrap(), &mut visitors);
+    println!("Setup cached metadata");
+    let mut metadata = CachedMetadata::new(root);
+    println!("Starting filesystem traverse");
+    traverser.traverse(&root, &mut metadata, &mut visitors);
+    println!("Finished filesystem traverse");
     let elapsed_time = start_time.elapsed();
 
     for visitable_instance in visitors {

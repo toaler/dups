@@ -2,6 +2,7 @@ use std::fs::Metadata;
 use std::path::Path;
 use crate::Visitable;
 use std::time::{Instant};
+use crate::cached_metadata::CachedMetadata;
 
 pub struct ProgressVisitor {
     total_files_scanned: usize,
@@ -58,7 +59,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, _path: &Path, metadata: &Metadata) {
+    fn visit(&mut self, _path: &Path, metadata: &mut CachedMetadata) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {
