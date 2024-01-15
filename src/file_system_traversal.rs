@@ -57,6 +57,28 @@ impl FileSystemTraversal {
             }
         }
     }
+
+    pub(crate) fn refresh(&self) {
+        for (key, mut m) in &self.registry {
+
+            // Attempt to get metadata for the file
+            if let Ok(metadata) = fs::metadata(key) {
+                // Access various metadata properties
+                let file_size = metadata.len();
+                let modification_time = metadata.modified().unwrap();
+
+                // TODO check actual file mtime versus expected
+                // TODO 1. update metadata entry
+                // TODO 2. If dir mtime changed run ReadDir and add new files
+
+            } else {
+                println!("Error getting file metadata file = {}", key);
+
+                // TODO file may no longer exists so remove it from data structure
+            }
+        }
+
+    }
 }
 
 // #[cfg(test)]

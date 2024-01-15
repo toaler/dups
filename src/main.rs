@@ -82,23 +82,28 @@ fn main() -> Result<(), io::Error>{
                 }
             }
         }
+
+        println!("Loaded {} entries into cache", traverser.metadata_size());
+
+        println!("Starting filesystem refresh");
+
+        let elapsed_time = start_time.elapsed();
+        traverser.refresh();
+
+        println!("Finished filesystem refresh");
+        println!("Total elapsed time = {:?}", elapsed_time);
+
+    } else  {
+
+        println!("Starting filesystem traverse");
+
+        traverser.traverse(&root, &mut visitors);
+        println!("Finished filesystem traverse");
+        let elapsed_time = start_time.elapsed();
+        let (accesses, misses) = traverser.get_cache_stats();
+
     }
-    println!("Loaded {} entries into cache", traverser.metadata_size());
 
-    //let mut metadata= CachedMetadata::new(root);
-    let mut metadata= CachedMetadata::new(root);
-
-
-
-
-    println!("Starting filesystem traverse");
-    // let mut traverser = FileSystemTraversal::new();
-
-    traverser.traverse(&root, &mut visitors);
-    println!("Finished filesystem traverse");
-    let elapsed_time = start_time.elapsed();
-    let (accesses, misses) = traverser.get_cache_stats();
-    println!("Total elapsed time = {:?}, cache accesses = {}, cache misses = {}", elapsed_time, accesses, misses);
 
 
     let mut file = File::create("output.txt")?;
