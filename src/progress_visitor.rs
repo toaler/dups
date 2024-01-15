@@ -59,7 +59,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, _path: &Path, metadata: &mut CachedMetadata) {
+    fn visit(&mut self, metadata: &mut CachedMetadata) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {

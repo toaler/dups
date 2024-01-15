@@ -16,9 +16,7 @@ impl NodeWriter {
 }
 
 impl Visitable for NodeWriter {
-    fn visit(&mut self, path: &Path, metadata: &mut CachedMetadata) {
-        println!("file={:?},dir={},file={},modified={:?}", path.file_name(),
-                 metadata.is_dir(), metadata.is_file(), metadata.modified());
+    fn visit(&mut self, metadata: &mut CachedMetadata) {
     }
 
     fn recap(&mut self) {}

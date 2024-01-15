@@ -1,24 +1,56 @@
 use std::{fs};
-use std::fs::Metadata;
-use std::path::Path;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 use crate::cached_metadata::CachedMetadata;
 use crate::visitable::Visitable;
 
-pub struct FileSystemTraversal;
+pub struct FileSystemTraversal {
+    registry: HashMap<String, CachedMetadata>,
+    cache_accesses: usize,
+    cache_misses: usize,
+}
 
 impl FileSystemTraversal {
 
-    pub (crate) fn traverse(&self, path: &Path, metadata: &mut CachedMetadata, visitors: &mut [&mut dyn Visitable]) {
+    pub fn new_with_cache() -> FileSystemTraversal {
+        FileSystemTraversal { registry: HashMap::new(), cache_accesses: 0, cache_misses: 0 }
+    }
+
+    pub fn add_metadata(&mut self, path: &String, metadata: CachedMetadata) {
+        self.registry.insert(path.clone(), metadata);
+    }
+
+    pub fn get_metadata(self) -> HashMap<String, CachedMetadata> {
+        self.registry
+    }
+
+    pub fn metadata_size(&self) -> usize {
+        self.registry.len()
+    }
+    pub fn get_cache_stats(&self) -> (usize, usize) {
+        (self.cache_accesses, self.cache_misses)
+    }
+
+    pub(crate) fn traverse(&mut self, path: &String, visitors: &mut [&mut dyn Visitable]) {
+
+        self.cache_accesses += 1;
+        let mut metadata = self.registry.entry(path.clone()).or_insert_with(|| {
+            self.cache_misses += 1;
+            CachedMetadata::new(&path)
+        });
+
         for visitor in &mut *visitors {
-            visitor.visit(&path, metadata);
+            visitor.visit(metadata);
         }
 
         if metadata.is_dir() && !metadata.is_symlink() {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries {
-                    let e = entry.unwrap();
-                    let mut cached_metadata = CachedMetadata::new(&e.path());
-                    self.traverse(&e.path(), &mut cached_metadata, visitors);
+                    if let Ok(e) = entry {
+
+
+                        self.traverse(&e.path().to_string_lossy().to_string(), visitors);
+                    }
                 }
             } else {
                 // Todo do something different here

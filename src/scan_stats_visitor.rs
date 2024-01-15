@@ -9,7 +9,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, _path: &Path, metadata: &mut CachedMetadata) {
+    fn visit(&mut self, metadata: &mut CachedMetadata) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         }  else {

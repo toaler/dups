@@ -1,9 +1,10 @@
-use std::fs;
+use std::{fmt, fs};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+#[derive(Clone, Debug)]
 pub struct CachedMetadata {
-    path: PathBuf,
+    path: String,
     is_dir_cache: Option<bool>,
     is_file_cache: Option<bool>,
     is_symlink_cache: Option<bool>,
@@ -11,9 +12,9 @@ pub struct CachedMetadata {
 }
 
 impl CachedMetadata {
-    pub(crate) fn new(p: &Path) -> Self {
+    pub(crate) fn new(p: &String) -> Self {
         CachedMetadata {
-            path: p.to_owned(),
+            path: p.clone(),
             is_dir_cache: None,
             is_file_cache: None,
             is_symlink_cache: None,
@@ -21,17 +22,35 @@ impl CachedMetadata {
         }
     }
 
+    // TODO Clean this up
+    pub(crate) fn new2(p: &String, is_dir: bool, is_symlink: bool) -> Self {
+        CachedMetadata {
+            path: p.clone(),
+            is_dir_cache: Some(is_dir),
+            is_file_cache: None,
+            is_symlink_cache: Some(is_symlink),
+            modified_cache: None,
+        }
+
+
+
+    }
+
+    pub(crate) fn get_path(&mut self) -> &String {
+        &self.path
+    }
+
     pub(crate) fn is_dir(&mut self) -> bool {
         self.is_dir_cache.unwrap_or_else(|| {
-            let result = self.path.is_dir();
+            let result = Path::new(&self.path).is_dir();
             self.is_dir_cache = Some(result);
             result
-        })
+        }).clone()
     }
 
     pub(crate) fn is_file(&mut self) -> bool {
         self.is_file_cache.unwrap_or_else(|| {
-            let result = self.path.is_file();
+            let result = Path::new(&self.path).is_file();
             self.is_file_cache = Some(result);
             result
         })
@@ -39,25 +58,33 @@ impl CachedMetadata {
 
     pub(crate) fn is_symlink(&mut self) -> bool {
         self.is_symlink_cache.unwrap_or_else(|| {
-            let result = self.path.is_symlink();
+            let result = Path::new(&self.path).is_symlink();
             self.is_symlink_cache = Some(result);
             result
         })
     }
 
     pub(crate) fn modified(&mut self) -> SystemTime {
-        // match self.modified_cache {
-        //     Some(result) => result,
-        //     None => {
-        //         let result = self.metadata.modified().unwrap_or_default();
-        //         self.modified_cache = Some(result);
-        //         result
-        //     }
-        // }
-
         SystemTime::now()
     }
+
+
 }
+
+impl fmt::Display for CachedMetadata {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "CachedMetadata {{ path: {}, is_dir: {:?}, is_file: {:?}, is_symlink: {:?}, modified: {:?} }}",
+            self.path,
+            self.is_dir_cache,
+            self.is_file_cache,
+            self.is_symlink_cache,
+            self.modified_cache,
+        )
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -66,7 +93,7 @@ mod tests {
     #[test]
     fn test_is_dir() {
         let metadata = fs::metadata("/path/to/your/directory").expect("Failed to get metadata");
-        let mut cached_metadata = CachedMetadata::new(metadata);
+        let mut cached_metadata = CachedMetadata::new(&metadata);
 
         assert_eq!(cached_metadata.is_dir(), true);
     }
@@ -74,7 +101,7 @@ mod tests {
     #[test]
     fn test_is_file() {
         let metadata = fs::metadata("/path/to/your/file.txt").expect("Failed to get metadata");
-        let mut cached_metadata = CachedMetadata::new(metadata);
+        let mut cached_metadata = CachedMetadata::new(&metadata);
 
         assert_eq!(cached_metadata.is_file(), true);
     }
@@ -83,7 +110,7 @@ mod tests {
     fn test_is_symlink() {
         // Note: You may need to create a symbolic link for this test case
         let metadata = fs::metadata("/path/to/your/symlink").expect("Failed to get metadata");
-        let mut cached_metadata = CachedMetadata::new(metadata);
+        let mut cached_metadata = CachedMetadata::new(&metadata);
 
         assert_eq!(cached_metadata.is_symlink(), true);
     }
@@ -91,7 +118,7 @@ mod tests {
     #[test]
     fn test_modified() {
         let metadata = fs::metadata("/path/to/your/file.txt").expect("Failed to get metadata");
-        let mut cached_metadata = CachedMetadata::new(metadata);
+        let mut cached_metadata = CachedMetadata::new(&metadata);
 
         let original_modified = cached_metadata.modified();
 
@@ -101,7 +128,7 @@ mod tests {
         std::thread::sleep(std::time::Duration::from_secs(1));
 
         let new_metadata = fs::metadata("/path/to/your/file.txt").expect("Failed to get metadata");
-        cached_metadata = CachedMetadata::new(new_metadata);
+        cached_metadata = CachedMetadata::new(&new_metadata);
 
         let new_modified = cached_metadata.modified();
 
