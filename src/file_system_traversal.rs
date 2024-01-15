@@ -72,7 +72,7 @@ impl FileSystemTraversal {
                 // TODO 2. If dir mtime changed run ReadDir and add new files
 
             } else {
-                println!("Error getting file metadata file = {}", key);
+                //println!("Error getting file metadata file = {}", key);
 
                 // TODO file may no longer exists so remove it from data structure
             }

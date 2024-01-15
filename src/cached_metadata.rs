@@ -1,6 +1,6 @@
 use std::{fmt, fs};
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Debug)]
 pub struct CachedMetadata {
@@ -31,9 +31,6 @@ impl CachedMetadata {
             is_symlink_cache: Some(is_symlink),
             modified_cache: None,
         }
-
-
-
     }
 
     pub(crate) fn get_path(&mut self) -> &String {
@@ -65,10 +62,15 @@ impl CachedMetadata {
     }
 
     pub(crate) fn modified(&mut self) -> SystemTime {
-        SystemTime::now()
+        self.modified_cache.unwrap_or_else(|| {
+            let result = match Path::new(&self.path).metadata() {
+                Ok(metadata) => metadata.modified().unwrap_or_else(|_| SystemTime::now()),
+                Err(_) => UNIX_EPOCH, // Default to current time on error
+            };
+            self.modified_cache = Some(result);
+            result
+        })
     }
-
-
 }
 
 impl fmt::Display for CachedMetadata {

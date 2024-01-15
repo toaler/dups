@@ -6,6 +6,7 @@ mod scan_stats;
 mod scan_stats_visitor;
 mod progress_visitor;
 mod trie;
+mod util;
 
 use std::{env, io};
 use std::collections::HashMap;
@@ -18,6 +19,7 @@ use crate::file_system_traversal::FileSystemTraversal;
 use crate::node_writer::NodeWriter;
 use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
+use crate::util::{str_to_system_time, system_time_to_string};
 use crate::visitable::Visitable;
 
 fn main() -> Result<(), io::Error>{
@@ -65,6 +67,7 @@ fn main() -> Result<(), io::Error>{
                     let is_dir = columns[0];
                     let is_symlink = columns[1];
                     let p = &columns.get(2).unwrap().trim().to_string();
+                    let modified = str_to_system_time(columns[3]);
 
                     let is_dir_bool = is_dir == "true";
                     let is_symlink_bool = is_symlink.trim().parse().unwrap_or(false); // Change the default if needed
@@ -109,7 +112,8 @@ fn main() -> Result<(), io::Error>{
     let mut file = File::create("output.txt")?;
     for (key, mut m) in traverser.get_metadata() {
 
-        let output_string = format!("{}, {}, {}\n", m.is_dir(), m.is_symlink(), m.get_path());
+        let t = system_time_to_string(&m.modified());
+        let output_string = format!("{}, {}, {}, {}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
         // println!("{}", output_string);
         file.write_all(output_string.as_bytes())?;
     }
