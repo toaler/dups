@@ -7,12 +7,13 @@ pub fn system_time_to_string(sys_time: &SystemTime) -> String {
     datetime.to_rfc3339()
 }
 
-pub fn str_to_system_time(input: &str) -> Result<std::time::SystemTime, chrono::ParseError> {
-    // Parse the input string into a DateTime<FixedOffset>
-    let datetime: DateTime<FixedOffset> = DateTime::parse_from_rfc3339(input)?;
-
-    // Convert the DateTime<FixedOffset> to a SystemTime
-    let system_time = datetime.with_timezone(&Utc).into();
-
-    Ok(system_time)
+pub fn str_to_system_time(input: &str) -> Result<SystemTime, chrono::ParseError> {
+    match DateTime::parse_from_rfc3339(input) {
+        Ok(datetime) => {
+            // Convert the DateTime<FixedOffset> to a SystemTime
+            let system_time = datetime.with_timezone(&Utc).into();
+            Ok(system_time)
+        }
+        Err(_) => Ok(SystemTime::UNIX_EPOCH),
+    }
 }

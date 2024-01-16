@@ -1,7 +1,9 @@
 use std::{fs};
 use std::collections::HashMap;
+use std::ops::Add;
 use std::path::{Path, PathBuf};
 use crate::cached_metadata::CachedMetadata;
+use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
 
 pub struct FileSystemTraversal {
@@ -47,8 +49,6 @@ impl FileSystemTraversal {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries {
                     if let Ok(e) = entry {
-
-
                         self.traverse(&e.path().to_string_lossy().to_string(), visitors);
                     }
                 }
@@ -58,14 +58,23 @@ impl FileSystemTraversal {
         }
     }
 
-    pub(crate) fn refresh(&self) {
-        for (key, mut m) in &self.registry {
+    pub(crate) fn change_detection(&mut self) {
+        for (key, mut cached) in &mut self.registry {
 
             // Attempt to get metadata for the file
-            if let Ok(metadata) = fs::metadata(key) {
+            if let Ok(current) = fs::metadata(key) {
                 // Access various metadata properties
-                let file_size = metadata.len();
-                let modification_time = metadata.modified().unwrap();
+                let file_size = current.len();
+                let modification_time = current.modified();
+
+               // println!("diff {} {} {:?}", key, system_time_to_string(&cached.modified()), system_time_to_string(&current.modified().unwrap()));
+
+                if cached.modified() != current.modified().unwrap() {
+                    // File changed
+                    println!("File {} changed", cached.get_path());
+                } else {
+                    // println!("File {} same", cached.get_path());
+                }
 
                 // TODO check actual file mtime versus expected
                 // TODO 1. update metadata entry

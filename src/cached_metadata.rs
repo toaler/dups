@@ -23,13 +23,13 @@ impl CachedMetadata {
     }
 
     // TODO Clean this up
-    pub(crate) fn new2(p: &String, is_dir: bool, is_symlink: bool) -> Self {
+    pub(crate) fn new2(p: &String, is_dir: bool, is_symlink: bool, modified: SystemTime) -> Self {
         CachedMetadata {
             path: p.clone(),
             is_dir_cache: Some(is_dir),
             is_file_cache: None,
             is_symlink_cache: Some(is_symlink),
-            modified_cache: None,
+            modified_cache: Some(modified),
         }
     }
 

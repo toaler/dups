@@ -67,13 +67,13 @@ fn main() -> Result<(), io::Error>{
                     let is_dir = columns[0];
                     let is_symlink = columns[1];
                     let p = &columns.get(2).unwrap().trim().to_string();
-                    let modified = str_to_system_time(columns[3]);
+                    let modified = str_to_system_time(columns[3]).unwrap();
 
                     let is_dir_bool = is_dir == "true";
                     let is_symlink_bool = is_symlink.trim().parse().unwrap_or(false); // Change the default if needed
 
 
-                    let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool);
+                    let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool, modified);
 
                     traverser.add_metadata(p, m);
 
@@ -91,7 +91,7 @@ fn main() -> Result<(), io::Error>{
         println!("Starting filesystem refresh");
 
         let elapsed_time = start_time.elapsed();
-        traverser.refresh();
+        traverser.change_detection();
 
         println!("Finished filesystem refresh");
         println!("Total elapsed time = {:?}", elapsed_time);
@@ -113,7 +113,7 @@ fn main() -> Result<(), io::Error>{
     for (key, mut m) in traverser.get_metadata() {
 
         let t = system_time_to_string(&m.modified());
-        let output_string = format!("{}, {}, {}, {}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
+        let output_string = format!("{},{},{},{}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
         // println!("{}", output_string);
         file.write_all(output_string.as_bytes())?;
     }
