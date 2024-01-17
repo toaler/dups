@@ -68,7 +68,8 @@ impl FileSystemTraversal {
                     let modification_time = current.modified();
 
                     if cached.modified() != current.modified().unwrap() {
-                        println!("File {} changed", cached.get_path());
+
+                        println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
 
                         // TODO think about validating that the current and cached entities are of the same file type (file/dir).
                         // TODO for example if a dir changed to a file or a file changed to a dir.
