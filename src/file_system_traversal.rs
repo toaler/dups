@@ -76,6 +76,33 @@ impl FileSystemTraversal {
                         if !cached.is_dir() {
                             let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
                             self.registry.insert(key.clone(), m);
+                        } else {
+                            // if metadata.is_dir() && !metadata.is_symlink() {
+                                if let Ok(entries) = fs::read_dir(&key) {
+                                    for entry in entries {
+                                        if let Ok(e) = entry {
+                                            // Using entry() to check if the key exists and insert if absent
+                                            let record =  self.registry.entry(e.path().to_string_lossy().parse().unwrap());
+
+                                            match record {
+                                                std::collections::hash_map::Entry::Occupied(_) => {
+                                                    // Key exists, perform additional actions if needed
+                                                    // Additional code for a hit
+                                                }
+                                                std::collections::hash_map::Entry::Vacant(record) => {
+                                                    // Key does not exist, insert value and perform additional actions
+                                                    self.registry.insert(e.path().to_string_lossy().parse::<String>().unwrap().clone(),
+                                                                         CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap()));
+                                                    // Additional code for a miss
+                                                    println!("change detected : {:?} added", e);
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // Todo do something different here
+                                }
+                            // }
                         }
                     }
                     // Additional logic for checking actual file mtime versus expected
