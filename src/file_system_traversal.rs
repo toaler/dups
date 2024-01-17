@@ -84,6 +84,8 @@ impl FileSystemTraversal {
             } else {
                 // Handle error getting file metadata
                 // TODO: file may no longer exist, remove it from the data structure
+                println!("change detected : {} deleted", key);
+                self.registry.remove(&key);
             }
         }
     }
