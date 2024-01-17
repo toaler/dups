@@ -13,7 +13,6 @@ pub struct FileSystemTraversal {
 }
 
 impl FileSystemTraversal {
-
     pub fn new_with_cache() -> FileSystemTraversal {
         FileSystemTraversal { registry: HashMap::new(), cache_accesses: 0, cache_misses: 0 }
     }
@@ -34,7 +33,6 @@ impl FileSystemTraversal {
     }
 
     pub(crate) fn traverse(&mut self, path: &String, visitors: &mut [&mut dyn Visitable]) {
-
         self.cache_accesses += 1;
         let mut metadata = self.registry.entry(path.clone()).or_insert_with(|| {
             self.cache_misses += 1;
@@ -68,40 +66,60 @@ impl FileSystemTraversal {
                     let modification_time = current.modified();
 
                     if cached.modified() != current.modified().unwrap() {
-
                         println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
 
                         // TODO think about validating that the current and cached entities are of the same file type (file/dir).
                         // TODO for example if a dir changed to a file or a file changed to a dir.
                         if !cached.is_dir() {
+                            // Is a file and has changed
                             let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
                             self.registry.insert(key.clone(), m);
                         } else {
-                            // if metadata.is_dir() && !metadata.is_symlink() {
-                                if let Ok(entries) = fs::read_dir(&key) {
-                                    for entry in entries {
-                                        if let Ok(e) = entry {
-                                            // Using entry() to check if the key exists and insert if absent
-                                            let record =  self.registry.entry(e.path().to_string_lossy().parse().unwrap());
 
-                                            match record {
-                                                std::collections::hash_map::Entry::Occupied(_) => {
-                                                    // Key exists, perform additional actions if needed
-                                                    // Additional code for a hit
-                                                }
-                                                std::collections::hash_map::Entry::Vacant(record) => {
-                                                    // Key does not exist, insert value and perform additional actions
-                                                    self.registry.insert(e.path().to_string_lossy().parse::<String>().unwrap().clone(),
-                                                                         CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap()));
+                            // Is a dir and a file has been added or removed, so we need to get a listing of all files
+                            // in the dir and figure out the changed file(s)
+
+                            // if metadata.is_dir() && !metadata.is_symlink() {
+
+                            // TODO this block needs to be recusive and scan a entire dir and add new files maybe can call traverse?
+                            // Get dir listing for set of files to determine what have changed
+                            if let Ok(entries) = fs::read_dir(&key) {
+                                for entry in entries {
+                                    if let Ok(e) = entry {
+                                        // Look only for new files/dir's added. Deleted files/dir's in a dir will get pruned on initial scan
+
+                                        // TODO check transitive hierarchy add.
+
+                                        let curr_file = &e.path().to_string_lossy().into_owned();
+                                        println!("Lookup {:?}", curr_file);
+                                        let value = self.registry.get(curr_file);
+
+                                        match value {
+                                            Some(value) => {
+                                                // File is known so ignore. If it changed it was picked up in initial file scane
+                                            }
+                                            None => {
+                                                // File/dir does not exist, insert value and perform additional actions
+                                                // Need to acquire metadata for file
+
+                                                if let Ok(c) = fs::metadata(curr_file) {
                                                     // Additional code for a miss
-                                                    println!("change detected : {:?} added", e);
+                                                    println!("change detected : {:?} added", curr_file);
+                                                    self.registry.insert(curr_file.to_string(),
+                                                                         CachedMetadata::new2(&curr_file, c.is_dir(), c.is_symlink(), c.modified().unwrap()));
                                                 }
+
                                             }
                                         }
                                     }
-                                } else {
-                                    // Todo do something different here
                                 }
+                            } else {
+                                // Todo do something different here
+                            }
+
+                            // update the changed dir metadata as well
+                            let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
+                            self.registry.insert(key.clone(), m);
                             // }
                         }
                     }
