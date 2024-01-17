@@ -59,35 +59,81 @@ impl FileSystemTraversal {
     }
 
     pub(crate) fn change_detection(&mut self) {
-        for (key, mut cached) in &mut self.registry {
+        let keys: Vec<String> = self.registry.keys().cloned().collect();
 
-            // Attempt to get metadata for the file
-            if let Ok(current) = fs::metadata(key) {
-                // Access various metadata properties
-                let file_size = current.len();
-                let modification_time = current.modified();
+        for key in keys {
+            if let Ok(current) = fs::metadata(&key) {
+                if let Some(mut cached) = self.registry.get_mut(&key) {
+                    let file_size = current.len();
+                    let modification_time = current.modified();
 
-               // println!("diff {} {} {:?}", key, system_time_to_string(&cached.modified()), system_time_to_string(&current.modified().unwrap()));
+                    if cached.modified() != current.modified().unwrap() {
+                        println!("File {} changed", cached.get_path());
 
-                if cached.modified() != current.modified().unwrap() {
-                    // File changed
-                    println!("File {} changed", cached.get_path());
-                } else {
-                    // println!("File {} same", cached.get_path());
+                        // TODO think about validating that the current and cached entities are of the same file type (file/dir).
+                        // TODO for example if a dir changed to a file or a file changed to a dir.
+                        if !cached.is_dir() {
+                            let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
+                            self.registry.insert(key.clone(), m);
+                        }
+                    }
+                    // Additional logic for checking actual file mtime versus expected
+                    // and updating metadata entry or running ReadDir, etc.
                 }
-
-                // TODO check actual file mtime versus expected
-                // TODO 1. update metadata entry
-                // TODO 2. If dir mtime changed run ReadDir and add new files
-
             } else {
-                //println!("Error getting file metadata file = {}", key);
-
-                // TODO file may no longer exists so remove it from data structure
+                // Handle error getting file metadata
+                // TODO: file may no longer exist, remove it from the data structure
             }
         }
-
     }
+    //
+    // pub(crate) fn change_detection(&mut self) {
+    //
+    //     let keys: Vec<String> = self.registry.keys().cloned().collect();
+    //
+    //     for (key, mut cached) in &mut self.registry {
+    //
+    //         // Attempt to get metadata for the file
+    //         if let Ok(current) = fs::metadata(key) {
+    //             // Access various metadata properties
+    //             let file_size = current.len();
+    //             let modification_time = current.modified();
+    //
+    //            // println!("diff {} {} {:?}", key, system_time_to_string(&cached.modified()), system_time_to_string(&current.modified().unwrap()));
+    //
+    //             if cached.modified() != current.modified().unwrap() {
+    //                 // File changed
+    //                 println!("File {} changed", cached.get_path());
+    //
+    //                 // TODO think about validating that the current and cached entities are of the same file type (file/dir).
+    //                 // TODO for example if a dir changed to a file or a file changed to a dir.
+    //                 if !cached.is_dir() {
+    //                     // update in-memory db
+    //                     if !cached.is_dir() {
+    //                         // update in-memory db
+    //                         let m = CachedMetadata::new2(key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
+    //
+    //                         // Update the entry in the registry
+    //                         self.registry.insert(key.clone(), m);
+    //                     }
+    //                 }
+    //
+    //             } else {
+    //                 // println!("File {} same", cached.get_path());
+    //             }
+    //
+    //             // TODO check actual file mtime versus expected
+    //             // TODO 1. update metadata entry
+    //             // TODO 2. If dir mtime changed run ReadDir and add new files
+    //
+    //         } else {
+    //             //println!("Error getting file metadata file = {}", key);
+    //
+    //             // TODO file may no longer exists so remove it from data structure
+    //         }
+    //     }
+    //
+    // }
 }
 
 // #[cfg(test)]
