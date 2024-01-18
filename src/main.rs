@@ -7,6 +7,7 @@ mod progress_visitor;
 mod util;
 
 use std::{env, io};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path};
@@ -45,6 +46,7 @@ fn main() -> Result<(), io::Error>{
 
     println!("Setup cached metadata");
     let mut scanner = ResourceScanner::new();
+    let mut registry: HashMap<String, CachedMetadata> = HashMap::new();
 
     if Path::new("output.txt").exists() {
         // Open the file for reading
@@ -71,7 +73,7 @@ fn main() -> Result<(), io::Error>{
 
                     let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool, modified);
 
-                    scanner.add_metadata(p, m);
+                    scanner.add_metadata(&mut registry, p, m);
 
 
                 }
@@ -82,12 +84,12 @@ fn main() -> Result<(), io::Error>{
             }
         }
 
-        println!("Loaded {} entries into cache", scanner.metadata_size());
+        println!("Loaded {} entries into cache", registry.len());
 
         println!("Starting filesystem refresh");
 
         let elapsed_time = start_time.elapsed();
-        scanner.incremental_scan();
+        scanner.incremental_scan(&mut registry);
 
         println!("Finished filesystem refresh");
         println!("Total elapsed time = {:?}", elapsed_time);
@@ -95,7 +97,7 @@ fn main() -> Result<(), io::Error>{
     } else  {
 
         println!("Starting full resource scan");
-        scanner.full_scan(&root, &mut visitors);
+        scanner.full_scan(&mut registry, &root, &mut visitors);
         let elapsed_time = start_time.elapsed();
         println!("Finished full resource scan elapsed time = {:?}", elapsed_time);
 
@@ -106,14 +108,12 @@ fn main() -> Result<(), io::Error>{
 
 
     let mut file = File::create("output.txt")?;
-    for (_key, mut m) in scanner.get_metadata() {
+    for (_key, mut m) in registry {
 
         let t = system_time_to_string(&m.modified());
         let output_string = format!("{},{},{},{}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
         file.write_all(output_string.as_bytes())?;
     }
-
-    // traverser.dump_registry();
 
     for visitable_instance in &mut visitors {
         visitable_instance.recap();

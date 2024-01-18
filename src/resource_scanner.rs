@@ -6,35 +6,34 @@ use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
 
 pub struct ResourceScanner {
-    registry: HashMap<String, CachedMetadata>,
     cache_accesses: usize,
     cache_misses: usize,
 }
 
 impl ResourceScanner {
     pub fn new() -> ResourceScanner {
-        ResourceScanner { registry: HashMap::new(), cache_accesses: 0, cache_misses: 0 }
+        ResourceScanner { cache_accesses: 0, cache_misses: 0 }
     }
 
-    pub fn add_metadata(&mut self, path: &String, metadata: CachedMetadata) {
-        self.registry.insert(path.clone(), metadata);
+    pub fn add_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, metadata: CachedMetadata) {
+        registry.insert(path.clone(), metadata);
     }
 
-    pub fn get_metadata(self) -> HashMap<String, CachedMetadata> {
-        self.registry
-    }
+    // pub fn get_metadata(self) -> HashMap<String, CachedMetadata> {
+    //     self.registry
+    // }
 
-    pub fn metadata_size(&self) -> usize {
-        self.registry.len()
-    }
+    // pub fn metadata_size(&self) -> usize {
+    //     self.registry.len()
+    // }
     #[allow(warnings)]
     pub fn get_cache_stats(&self) -> (usize, usize) {
         (self.cache_accesses, self.cache_misses)
     }
 
-    pub(crate) fn full_scan(&mut self, path: &String, visitors: &mut [&mut dyn Visitable]) {
+    pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         self.cache_accesses += 1;
-        let metadata = self.registry.entry(path.clone()).or_insert_with(|| {
+        let metadata = registry.entry(path.clone()).or_insert_with(|| {
             self.cache_misses += 1;
             CachedMetadata::new(&path)
         });
@@ -47,7 +46,7 @@ impl ResourceScanner {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries {
                     if let Ok(e) = entry {
-                        self.full_scan(&e.path().to_string_lossy().to_string(), visitors);
+                        self.full_scan(registry, &e.path().to_string_lossy().to_string(), visitors);
                     }
                 }
             } else {
@@ -56,27 +55,27 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn incremental_scan(&mut self) {
-        let keys: Vec<String> = self.registry.keys().cloned().collect();
-        self.scan_resources_for_change(keys);
+    pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>) {
+        let keys: Vec<String> = registry.keys().cloned().collect();
+        self.scan_resources_for_change(registry, keys);
     }
 
-    fn scan_resources_for_change(&mut self, keys: Vec<String>) {
+    fn scan_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>) {
         for key in keys {
-            self.scan_resource_for_change(&key);
+            self.scan_resource_for_change(registry, &key);
         }
     }
 
-    pub(crate) fn scan_resource_for_change(&mut self, key: &String) {
+    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String) {
         if let Ok(current) = fs::metadata(&key) {
-            if let Some(cached) = self.registry.get_mut(key) {
+            if let Some(cached) = registry.get_mut(key) {
                 if cached.modified() != current.modified().unwrap() {
                     println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
 
                     if !cached.is_dir() {
-                        self.sync_file(key, &current);
+                        self.sync_file(registry, key, &current);
                     } else {
-                        self.sync_dir(key, &current);
+                        self.sync_dir(registry, key, &current);
                     }
                 }
             }
@@ -84,22 +83,22 @@ impl ResourceScanner {
             // Handle error getting file metadata
             // TODO: file may no longer exist, remove it from the data structure
             println!("change detected : {} deleted", key);
-            self.registry.remove(key);
+            registry.remove(key);
         }
     }
 
-    fn sync_file(&mut self, key: &String, current: &Metadata) {
-        self.put_metadata(key, &current);
+    fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
+        self.put_metadata(registry, key, &current);
     }
 
-    fn sync_dir(&mut self, key: &String, current: &Metadata) {
+    fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         if let Ok(children) = fs::read_dir(key) {
             for child in children {
                 if let Ok(e) = child {
                     // Look only for new files/dir's added. Deleted files/dir's in a dir will get pruned on initial scan
 
                     let resource = &e.path().to_string_lossy().into_owned();
-                    let value = self.registry.get(resource);
+                    let value = registry.get(resource);
 
                     match value {
                         Some(_value) => {
@@ -111,10 +110,10 @@ impl ResourceScanner {
 
                             if let Ok(c) = fs::metadata(resource) {
                                 println!("change detected : {:?} added", resource);
-                                self.put_metadata(&resource.to_string(), &c);
+                                self.put_metadata(registry, &resource.to_string(), &c);
 
                                 if c.is_dir() {
-                                    self.sync_dir(&resource.to_string(), &c);
+                                    self.sync_dir(registry, &resource.to_string(), &c);
                                 }
                             }
                         }
@@ -126,11 +125,11 @@ impl ResourceScanner {
         }
 
         // update the changed dir metadata as well
-        self.put_metadata(key, &current);
+        self.put_metadata(registry, key, &current);
     }
 
-    fn put_metadata(&mut self, key: &String, current: &Metadata) {
+    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-        self.registry.insert(key.clone(), m);
+        registry.insert(key.clone(), m);
     }
 }
