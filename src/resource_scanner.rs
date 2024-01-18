@@ -15,21 +15,7 @@ impl ResourceScanner {
         ResourceScanner { cache_accesses: 0, cache_misses: 0 }
     }
 
-    pub fn add_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, metadata: CachedMetadata) {
-        registry.insert(path.clone(), metadata);
-    }
 
-    // pub fn get_metadata(self) -> HashMap<String, CachedMetadata> {
-    //     self.registry
-    // }
-
-    // pub fn metadata_size(&self) -> usize {
-    //     self.registry.len()
-    // }
-    #[allow(warnings)]
-    pub fn get_cache_stats(&self) -> (usize, usize) {
-        (self.cache_accesses, self.cache_misses)
-    }
 
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         self.cache_accesses += 1;
@@ -71,12 +57,13 @@ impl ResourceScanner {
             if let Some(cached) = registry.get_mut(key) {
                 if cached.modified() != current.modified().unwrap() {
                     println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
-
                     if !cached.is_dir() {
                         self.sync_file(registry, key, &current);
                     } else {
                         self.sync_dir(registry, key, &current);
                     }
+                } else {
+                    // resource current
                 }
             }
         } else {
@@ -89,6 +76,7 @@ impl ResourceScanner {
 
     fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         self.put_metadata(registry, key, &current);
+        // Resource current
     }
 
     fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
@@ -115,6 +103,8 @@ impl ResourceScanner {
                                 if c.is_dir() {
                                     self.sync_dir(registry, &resource.to_string(), &c);
                                 }
+
+                                // Resource updated
                             }
                         }
                     }
@@ -128,8 +118,20 @@ impl ResourceScanner {
         self.put_metadata(registry, key, &current);
     }
 
+
+
+    pub fn add_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, metadata: CachedMetadata) {
+        registry.insert(path.clone(), metadata);
+    }
     fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
         registry.insert(key.clone(), m);
     }
+
+    #[allow(warnings)]
+    pub fn get_cache_stats(&self) -> (usize, usize) {
+        (self.cache_accesses, self.cache_misses)
+    }
+
+
 }
