@@ -1,5 +1,5 @@
-use std::{fmt, fs};
-use std::path::{Path, PathBuf};
+use std::{fmt};
+use std::path::{Path};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Clone, Debug)]
@@ -45,6 +45,7 @@ impl CachedMetadata {
         }).clone()
     }
 
+    #[allow(warnings)]
     pub(crate) fn is_file(&mut self) -> bool {
         self.is_file_cache.unwrap_or_else(|| {
             let result = Path::new(&self.path).is_file();

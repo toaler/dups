@@ -1,5 +1,3 @@
-use std::fs::Metadata;
-use std::path::Path;
 use crate::Visitable;
 use std::time::{Instant};
 use crate::cached_metadata::CachedMetadata;
@@ -34,10 +32,12 @@ impl ProgressVisitor {
         self.total_files_scanned + self.total_dirs_scanned
     }
 
+    #[allow(warnings)]
     pub fn total_files_scanned(&self) -> usize {
         self.total_files_scanned
     }
 
+    #[allow(warnings)]
     pub fn total_dirs_scanned(&self) -> usize {
         self.total_dirs_scanned
     }

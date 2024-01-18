@@ -1,6 +1,5 @@
-use std::string::ParseError;
 use std::time::SystemTime;
-use chrono::{DateTime, FixedOffset, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 
 pub fn system_time_to_string(sys_time: &SystemTime) -> String {
     let datetime: DateTime<Utc> = (*sys_time).into(); // Dereference the reference

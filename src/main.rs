@@ -1,22 +1,18 @@
-mod file_system_traversal;
+mod resource_scanner;
 mod visitable;
-mod node_writer;
 mod cached_metadata;
 mod scan_stats;
 mod scan_stats_visitor;
 mod progress_visitor;
-mod trie;
 mod util;
 
 use std::{env, io};
-use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::path::{Path, PathBuf};
+use std::io::{BufRead, BufReader, Write};
+use std::path::{Path};
 use std::time::Instant;
 use crate::cached_metadata::CachedMetadata;
-use crate::file_system_traversal::FileSystemTraversal;
-use crate::node_writer::NodeWriter;
+use crate::resource_scanner::ResourceScanner;
 use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::util::{str_to_system_time, system_time_to_string};
@@ -36,7 +32,7 @@ fn main() -> Result<(), io::Error>{
     println!("Build visitors");
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
-    let mut node_writer = NodeWriter::new();
+    // let node_writer = NodeWriter::new();
 
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
     visitors.push(&mut progress_visitor);
@@ -48,11 +44,11 @@ fn main() -> Result<(), io::Error>{
     // Load cache
 
     println!("Setup cached metadata");
-    let mut traverser = FileSystemTraversal::new_with_cache();
+    let mut scanner = ResourceScanner::new();
 
     if Path::new("output.txt").exists() {
         // Open the file for reading
-        let mut file = File::open("output.txt")?;
+        let file = File::open("output.txt")?;
         let reader = BufReader::new(file);
 
         // Iterate over each line in the file
@@ -75,7 +71,7 @@ fn main() -> Result<(), io::Error>{
 
                     let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool, modified);
 
-                    traverser.add_metadata(p, m);
+                    scanner.add_metadata(p, m);
 
 
                 }
@@ -86,44 +82,38 @@ fn main() -> Result<(), io::Error>{
             }
         }
 
-        println!("Loaded {} entries into cache", traverser.metadata_size());
+        println!("Loaded {} entries into cache", scanner.metadata_size());
 
         println!("Starting filesystem refresh");
 
         let elapsed_time = start_time.elapsed();
-        traverser.change_detection();
+        scanner.incremental_scan();
 
         println!("Finished filesystem refresh");
         println!("Total elapsed time = {:?}", elapsed_time);
 
     } else  {
 
-        println!("Starting filesystem traverse");
-
-        traverser.traverse(&root, &mut visitors);
-
-        println!("Finished filesystem traverse");
+        println!("Starting full resource scan");
+        scanner.full_scan(&root, &mut visitors);
         let elapsed_time = start_time.elapsed();
-        let (accesses, misses) = traverser.get_cache_stats();
+        println!("Finished full resource scan elapsed time = {:?}", elapsed_time);
+
+
 
     }
 
 
 
     let mut file = File::create("output.txt")?;
-    for (key, mut m) in traverser.get_metadata() {
+    for (_key, mut m) in scanner.get_metadata() {
 
         let t = system_time_to_string(&m.modified());
         let output_string = format!("{},{},{},{}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
-        // println!("{}", output_string);
         file.write_all(output_string.as_bytes())?;
     }
 
     // traverser.dump_registry();
-
-
-
-
 
     for visitable_instance in &mut visitors {
         visitable_instance.recap();

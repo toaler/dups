@@ -1,5 +1,3 @@
-use std::fs::Metadata;
-use std::path::Path;
 use crate::cached_metadata::CachedMetadata;
 use crate::scan_stats::ScanStats;
 use crate::visitable::Visitable;
