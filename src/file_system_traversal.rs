@@ -1,7 +1,6 @@
 use std::{fs};
 use std::collections::HashMap;
-use std::ops::Add;
-use std::path::{Path, PathBuf};
+use std::fs::Metadata;
 use crate::cached_metadata::CachedMetadata;
 use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
@@ -59,129 +58,81 @@ impl FileSystemTraversal {
     pub(crate) fn change_detection(&mut self) {
         let keys: Vec<String> = self.registry.keys().cloned().collect();
 
+        self.scan_resources_for_change(keys);
+    }
+
+    fn scan_resources_for_change(&mut self, keys: Vec<String>) {
         for key in keys {
-            if let Ok(current) = fs::metadata(&key) {
-                if let Some(mut cached) = self.registry.get_mut(&key) {
-                    let file_size = current.len();
-                    let modification_time = current.modified();
-
-                    if cached.modified() != current.modified().unwrap() {
-                        println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
-
-                        // TODO think about validating that the current and cached entities are of the same file type (file/dir).
-                        // TODO for example if a dir changed to a file or a file changed to a dir.
-                        if !cached.is_dir() {
-                            // Is a file and has changed
-                            let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-                            self.registry.insert(key.clone(), m);
-                        } else {
-
-                            // Is a dir and a file has been added or removed, so we need to get a listing of all files
-                            // in the dir and figure out the changed file(s)
-
-                            // if metadata.is_dir() && !metadata.is_symlink() {
-
-                            // TODO this block needs to be recusive and scan a entire dir and add new files maybe can call traverse?
-                            // Get dir listing for set of files to determine what have changed
-                            if let Ok(entries) = fs::read_dir(&key) {
-                                for entry in entries {
-                                    if let Ok(e) = entry {
-                                        // Look only for new files/dir's added. Deleted files/dir's in a dir will get pruned on initial scan
-
-                                        // TODO check transitive hierarchy add.
-
-                                        let curr_file = &e.path().to_string_lossy().into_owned();
-                                        println!("Lookup {:?}", curr_file);
-                                        let value = self.registry.get(curr_file);
-
-                                        match value {
-                                            Some(value) => {
-                                                // File is known so ignore. If it changed it was picked up in initial file scane
-                                            }
-                                            None => {
-                                                // File/dir does not exist, insert value and perform additional actions
-                                                // Need to acquire metadata for file
-
-                                                if let Ok(c) = fs::metadata(curr_file) {
-                                                    // Additional code for a miss
-                                                    println!("change detected : {:?} added", curr_file);
-                                                    self.registry.insert(curr_file.to_string(),
-                                                                         CachedMetadata::new2(&curr_file, c.is_dir(), c.is_symlink(), c.modified().unwrap()));
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                // Todo do something different here
-                            }
-
-                            // update the changed dir metadata as well
-                            let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-                            self.registry.insert(key.clone(), m);
-                            // }
-                        }
-                    }
-                    // Additional logic for checking actual file mtime versus expected
-                    // and updating metadata entry or running ReadDir, etc.
-                }
-            } else {
-                // Handle error getting file metadata
-                // TODO: file may no longer exist, remove it from the data structure
-                println!("change detected : {} deleted", key);
-                self.registry.remove(&key);
-            }
+            self.scan_resource_for_change(&key);
         }
     }
-    //
-    // pub(crate) fn change_detection(&mut self) {
-    //
-    //     let keys: Vec<String> = self.registry.keys().cloned().collect();
-    //
-    //     for (key, mut cached) in &mut self.registry {
-    //
-    //         // Attempt to get metadata for the file
-    //         if let Ok(current) = fs::metadata(key) {
-    //             // Access various metadata properties
-    //             let file_size = current.len();
-    //             let modification_time = current.modified();
-    //
-    //            // println!("diff {} {} {:?}", key, system_time_to_string(&cached.modified()), system_time_to_string(&current.modified().unwrap()));
-    //
-    //             if cached.modified() != current.modified().unwrap() {
-    //                 // File changed
-    //                 println!("File {} changed", cached.get_path());
-    //
-    //                 // TODO think about validating that the current and cached entities are of the same file type (file/dir).
-    //                 // TODO for example if a dir changed to a file or a file changed to a dir.
-    //                 if !cached.is_dir() {
-    //                     // update in-memory db
-    //                     if !cached.is_dir() {
-    //                         // update in-memory db
-    //                         let m = CachedMetadata::new2(key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-    //
-    //                         // Update the entry in the registry
-    //                         self.registry.insert(key.clone(), m);
-    //                     }
-    //                 }
-    //
-    //             } else {
-    //                 // println!("File {} same", cached.get_path());
-    //             }
-    //
-    //             // TODO check actual file mtime versus expected
-    //             // TODO 1. update metadata entry
-    //             // TODO 2. If dir mtime changed run ReadDir and add new files
-    //
-    //         } else {
-    //             //println!("Error getting file metadata file = {}", key);
-    //
-    //             // TODO file may no longer exists so remove it from data structure
-    //         }
-    //     }
-    //
-    // }
+
+    pub(crate) fn scan_resource_for_change(&mut self, key: &String) {
+        if let Ok(current) = fs::metadata(&key) {
+            if let Some(mut cached) = self.registry.get_mut(key) {
+                if cached.modified() != current.modified().unwrap() {
+                    println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
+
+                    if !cached.is_dir() {
+                        self.sync_file(key, &current);
+                    } else {
+                        self.sync_dir(key, &current);
+                    }
+                }
+            }
+        } else {
+            // Handle error getting file metadata
+            // TODO: file may no longer exist, remove it from the data structure
+            println!("change detected : {} deleted", key);
+            self.registry.remove(key);
+        }
+    }
+
+    fn sync_file(&mut self, key: &String, current: &Metadata) {
+        self.put_metadata(key, &current);
+    }
+
+    fn sync_dir(&mut self, key: &String, current: &Metadata) {
+        if let Ok(children) = fs::read_dir(key) {
+            for child in children {
+                if let Ok(e) = child {
+                    // Look only for new files/dir's added. Deleted files/dir's in a dir will get pruned on initial scan
+
+                    let resource = &e.path().to_string_lossy().into_owned();
+                    let value = self.registry.get(resource);
+
+                    match value {
+                        Some(value) => {
+                            // Resource is known so ignore. If it changed it was picked up in initial files
+                        }
+                        None => {
+                            // Resource does not exist, insert value and perform additional actions
+                            // Need to acquire metadata for file
+
+                            if let Ok(c) = fs::metadata(resource) {
+                                println!("change detected : {:?} added", resource);
+                                self.put_metadata(&resource.to_string(), &c);
+
+                                if (c.is_dir()) {
+                                    self.sync_dir(&resource.to_string(), &c);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Todo do something different here
+        }
+
+        // update the changed dir metadata as well
+        self.put_metadata(key, &current);
+    }
+
+    fn put_metadata(&mut self, key: &String, current: &Metadata) {
+        let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
+        self.registry.insert(key.clone(), m);
+    }
 }
 
 // #[cfg(test)]

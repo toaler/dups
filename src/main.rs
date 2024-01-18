@@ -101,6 +101,7 @@ fn main() -> Result<(), io::Error>{
         println!("Starting filesystem traverse");
 
         traverser.traverse(&root, &mut visitors);
+
         println!("Finished filesystem traverse");
         let elapsed_time = start_time.elapsed();
         let (accesses, misses) = traverser.get_cache_stats();
