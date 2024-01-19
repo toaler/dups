@@ -1,6 +1,7 @@
 use std::{fs};
 use std::collections::HashMap;
 use std::fs::Metadata;
+use std::io::Error;
 use crate::cached_metadata::CachedMetadata;
 use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
@@ -14,8 +15,6 @@ impl ResourceScanner {
     pub fn new() -> ResourceScanner {
         ResourceScanner { cache_accesses: 0, cache_misses: 0 }
     }
-
-
 
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         self.cache_accesses += 1;
@@ -35,8 +34,6 @@ impl ResourceScanner {
                         self.full_scan(registry, &e.path().to_string_lossy().to_string(), visitors);
                     }
                 }
-            } else {
-                // Todo do something different here
             }
         }
     }
@@ -52,11 +49,17 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String) {
+    fn get_metadata(&mut self, path: &String, is_symlink: bool) -> Result<Metadata, Error> {
+        if is_symlink {
+            return fs::symlink_metadata(path);
+        }
+        return fs::metadata(path);
+    }
 
-        match fs::metadata(&key) {
-            Ok(current) => {
-                if let Some(cached) = registry.get_mut(key) {
+    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String) {
+        if let Some(cached) = registry.get_mut(key) {
+            match self.get_metadata(&key, cached.is_symlink()) {
+                Ok(current) => {
                     if cached.modified() != current.modified().unwrap() {
                         println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
                         if !cached.is_dir() {
@@ -64,54 +67,38 @@ impl ResourceScanner {
                         } else {
                             self.sync_dir(registry, key, &current);
                         }
-                    } else {
-                        // resource current
                     }
                 }
-            }
-            Err(error) => {
-                // Handle the case when there's an error obtaining metadata
-                match error.kind() {
-                    std::io::ErrorKind::NotFound => {
-                        eprintln!("File or directory not found.");
-                        if let Some(cached) = registry.get_mut(key) {
-                            if cached.is_dangling() {
-                                // check if file exists via path and if it doesn't then remove it
-                                return
-                            }
+                Err(error) => {
+                    // Handle the case when there's an error obtaining metadata
+                    match error.kind() {
+                        std::io::ErrorKind::NotFound => {
+                            println!("change detected : {} deleted", key);
+                            registry.remove(key);
                         }
-
-
-                        // Additional specific error-handling logic for NotFound
-                    }
-                    std::io::ErrorKind::PermissionDenied => {
-                        eprintln!("Permission denied.");
-                        // Additional specific error-handling logic for PermissionDenied
-                    }
-                    _ => {
-                        // Handle other errors
-                        eprintln!("Error: {}", error);
-                        // Additional generic error-handling logic
+                        std::io::ErrorKind::PermissionDenied => {
+                            eprintln!("scan_resource_for_change  : Permission denied : {}", key);
+                            // Additional specific error-handling logic for PermissionDenied
+                        }
+                        _ => {
+                            // Handle other errors
+                            eprintln!("scan_resource_for_change  : Error: {} : {}", error, key);
+                            // Additional generic error-handling logic
+                        }
                     }
                 }
-                // Handle error getting file metadata
-                // TODO: file may no longer exist, remove it from the data structure
-                println!("change detected : {} deleted", key);
-                registry.remove(key);
             }
         }
     }
 
     fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         self.put_metadata(registry, key, &current);
-        // Resource current
     }
 
     fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         if let Ok(children) = fs::read_dir(key) {
             for child in children {
                 if let Ok(e) = child {
-                    // Look only for new files/dir's added. Deleted files/dir's in a dir will get pruned on initial scan
 
                     let resource = &e.path().to_string_lossy().into_owned();
                     let value = registry.get(resource);
@@ -131,22 +118,15 @@ impl ResourceScanner {
                                 if c.is_dir() {
                                     self.sync_dir(registry, &resource.to_string(), &c);
                                 }
-
-                                // Resource updated
                             }
                         }
                     }
                 }
             }
-        } else {
-            // Todo do something different here
         }
 
-        // update the changed dir metadata as well
         self.put_metadata(registry, key, &current);
     }
-
-
 
     pub fn add_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, metadata: CachedMetadata) {
         registry.insert(path.clone(), metadata);
@@ -160,6 +140,4 @@ impl ResourceScanner {
     pub fn get_cache_stats(&self) -> (usize, usize) {
         (self.cache_accesses, self.cache_misses)
     }
-
-
 }

@@ -1,4 +1,6 @@
-use std::{fmt};
+use std::{fmt, fs};
+use std::fs::Metadata;
+use std::io::Error;
 use std::path::{Path};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -8,7 +10,6 @@ pub struct CachedMetadata {
     is_dir_cache: Option<bool>,
     is_file_cache: Option<bool>,
     is_symlink_cache: Option<bool>,
-    is_dangling: Option<bool>,
     modified_cache: Option<SystemTime>,
 }
 
@@ -19,7 +20,6 @@ impl CachedMetadata {
             is_dir_cache: None,
             is_file_cache: None,
             is_symlink_cache: None,
-            is_dangling: None,
             modified_cache: None,
         }
     }
@@ -31,7 +31,6 @@ impl CachedMetadata {
             is_dir_cache: Some(is_dir),
             is_file_cache: None,
             is_symlink_cache: Some(is_symlink),
-            is_dangling: None,
             modified_cache: Some(modified),
         }
     }
@@ -65,20 +64,21 @@ impl CachedMetadata {
         })
     }
 
-    pub(crate) fn is_dangling(&mut self) -> bool {
-        self.is_dangling.unwrap()
+    pub fn get_metadata(&mut self) -> Result<Metadata, Error> {
+        if self.is_symlink() {
+            return fs::symlink_metadata(self.get_path());
+        }
+        return fs::metadata(self.get_path());
     }
 
     pub(crate) fn modified(&mut self) -> SystemTime {
         self.modified_cache.unwrap_or_else(|| {
-            let result = match Path::new(&self.path).metadata() {
+            let result = match self.get_metadata() {
                 Ok(metadata) => metadata.modified().unwrap_or_else(|_| SystemTime::now()),
-                Err(_) => {
-                    if self.is_symlink() {
-                        self.is_dangling = Some(true);
-                    }
+                Err(e) => {
+                    eprintln!("error during modification attempt {} for file {}", e, &self.path);
                     UNIX_EPOCH
-                }, // Default to current time on error
+                } // Default to current time on error
             };
             self.modified_cache = Some(result);
             result

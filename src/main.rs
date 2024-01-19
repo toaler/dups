@@ -71,7 +71,8 @@ fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), E
     let mut file = File::create("output.txt")?;
     for (_key, m) in registry {
         let t = system_time_to_string(&m.modified());
-        let output_string = format!("{},{},{},{}\n", m.is_dir(), m.is_symlink(), m.get_path(), t);
+        let output_string = format!("{},{},{},{}\n",
+                                    m.is_dir(), m.is_symlink(), m.get_path(), t);
         file.write_all(output_string.as_bytes())?;
     }
     Ok(())
@@ -96,9 +97,9 @@ fn load_registry(scanner: &mut ResourceScanner, mut registry: &mut HashMap<Strin
                 let p = &columns.get(2).unwrap().trim().to_string();
                 let modified = str_to_system_time(columns[3]).unwrap();
 
+
                 let is_dir_bool = is_dir == "true";
                 let is_symlink_bool = is_symlink.trim().parse().unwrap_or(false); // Change the default if needed
-
 
                 let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool, modified);
 
