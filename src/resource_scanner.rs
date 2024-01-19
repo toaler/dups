@@ -74,6 +74,14 @@ impl ResourceScanner {
                 match error.kind() {
                     std::io::ErrorKind::NotFound => {
                         eprintln!("File or directory not found.");
+                        if let Some(cached) = registry.get_mut(key) {
+                            if cached.is_dangling() {
+                                // check if file exists via path and if it doesn't then remove it
+                                return
+                            }
+                        }
+
+
                         // Additional specific error-handling logic for NotFound
                     }
                     std::io::ErrorKind::PermissionDenied => {
