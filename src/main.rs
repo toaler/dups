@@ -67,6 +67,7 @@ fn process_args() -> Result<String, Result<(), Error>> {
     Ok(r)
 }
 
+// TODO figure out better encoding that deals with file characters like whitespace/comma
 fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), Error> {
     let mut file = File::create("output.txt")?;
     for (_key, m) in registry {
