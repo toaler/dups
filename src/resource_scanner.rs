@@ -53,24 +53,44 @@ impl ResourceScanner {
     }
 
     pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String) {
-        if let Ok(current) = fs::metadata(&key) {
-            if let Some(cached) = registry.get_mut(key) {
-                if cached.modified() != current.modified().unwrap() {
-                    println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
-                    if !cached.is_dir() {
-                        self.sync_file(registry, key, &current);
+
+        match fs::metadata(&key) {
+            Ok(current) => {
+                if let Some(cached) = registry.get_mut(key) {
+                    if cached.modified() != current.modified().unwrap() {
+                        println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
+                        if !cached.is_dir() {
+                            self.sync_file(registry, key, &current);
+                        } else {
+                            self.sync_dir(registry, key, &current);
+                        }
                     } else {
-                        self.sync_dir(registry, key, &current);
+                        // resource current
                     }
-                } else {
-                    // resource current
                 }
             }
-        } else {
-            // Handle error getting file metadata
-            // TODO: file may no longer exist, remove it from the data structure
-            println!("change detected : {} deleted", key);
-            registry.remove(key);
+            Err(error) => {
+                // Handle the case when there's an error obtaining metadata
+                match error.kind() {
+                    std::io::ErrorKind::NotFound => {
+                        eprintln!("File or directory not found.");
+                        // Additional specific error-handling logic for NotFound
+                    }
+                    std::io::ErrorKind::PermissionDenied => {
+                        eprintln!("Permission denied.");
+                        // Additional specific error-handling logic for PermissionDenied
+                    }
+                    _ => {
+                        // Handle other errors
+                        eprintln!("Error: {}", error);
+                        // Additional generic error-handling logic
+                    }
+                }
+                // Handle error getting file metadata
+                // TODO: file may no longer exist, remove it from the data structure
+                println!("change detected : {} deleted", key);
+                registry.remove(key);
+            }
         }
     }
 
