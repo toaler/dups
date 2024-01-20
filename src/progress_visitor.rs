@@ -1,5 +1,6 @@
 use crate::Visitable;
 use std::time::{Instant};
+use log::info;
 use crate::cached_metadata::CachedMetadata;
 
 pub struct ProgressVisitor {
@@ -45,7 +46,7 @@ impl ProgressVisitor {
     fn incremental_recap(&mut self) {
         let elapsed_time = self.recap_start_time.elapsed();
 
-        println!(
+        info!(
             "Entities = {}, files = {}, dirs = {}, time = {:?}",
             self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap,
             self.files_scanned_since_last_recap,
@@ -80,7 +81,7 @@ impl Visitable for ProgressVisitor {
     fn recap(&mut self) {
         self.incremental_recap();
 
-        println!(
+        info!(
             "Total entities={}, files = {}, dirs = {}",
             self.total_entities(),
             self.total_files_scanned,

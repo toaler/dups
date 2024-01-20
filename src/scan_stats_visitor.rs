@@ -1,3 +1,4 @@
+use log::info;
 use crate::cached_metadata::CachedMetadata;
 use crate::scan_stats::ScanStats;
 use crate::visitable::Visitable;
@@ -16,9 +17,9 @@ impl Visitable for ScanStatsVisitor {
     }
 
     fn recap(&mut self) {
-        println!("");
-        println!("Scanning stats:");
-        println!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
+        info!("");
+        info!("Scanning stats:");
+        info!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
     }
 }
 

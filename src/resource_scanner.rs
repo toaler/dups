@@ -2,6 +2,7 @@ use std::{fs};
 use std::collections::HashMap;
 use std::fs::Metadata;
 use std::io::Error;
+use log::{error, info};
 use crate::cached_metadata::CachedMetadata;
 use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
@@ -61,7 +62,7 @@ impl ResourceScanner {
             match self.get_metadata(&key, cached.is_symlink()) {
                 Ok(current) => {
                     if cached.modified() != current.modified().unwrap() {
-                        println!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
+                        info!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
                         if !cached.is_dir() {
                             self.sync_file(registry, key, &current);
                         } else {
@@ -73,16 +74,16 @@ impl ResourceScanner {
                     // Handle the case when there's an error obtaining metadata
                     match error.kind() {
                         std::io::ErrorKind::NotFound => {
-                            println!("change detected : {} deleted", key);
+                            info!("change detected : {} deleted", key);
                             registry.remove(key);
                         }
                         std::io::ErrorKind::PermissionDenied => {
-                            eprintln!("scan_resource_for_change  : Permission denied : {}", key);
+                            error!("scan_resource_for_change  : Permission denied : {}", key);
                             // Additional specific error-handling logic for PermissionDenied
                         }
                         _ => {
                             // Handle other errors
-                            eprintln!("scan_resource_for_change  : Error: {} : {}", error, key);
+                            error!("scan_resource_for_change  : Error: {} : {}", error, key);
                             // Additional generic error-handling logic
                         }
                     }
@@ -112,7 +113,7 @@ impl ResourceScanner {
                             // Need to acquire metadata for file
 
                             if let Ok(c) = fs::metadata(resource) {
-                                println!("change detected : {:?} added", resource);
+                                info!("change detected : {:?} added", resource);
                                 self.put_metadata(registry, &resource.to_string(), &c);
 
                                 if c.is_dir() {

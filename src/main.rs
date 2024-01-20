@@ -6,12 +6,16 @@ mod scan_stats_visitor;
 mod progress_visitor;
 mod util;
 
+use log::{error, warn, info, debug, trace};
+
 use std::{env, io};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Error, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path};
 use std::time::Instant;
+use std::error::Error;
+use csv::{ReaderBuilder, WriterBuilder};
 use crate::cached_metadata::CachedMetadata;
 use crate::resource_scanner::ResourceScanner;
 use crate::progress_visitor::ProgressVisitor;
@@ -19,13 +23,13 @@ use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::util::{str_to_system_time, system_time_to_string};
 use crate::visitable::Visitable;
 
-fn main() -> Result<(), io::Error> {
-    let root = match process_args() {
-        Ok(value) => value,
-        Err(value) => return value,
-    };
+fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::init();
+    info!("Running dups!!!");
 
-    println!("Build visitors");
+    let root = process_args()?;
+
+    info!("Build visitors");
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
@@ -36,15 +40,17 @@ fn main() -> Result<(), io::Error> {
     let mut scanner = ResourceScanner::new();
     let mut registry: HashMap<String, CachedMetadata> = HashMap::new();
 
-    if Path::new("output.txt").exists() {
-        load_registry(&mut scanner, &mut registry)?;
+    if Path::new("output.csv").exists() {
+        info!("Incremental scan detected");
+        load_registry("output.csv", &mut registry)?;
+        info!("Registry loaded with {} resources", registry.len());
         scanner.incremental_scan(&mut registry);
     } else {
-        println!("Starting full resource scan");
+        info!("Starting full resource scan");
         scanner.full_scan(&mut registry, &root, &mut visitors);
-        println!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
+        info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
     }
-    println!("Total elapsed time = {:?}", start_time.elapsed());
+    info!("Total elapsed time = {:?}", start_time.elapsed());
 
     save_registry(&mut registry)?;
 
@@ -55,12 +61,12 @@ fn main() -> Result<(), io::Error> {
     Ok(())
 }
 
-fn process_args() -> Result<String, Result<(), Error>> {
+fn process_args() -> Result<String, Box<dyn Error>> {
     let args: Vec<String> = env::args().collect::<Vec<_>>();
 
     if args.len() < 2 {
-        eprintln!("Please provide a directory path.");
-        return Err(Err(io::Error::new(io::ErrorKind::InvalidInput, "Missing directory path")));
+        error!("Please provide a directory path.");
+        return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, "Missing directory path")));
     }
 
     let r = args[1].clone();
@@ -68,54 +74,53 @@ fn process_args() -> Result<String, Result<(), Error>> {
 }
 
 // TODO figure out better encoding that deals with file characters like whitespace/comma
-fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), Error> {
-    let mut file = File::create("output.txt")?;
+fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), std::io::Error> {
+    let file = File::create("output.csv")?;
+
+    // Create a CSV writer
+    let mut writer = WriterBuilder::new().from_writer(file);
+
+    // Write header
     for (_key, m) in registry {
         let t = system_time_to_string(&m.modified());
-        let output_string = format!("{},{},{},{}\n",
-                                    m.is_dir(), m.is_symlink(), m.get_path(), t);
-        file.write_all(output_string.as_bytes())?;
+        let path = m.get_path().clone();
+        let dir = m.is_dir().to_string();
+        let sym = m.is_symlink().to_string();
+
+        writer.write_record(&[path, dir, sym, t])?;
     }
+
+    writer.flush()?;
+
+    info!("CSV file created successfully.");
+
     Ok(())
 }
 
-fn load_registry(scanner: &mut ResourceScanner, mut registry: &mut HashMap<String, CachedMetadata>) -> Result<(), Error> {
-    // Open the file for reading
-    let file = File::open("output.txt")?;
+fn load_registry(file_path: &str, registry: &mut HashMap<String, CachedMetadata>) -> Result<HashMap<String, CachedMetadata>, Box<dyn Error>> {
+    // Open the file using BufReader for efficiency
+    let file = File::open(file_path)?;
     let reader = BufReader::new(file);
 
-    // Iterate over each line in the file
-    for line in reader.lines() {
-        // Handle each line as needed
-        match line {
-            Ok(row) => {
-                // Split the row by comma
-                let columns: Vec<&str> = row.split(',').collect();
-
-                // Process each column (print them in this case)
-                let is_dir = columns[0];
-                let is_symlink = columns[1];
-                let p = &columns.get(2).unwrap().trim().to_string();
-                let modified = str_to_system_time(columns[3]).unwrap();
+    // Create a CSV reader
+    let mut csv_reader = ReaderBuilder::new().has_headers(false).from_reader(reader);
 
 
-                let is_dir_bool = is_dir == "true";
-                let is_symlink_bool = is_symlink.trim().parse().unwrap_or(false); // Change the default if needed
+    // Iterate over CSV records
+    for record in csv_reader.records() {
+        let record = record?;
 
-                let m = CachedMetadata::new2(p, is_dir_bool, is_symlink_bool, modified);
+        // Assuming the CSV file structure is [path, dir, sym, t]
+        let path = record.get(0).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing path in CSV record"))?.to_string();
+        let is_dir: bool = record.get(1).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing is_dir in CSV record"))?.parse()?;
+        let is_symlink: bool = record.get(2).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing is_symlink in CSV record"))?.parse()?;
+        // Assuming the system_time_from_string function parses the time correctly
+        let modified_time = str_to_system_time(record.get(3).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing modified_time in CSV record"))?)?;
 
-                scanner.add_metadata(&mut registry, p, m);
-            }
-            Err(err) => {
-                // Handle the error if any
-                eprintln!("Error reading line: {}", err);
-            }
-        }
+        // Create CachedMetadata and insert into the registry
+        let cached_metadata = CachedMetadata::new2(&path, is_dir, is_symlink, modified_time);
+        registry.insert(path, cached_metadata);
     }
 
-    println!("Loaded {} entries into cache", registry.len());
-    println!("Starting filesystem refresh");
-
-
-    Ok(())
+    Ok(registry.clone()) // Use clone() to return a new HashMap
 }
