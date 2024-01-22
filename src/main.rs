@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path};
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 use std::error::Error;
 use csv::{ReaderBuilder, WriterBuilder};
 use crate::cached_metadata::CachedMetadata;
@@ -43,6 +43,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     if Path::new("output.csv").exists() {
         info!("Incremental scan detected");
         load_registry("output.csv", &mut registry)?;
+
+        // Add root dir in case it's not known from previous scans
+        if !registry.contains_key(&root) {
+            // Create CachedMetadata and insert into the registry
+            let p = Path::new(&root);
+            let m = CachedMetadata::new2(&root, p.is_dir(), p.is_symlink(), SystemTime::now());
+            registry.insert(root.clone(), m);
+        }
+
         info!("Registry loaded with {} resources", registry.len());
         scanner.incremental_scan(&mut registry);
     } else {
