@@ -129,9 +129,6 @@ impl ResourceScanner {
         self.put_metadata(registry, key, &current);
     }
 
-    pub fn add_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, metadata: CachedMetadata) {
-        registry.insert(path.clone(), metadata);
-    }
     fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
         let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
         registry.insert(key.clone(), m);

@@ -6,12 +6,12 @@ mod scan_stats_visitor;
 mod progress_visitor;
 mod util;
 
-use log::{error, warn, info, debug, trace};
+use log::{error, info};
 
 use std::{env, io};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufReader};
 use std::path::{Path};
 use std::time::{Instant, SystemTime};
 use std::error::Error;
@@ -113,7 +113,6 @@ fn load_registry(file_path: &str, registry: &mut HashMap<String, CachedMetadata>
 
     // Create a CSV reader
     let mut csv_reader = ReaderBuilder::new().has_headers(false).from_reader(reader);
-
 
     // Iterate over CSV records
     for record in csv_reader.records() {
