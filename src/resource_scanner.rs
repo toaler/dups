@@ -2,7 +2,7 @@ use std::{fs};
 use std::collections::HashMap;
 use std::fs::Metadata;
 use std::io::Error;
-use log::{error, info};
+use log::{debug, error, info};
 use crate::cached_metadata::CachedMetadata;
 use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
@@ -39,14 +39,14 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>) {
+    pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, visitors: &mut [&mut dyn Visitable]) {
         let keys: Vec<String> = registry.keys().cloned().collect();
-        self.scan_resources_for_change(registry, keys);
+        self.scan_resources_for_change(registry, keys, visitors);
     }
 
-    fn scan_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>) {
+    fn scan_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
         for key in keys {
-            self.scan_resource_for_change(registry, &key);
+            self.scan_resource_for_change(registry, &key, visitors);
         }
     }
 
@@ -57,16 +57,21 @@ impl ResourceScanner {
         return fs::metadata(path);
     }
 
-    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String) {
+    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
         if let Some(cached) = registry.get_mut(key) {
             match self.get_metadata(&key, cached.is_symlink()) {
                 Ok(current) => {
                     if cached.modified() != current.modified().unwrap() {
                         info!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
                         if !cached.is_dir() {
-                            self.sync_file(registry, key, &current);
+                            self.sync_file(registry, key, &current, visitors);
                         } else {
-                            self.sync_dir(registry, key, &current);
+                            self.sync_dir(registry, key, &current, visitors);
+                        }
+                    } else {
+                        debug!("Visiting file={:?} ", key);
+                        for visitor in &mut *visitors {
+                            visitor.visit(cached);
                         }
                     }
                 }
@@ -92,11 +97,11 @@ impl ResourceScanner {
         }
     }
 
-    fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
-        self.put_metadata(registry, key, &current);
+    fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
+        self.put_metadata(registry, key, &current, visitors);
     }
 
-    fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
+    fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
         if let Ok(children) = fs::read_dir(key) {
             for child in children {
                 if let Ok(e) = child {
@@ -105,8 +110,11 @@ impl ResourceScanner {
                     let value = registry.get(resource);
 
                     match value {
-                        Some(_value) => {
+                        Some(v) => {
                             // Resource is known so ignore. If it changed it was picked up in initial files
+                            for visitor in &mut *visitors {
+                                visitor.visit(&mut v.clone());
+                            }
                         }
                         None => {
                             // Resource does not exist, insert value and perform additional actions
@@ -114,10 +122,12 @@ impl ResourceScanner {
 
                             if let Ok(c) = fs::metadata(resource) {
                                 info!("change detected : {:?} added", resource);
-                                self.put_metadata(registry, &resource.to_string(), &c);
+                                self.put_metadata(registry, &resource.to_string(), &c, visitors);
+                                // Resource is known so ignore. If it changed it was picked up in initial files
+
 
                                 if c.is_dir() {
-                                    self.sync_dir(registry, &resource.to_string(), &c);
+                                    self.sync_dir(registry, &resource.to_string(), &c, visitors);
                                 }
                             }
                         }
@@ -126,12 +136,16 @@ impl ResourceScanner {
             }
         }
 
-        self.put_metadata(registry, key, &current);
+        self.put_metadata(registry, key, &current, visitors);
     }
 
-    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) {
+    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
         let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-        registry.insert(key.clone(), m);
+        registry.insert(key.clone(), m.clone());
+        debug!("Visiting file={:?} ", key);
+        for visitor in &mut *visitors {
+            visitor.visit(&mut m.clone());
+        }
     }
 
     #[allow(warnings)]
