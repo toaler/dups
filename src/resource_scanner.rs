@@ -2,7 +2,7 @@ use std::{fs};
 use std::collections::HashMap;
 use std::fs::Metadata;
 use std::io::Error;
-use log::{debug, error, info};
+use log::{debug, error};
 use crate::cached_metadata::CachedMetadata;
 use crate::util::system_time_to_string;
 use crate::visitable::Visitable;
@@ -40,7 +40,6 @@ impl ResourceScanner {
     }
 
     pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, visitors: &mut [&mut dyn Visitable]) {
-        // TODO : look to flip to .keys() to .values()
         let keys: Vec<String> = registry.keys().cloned().collect();
         self.inspect_resources_for_change(registry, keys, visitors);
     }
@@ -74,7 +73,7 @@ impl ResourceScanner {
                         // Authoritative metadata lookup failed
                         match error.kind() {
                             std::io::ErrorKind::NotFound => {
-                                info!("change detected : {} deleted", key);
+                                debug!("change detected : {} deleted", key);
                                 registry.remove(key);
                             }
                             std::io::ErrorKind::PermissionDenied => {
@@ -120,7 +119,7 @@ impl ResourceScanner {
                                 }
                                 None => {
                                     // Resource not cached, validate existence & acquire metadata
-                                    if let Ok(c) = fs::metadata(resource) {
+                                    if let Ok(c) = fs::symlink_metadata(resource) {
                                         debug!("Resource changed : {} added", resource.to_string());
                                         let mut m = self.put_metadata(registry, &resource.to_string(), &c);
 

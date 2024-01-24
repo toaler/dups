@@ -4,6 +4,8 @@ use log::info;
 use crate::cached_metadata::CachedMetadata;
 use crate::util::add_groupings_usize;
 
+const RECAP_THRESHOLD: usize = 100000;
+
 pub struct ProgressVisitor {
     total_files_scanned: usize,
     total_dirs_scanned: usize,
@@ -30,7 +32,7 @@ impl ProgressVisitor {
     }
 
     // Getter methods
-    pub fn total_entities(&self) -> usize {
+    pub fn total_resources(&self) -> usize {
         self.total_files_scanned + self.total_dirs_scanned
     }
 
@@ -48,10 +50,10 @@ impl ProgressVisitor {
         let elapsed_time = self.recap_start_time.elapsed();
 
         info!(
-            "Entities = {} files = {} dirs = {} time = {:?}",
+            "resources = {} dirs = {} files = {} time = {:?}",
             add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
-            add_groupings_usize(self.files_scanned_since_last_recap),
             add_groupings_usize(self.dirs_scanned_since_last_recap),
+            add_groupings_usize(self.files_scanned_since_last_recap),
             elapsed_time
         );
 
@@ -72,8 +74,7 @@ impl Visitable for ProgressVisitor {
             self.files_scanned_since_last_recap += 1;
         }
 
-        // Check if it's time for a recap (every 100000 files)
-        if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % 100000 == 0 {
+        if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % RECAP_THRESHOLD == 0 {
             self.incremental_recap();
         }
     }
@@ -83,10 +84,11 @@ impl Visitable for ProgressVisitor {
         self.incremental_recap();
 
         info!(
-            "Total entities={} files = {} dirs = {}",
-            add_groupings_usize(self.total_entities()),
-            add_groupings_usize(self.total_files_scanned),
-            add_groupings_usize(self.total_dirs_scanned)
+            "Total resources={} dirs = {} files = {}",
+            add_groupings_usize(self.total_resources()),
+            add_groupings_usize(self.total_dirs_scanned),
+            add_groupings_usize(self.total_files_scanned)
+
         );
 
         // Reset counters for the next recap

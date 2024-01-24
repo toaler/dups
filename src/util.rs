@@ -17,6 +17,7 @@ pub fn str_to_system_time(input: &str) -> Result<SystemTime, chrono::ParseError>
     }
 }
 
+#[allow(warnings)]
 pub fn add_groupings(mut number: u64) -> String {
     let mut result = String::new();
     let mut count = 0;
