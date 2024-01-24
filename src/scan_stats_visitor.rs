@@ -1,6 +1,7 @@
 use log::info;
 use crate::cached_metadata::CachedMetadata;
 use crate::scan_stats::ScanStats;
+use crate::util::add_groupings_u32;
 use crate::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
@@ -18,8 +19,7 @@ impl Visitable for ScanStatsVisitor {
 
     fn recap(&mut self) {
         info!("");
-        info!("Scanning stats:");
-        info!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
+        info!("Scanning stats: directories={} files={}", add_groupings_u32(self.get_stats().get_directory_count()), add_groupings_u32(self.get_stats().get_file_count()));
     }
 
     fn name(&self) -> &'static str {

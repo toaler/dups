@@ -2,6 +2,7 @@ use crate::Visitable;
 use std::time::{Instant};
 use log::info;
 use crate::cached_metadata::CachedMetadata;
+use crate::util::add_groupings_usize;
 
 pub struct ProgressVisitor {
     total_files_scanned: usize,
@@ -47,10 +48,10 @@ impl ProgressVisitor {
         let elapsed_time = self.recap_start_time.elapsed();
 
         info!(
-            "Entities = {}, files = {}, dirs = {}, time = {:?}",
-            self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap,
-            self.files_scanned_since_last_recap,
-            self.dirs_scanned_since_last_recap,
+            "Entities = {} files = {} dirs = {} time = {:?}",
+            add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
+            add_groupings_usize(self.files_scanned_since_last_recap),
+            add_groupings_usize(self.dirs_scanned_since_last_recap),
             elapsed_time
         );
 
@@ -82,10 +83,10 @@ impl Visitable for ProgressVisitor {
         self.incremental_recap();
 
         info!(
-            "Total entities={}, files = {}, dirs = {}",
-            self.total_entities(),
-            self.total_files_scanned,
-            self.total_dirs_scanned
+            "Total entities={} files = {} dirs = {}",
+            add_groupings_usize(self.total_entities()),
+            add_groupings_usize(self.total_files_scanned),
+            add_groupings_usize(self.total_dirs_scanned)
         );
 
         // Reset counters for the next recap

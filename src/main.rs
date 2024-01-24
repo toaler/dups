@@ -20,7 +20,7 @@ use crate::cached_metadata::CachedMetadata;
 use crate::resource_scanner::ResourceScanner;
 use crate::progress_visitor::ProgressVisitor;
 use crate::scan_stats_visitor::ScanStatsVisitor;
-use crate::util::{str_to_system_time, system_time_to_string};
+use crate::util::{add_groupings_usize, str_to_system_time, system_time_to_string};
 use crate::visitable::Visitable;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             registry.insert(root.clone(), m);
         }
 
-        info!("Registry loaded with {} resources", registry.len());
+        info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
         scanner.incremental_scan(&mut registry, &mut visitors);
     } else {
         info!("Starting full resource scan");
