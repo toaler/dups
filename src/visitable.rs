@@ -4,4 +4,6 @@ pub trait Visitable {
     fn visit(&mut self, metadata: &mut CachedMetadata);
 
     fn recap(&mut self);
+
+    fn name(&self) -> &'static str;
 }

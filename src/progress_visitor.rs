@@ -91,4 +91,8 @@ impl Visitable for ProgressVisitor {
         // Reset counters for the next recap
         self.reset_recap_counters();
     }
+
+    fn name(&self) -> &'static str {
+        "ProgressVisitor"
+    }
 }

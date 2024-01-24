@@ -58,7 +58,7 @@ impl ResourceScanner {
                     Ok(authoritative_metadata) => {
                         if cached_metadata.modified() != authoritative_metadata.modified().unwrap() {
                             // Cached resource is invalid
-                            info!("change detected : is_dir={} {} changed new modified time {:?}", cached_metadata.is_dir(), cached_metadata.get_path(), system_time_to_string(&authoritative_metadata.modified().unwrap()));
+                            debug!("Resource changed : is_dir={} {} new modified time {:?}", cached_metadata.is_dir(), cached_metadata.get_path(), system_time_to_string(&authoritative_metadata.modified().unwrap()));
                             if !cached_metadata.is_dir() {
                                 self.sync_file(registry, key, &authoritative_metadata, visitors);
                             } else {
@@ -66,7 +66,7 @@ impl ResourceScanner {
                             }
                         } else {
                             // Cached resource is fresh
-                            debug!("2 Visiting file={:?} ", key);
+                            debug!("Visiting [2] file={:?}", key);
                             Self::visit(cached_metadata, visitors);
                         }
                     }
@@ -98,13 +98,13 @@ impl ResourceScanner {
 
     fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
         let mut m = self.put_metadata(registry, key, &current);
-        debug!("3 Visiting file={:?} ", &key);
+        debug!("Visiting [1] file={:?} ", &key);
         Self::visit(&mut m, visitors);
     }
 
     fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
         let mut m = self.put_metadata(registry, key, &current);
-        debug!("4 Visiting file={:?} ", &key);
+        debug!("Visiting [2] file={:?} ", &key);
         Self::visit(&mut m, visitors);
 
         match fs::read_dir(key) {
@@ -121,12 +121,12 @@ impl ResourceScanner {
                                 None => {
                                     // Resource not cached, validate existence & acquire metadata
                                     if let Ok(c) = fs::metadata(resource) {
-                                        info!("change detected : {} added", resource.to_string());
+                                        debug!("Resource changed : {} added", resource.to_string());
                                         let mut m = self.put_metadata(registry, &resource.to_string(), &c);
 
                                         // Resource is known so ignore. If it changed it was picked up in initial files
                                         if !c.is_dir() {
-                                            debug!("3 Visiting file={:?} ", &resource);
+                                            debug!("Visiting [3] file={:?} ", &resource);
                                             Self::visit(&mut m, visitors);
                                         } else {
                                             self.sync_dir(registry, &resource.to_string(), &c, visitors);

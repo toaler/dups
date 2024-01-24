@@ -11,7 +11,7 @@ impl Visitable for ScanStatsVisitor {
     fn visit(&mut self, metadata: &mut CachedMetadata) {
         if metadata.is_dir() {
             self.stats.increment_directory();
-        }  else {
+        } else {
             self.stats.increment_file();
         }
     }
@@ -20,6 +20,10 @@ impl Visitable for ScanStatsVisitor {
         info!("");
         info!("Scanning stats:");
         info!("directories={},files={}", self.get_stats().get_directory_count(), self.get_stats().get_file_count());
+    }
+
+    fn name(&self) -> &'static str {
+        "ScanStatsVisitor"
     }
 }
 

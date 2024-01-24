@@ -6,7 +6,7 @@ mod scan_stats_visitor;
 mod progress_visitor;
 mod util;
 
-use log::{error, info};
+use log::{debug, error, info};
 
 use std::{env, io};
 use std::collections::HashMap;
@@ -29,12 +29,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let root = process_args()?;
 
-    info!("Build visitors");
+    debug!("Register visitors:");
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
     visitors.push(&mut progress_visitor);
     visitors.push(&mut scan_stats_visitor);
+
+    for v in &mut *visitors {
+        debug!("Visitor registered: {}", v.name());
+    }
 
     let start_time = Instant::now();
     let mut scanner = ResourceScanner::new();
