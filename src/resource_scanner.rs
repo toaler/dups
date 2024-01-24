@@ -40,112 +40,126 @@ impl ResourceScanner {
     }
 
     pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, visitors: &mut [&mut dyn Visitable]) {
+        // TODO : look to flip to .keys() to .values()
         let keys: Vec<String> = registry.keys().cloned().collect();
-        self.scan_resources_for_change(registry, keys, visitors);
+        self.inspect_resources_for_change(registry, keys, visitors);
     }
 
-    fn scan_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
+    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
         for key in keys {
-            self.scan_resource_for_change(registry, &key, visitors);
+            self.inspect_resource_for_change(registry, &key, visitors);
         }
     }
 
-    fn get_metadata(&mut self, path: &String, is_symlink: bool) -> Result<Metadata, Error> {
-        if is_symlink {
-            return fs::symlink_metadata(path);
-        }
-        return fs::metadata(path);
-    }
-
-    pub(crate) fn scan_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
-        if let Some(cached) = registry.get_mut(key) {
-            match self.get_metadata(&key, cached.is_symlink()) {
-                Ok(current) => {
-                    if cached.modified() != current.modified().unwrap() {
-                        info!("change detected : is_dir={} {} changed new modified time {:?}", cached.is_dir(), cached.get_path(), system_time_to_string(&current.modified().unwrap()));
-                        if !cached.is_dir() {
-                            self.sync_file(registry, key, &current, visitors);
+    pub(crate) fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
+        match registry.get_mut(key) {
+            Some(cached_metadata) => {
+                match self.get_authoritative_metadata(&key, cached_metadata.is_symlink()) {
+                    Ok(authoritative_metadata) => {
+                        if cached_metadata.modified() != authoritative_metadata.modified().unwrap() {
+                            // Cached resource is invalid
+                            info!("change detected : is_dir={} {} changed new modified time {:?}", cached_metadata.is_dir(), cached_metadata.get_path(), system_time_to_string(&authoritative_metadata.modified().unwrap()));
+                            if !cached_metadata.is_dir() {
+                                self.sync_file(registry, key, &authoritative_metadata, visitors);
+                            } else {
+                                self.sync_dir(registry, key, &authoritative_metadata, visitors);
+                            }
                         } else {
-                            self.sync_dir(registry, key, &current, visitors);
+                            // Cached resource is fresh
+                            debug!("2 Visiting file={:?} ", key);
+                            Self::visit(cached_metadata, visitors);
                         }
-                    } else {
-                        debug!("Visiting file={:?} ", key);
-                        for visitor in &mut *visitors {
-                            visitor.visit(cached);
+                    }
+                    Err(error) => {
+                        // Authoritative metadata lookup failed
+                        match error.kind() {
+                            std::io::ErrorKind::NotFound => {
+                                info!("change detected : {} deleted", key);
+                                registry.remove(key);
+                            }
+                            std::io::ErrorKind::PermissionDenied => {
+                                error!("scan_resource_for_change  : Permission denied : {}", key);
+                                // Additional specific error-handling logic for PermissionDenied
+                            }
+                            _ => {
+                                // Handle other errors
+                                error!("scan_resource_for_change  : Error: {} : {}", error, key);
+                                // Additional generic error-handling logic
+                            }
                         }
                     }
                 }
-                Err(error) => {
-                    // Handle the case when there's an error obtaining metadata
-                    match error.kind() {
-                        std::io::ErrorKind::NotFound => {
-                            info!("change detected : {} deleted", key);
-                            registry.remove(key);
-                        }
-                        std::io::ErrorKind::PermissionDenied => {
-                            error!("scan_resource_for_change  : Permission denied : {}", key);
-                            // Additional specific error-handling logic for PermissionDenied
-                        }
-                        _ => {
-                            // Handle other errors
-                            error!("scan_resource_for_change  : Error: {} : {}", error, key);
-                            // Additional generic error-handling logic
-                        }
-                    }
-                }
+            }
+            _ => {
+                // Shouldn't get here, all lookups are from keys that exist in cache
             }
         }
     }
 
     fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
-        self.put_metadata(registry, key, &current, visitors);
+        let mut m = self.put_metadata(registry, key, &current);
+        debug!("3 Visiting file={:?} ", &key);
+        Self::visit(&mut m, visitors);
     }
 
     fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
-        if let Ok(children) = fs::read_dir(key) {
-            for child in children {
-                if let Ok(e) = child {
+        let mut m = self.put_metadata(registry, key, &current);
+        debug!("4 Visiting file={:?} ", &key);
+        Self::visit(&mut m, visitors);
 
-                    let resource = &e.path().to_string_lossy().into_owned();
-                    let value = registry.get(resource);
+        match fs::read_dir(key) {
+            Ok(children) => {
+                for child in children {
+                    match child {
+                        Ok(e) => {
+                            let resource = &e.path().to_string_lossy().into_owned();
 
-                    match value {
-                        Some(v) => {
-                            // Resource is known so ignore. If it changed it was picked up in initial files
-                            for visitor in &mut *visitors {
-                                visitor.visit(&mut v.clone());
-                            }
-                        }
-                        None => {
-                            // Resource does not exist, insert value and perform additional actions
-                            // Need to acquire metadata for file
+                            match registry.get(resource) {
+                                Some(_v) => {
+                                    // Resource is known so ignore. If it changed it was picked up in initial files
+                                }
+                                None => {
+                                    // Resource not cached, validate existence & acquire metadata
+                                    if let Ok(c) = fs::metadata(resource) {
+                                        info!("change detected : {} added", resource.to_string());
+                                        let mut m = self.put_metadata(registry, &resource.to_string(), &c);
 
-                            if let Ok(c) = fs::metadata(resource) {
-                                info!("change detected : {:?} added", resource);
-                                self.put_metadata(registry, &resource.to_string(), &c, visitors);
-                                // Resource is known so ignore. If it changed it was picked up in initial files
-
-
-                                if c.is_dir() {
-                                    self.sync_dir(registry, &resource.to_string(), &c, visitors);
+                                        // Resource is known so ignore. If it changed it was picked up in initial files
+                                        if !c.is_dir() {
+                                            debug!("3 Visiting file={:?} ", &resource);
+                                            Self::visit(&mut m, visitors);
+                                        } else {
+                                            self.sync_dir(registry, &resource.to_string(), &c, visitors);
+                                        }
+                                    }
                                 }
                             }
                         }
+                        _ => {}
                     }
                 }
             }
+            _ => {}
         }
-
-        self.put_metadata(registry, key, &current, visitors);
     }
 
-    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
+    fn visit(cached: &mut CachedMetadata, visitors: &mut [&mut dyn Visitable]) {
+        for visitor in &mut *visitors {
+            visitor.visit(cached);
+        }
+    }
+
+    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) -> CachedMetadata {
         let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
         registry.insert(key.clone(), m.clone());
-        debug!("Visiting file={:?} ", key);
-        for visitor in &mut *visitors {
-            visitor.visit(&mut m.clone());
+        m
+    }
+
+    fn get_authoritative_metadata(&mut self, path: &String, is_symlink: bool) -> Result<Metadata, Error> {
+        if is_symlink {
+            return fs::symlink_metadata(path);
         }
+        return fs::metadata(path);
     }
 
     #[allow(warnings)]
