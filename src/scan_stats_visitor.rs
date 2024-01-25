@@ -41,6 +41,7 @@ impl ScanStatsVisitor {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
     use super::*;
     use std::fs::create_dir_all;
     use std::io::Write;
@@ -50,15 +51,20 @@ mod tests {
     fn test_visit_files_and_directories() {
         let temp_dir = TempDir::new().unwrap();
 
-        let file_path = temp_dir.path().join("test_file.txt");
-        let dir_path = temp_dir.path().join("test_dir");
+        let f = "test_file.txt";
+        let d = "test_dir";
+
+        let file_path = temp_dir.path().join(f);
+        let dir_path = temp_dir.path().join(d);
 
         create_dummy_file(&file_path);
         create_dir_all(&dir_path).unwrap();
 
         let mut visitor = ScanStatsVisitor::new();
-        visitor.visit(&file_path, false);
-        visitor.visit(&dir_path, true);
+        let file = ResourceMetadata::new(&f.to_string(), false, false, 0);
+        let dir = ResourceMetadata::new(&d.to_string(), true, false, 0);
+        visitor.visit(&file);
+        visitor.visit(&dir);
 
         assert_eq!(visitor.get_stats().get_file_count(), 1);
         assert_eq!(visitor.get_stats().get_directory_count(), 1);
