@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
-        scanner.incremental_scan(&mut registry, &mut visitors);
+        scanner.incremental_scan(&root, &mut registry, &mut visitors);
     } else {
         info!("Starting full resource scan");
         scanner.full_scan(&mut registry, &root, &mut visitors);
