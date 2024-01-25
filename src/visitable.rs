@@ -1,7 +1,7 @@
-use crate::cached_metadata::CachedMetadata;
+use crate::resource_metadata::ResourceMetadata;
 
 pub trait Visitable {
-    fn visit(&mut self, metadata: &mut CachedMetadata);
+    fn visit(&mut self, metadata: &ResourceMetadata);
 
     fn recap(&mut self);
 

@@ -1,7 +1,7 @@
 use crate::Visitable;
 use std::time::{Instant};
 use log::info;
-use crate::cached_metadata::CachedMetadata;
+use crate::resource_metadata::ResourceMetadata;
 use crate::util::add_groupings_usize;
 
 const RECAP_THRESHOLD: usize = 100000;
@@ -63,7 +63,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, metadata: &mut CachedMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {

@@ -1,11 +1,14 @@
-use std::{fs};
 use std::collections::HashMap;
-use std::fs::Metadata;
-use std::io::Error;
-use log::{debug, error};
-use crate::cached_metadata::CachedMetadata;
-use crate::util::system_time_to_string;
+use std::path::Path;
+
+use std::fs;
+use std::os::unix::fs::MetadataExt;
+
+use log::{debug};
+
+use crate::resource_metadata::ResourceMetadata;
 use crate::visitable::Visitable;
+
 
 pub struct ResourceScanner {
     cache_accesses: usize,
@@ -17,11 +20,13 @@ impl ResourceScanner {
         ResourceScanner { cache_accesses: 0, cache_misses: 0 }
     }
 
-    pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
+    pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         self.cache_accesses += 1;
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             self.cache_misses += 1;
-            CachedMetadata::new(&path)
+
+            let m = fs::symlink_metadata(path).unwrap();
+            ResourceMetadata::new(&path.clone(), m.is_dir(), m.is_symlink(), m.mtime())
         });
 
         for visitor in &mut *visitors {
@@ -39,54 +44,43 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, CachedMetadata>, visitors: &mut [&mut dyn Visitable]) {
+    pub(crate) fn incremental_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
         let keys: Vec<String> = registry.keys().cloned().collect();
         self.inspect_resources_for_change(registry, keys, visitors);
     }
 
-    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
+    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
         for key in keys {
             self.inspect_resource_for_change(registry, &key, visitors);
         }
     }
 
-    pub(crate) fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
+    pub(crate) fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
         match registry.get_mut(key) {
             Some(cached_metadata) => {
-                match self.get_authoritative_metadata(&key, cached_metadata.is_symlink()) {
-                    Ok(authoritative_metadata) => {
-                        if cached_metadata.modified() != authoritative_metadata.modified().unwrap() {
-                            // Cached resource is invalid
-                            debug!("Resource changed : is_dir={} {} new modified time {:?}", cached_metadata.is_dir(), cached_metadata.get_path(), system_time_to_string(&authoritative_metadata.modified().unwrap()));
-                            if !cached_metadata.is_dir() {
-                                self.sync_file(registry, key, &authoritative_metadata, visitors);
-                            } else {
-                                self.sync_dir(registry, key, &authoritative_metadata, visitors);
-                            }
+                let p = Path::new(cached_metadata.get_path());
+
+                if p.exists() {
+
+                    let mtime = fs::symlink_metadata(p).unwrap().mtime();
+
+                    if cached_metadata.modified() != mtime {
+                        // Cached resource is invalid
+                        debug!("Resource changed : is_dir={} {} new modified time {:?}", p.is_dir(), p.to_string_lossy().to_string(), mtime);
+
+                        let current = ResourceMetadata::new(&p.to_string_lossy().to_string(), p.is_dir(), p.is_symlink(), mtime);
+                        if !cached_metadata.is_dir() {
+                            self.sync_file(registry, key, &current, visitors);
                         } else {
-                            // Cached resource is fresh
-                            debug!("Visiting [2] file={:?}", key);
-                            Self::visit(cached_metadata, visitors);
+                            self.sync_dir(registry, key, &current, visitors);
                         }
+                    } else {
+                        // Cached resource is fresh
+                        Self::visit(cached_metadata, visitors);
                     }
-                    Err(error) => {
-                        // Authoritative metadata lookup failed
-                        match error.kind() {
-                            std::io::ErrorKind::NotFound => {
-                                debug!("change detected : {} deleted", key);
-                                registry.remove(key);
-                            }
-                            std::io::ErrorKind::PermissionDenied => {
-                                error!("scan_resource_for_change  : Permission denied : {}", key);
-                                // Additional specific error-handling logic for PermissionDenied
-                            }
-                            _ => {
-                                // Handle other errors
-                                error!("scan_resource_for_change  : Error: {} : {}", error, key);
-                                // Additional generic error-handling logic
-                            }
-                        }
-                    }
+                } else {
+                    debug!("change detected : {} deleted", key);
+                    registry.remove(key);
                 }
             }
             _ => {
@@ -95,16 +89,14 @@ impl ResourceScanner {
         }
     }
 
-    fn sync_file(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
-        let mut m = self.put_metadata(registry, key, &current);
-        debug!("Visiting [1] file={:?} ", &key);
-        Self::visit(&mut m, visitors);
+    fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
+        Self::update(registry, &current.get_path().clone(), current.clone());
+        Self::visit(&current, visitors);
     }
 
-    fn sync_dir(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata, visitors: &mut [&mut dyn Visitable]) {
-        let mut m = self.put_metadata(registry, key, &current);
-        debug!("Visiting [2] file={:?} ", &key);
-        Self::visit(&mut m, visitors);
+    fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
+        Self::update(registry, &current.get_path().clone(), current.clone());
+        Self::visit(&current, visitors);
 
         match fs::read_dir(key) {
             Ok(children) => {
@@ -120,15 +112,15 @@ impl ResourceScanner {
                                 None => {
                                     // Resource not cached, validate existence & acquire metadata
                                     if let Ok(c) = fs::symlink_metadata(resource) {
-                                        debug!("Resource changed : {} added", resource.to_string());
-                                        let mut m = self.put_metadata(registry, &resource.to_string(), &c);
+                                        // TODO : Reduce cloning and memory allocations
+                                        let new = ResourceMetadata::new(&resource.to_string(), c.is_dir(), c.is_symlink(), c.mtime());
+                                        Self::update(registry, &new.get_path().to_string(), new.clone());
 
                                         // Resource is known so ignore. If it changed it was picked up in initial files
                                         if !c.is_dir() {
-                                            debug!("Visiting [3] file={:?} ", &resource);
-                                            Self::visit(&mut m, visitors);
+                                            Self::visit(&new, visitors);
                                         } else {
-                                            self.sync_dir(registry, &resource.to_string(), &c, visitors);
+                                            self.sync_dir(registry, &new.get_path().to_string(), &new, visitors);
                                         }
                                     }
                                 }
@@ -142,23 +134,16 @@ impl ResourceScanner {
         }
     }
 
-    fn visit(cached: &mut CachedMetadata, visitors: &mut [&mut dyn Visitable]) {
+    fn update(registry: &mut HashMap<String, ResourceMetadata>, k: &String, v: ResourceMetadata) {
+        registry.entry(k.clone()).and_modify(|existing| {
+            *existing = v.clone();
+        }).or_insert(v.clone());
+    }
+
+    fn visit(cached: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
         for visitor in &mut *visitors {
             visitor.visit(cached);
         }
-    }
-
-    fn put_metadata(&mut self, registry: &mut HashMap<String, CachedMetadata>, key: &String, current: &Metadata) -> CachedMetadata {
-        let m = CachedMetadata::new2(&key, current.is_dir(), current.is_symlink(), current.modified().unwrap());
-        registry.insert(key.clone(), m.clone());
-        m
-    }
-
-    fn get_authoritative_metadata(&mut self, path: &String, is_symlink: bool) -> Result<Metadata, Error> {
-        if is_symlink {
-            return fs::symlink_metadata(path);
-        }
-        return fs::metadata(path);
     }
 
     #[allow(warnings)]

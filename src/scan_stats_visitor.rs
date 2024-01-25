@@ -1,5 +1,5 @@
 use log::info;
-use crate::cached_metadata::CachedMetadata;
+use crate::resource_metadata::ResourceMetadata;
 use crate::scan_stats::ScanStats;
 use crate::util::add_groupings_u32;
 use crate::visitable::Visitable;
@@ -9,7 +9,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, metadata: &mut CachedMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         } else {

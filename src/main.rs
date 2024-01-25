@@ -1,10 +1,10 @@
 mod resource_scanner;
 mod visitable;
-mod cached_metadata;
 mod scan_stats;
 mod scan_stats_visitor;
 mod progress_visitor;
 mod util;
+mod resource_metadata;
 
 use log::{debug, error, info};
 
@@ -13,18 +13,20 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader};
 use std::path::{Path};
-use std::time::{Instant, SystemTime};
+use std::time::{Instant};
 use std::error::Error;
 use csv::{ReaderBuilder, WriterBuilder};
-use crate::cached_metadata::CachedMetadata;
+use env_logger::Env;
 use crate::resource_scanner::ResourceScanner;
 use crate::progress_visitor::ProgressVisitor;
+use crate::resource_metadata::ResourceMetadata;
 use crate::scan_stats_visitor::ScanStatsVisitor;
-use crate::util::{add_groupings_usize, str_to_system_time, system_time_to_string};
+use crate::util::{add_groupings_usize};
 use crate::visitable::Visitable;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    env_logger::init();
+    // TODO better error handling for bubbled up Err's
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
     info!("Running dups!!!");
 
     let root = process_args()?;
@@ -42,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let start_time = Instant::now();
     let mut scanner = ResourceScanner::new();
-    let mut registry: HashMap<String, CachedMetadata> = HashMap::new();
+    let mut registry: HashMap<String, ResourceMetadata> = HashMap::new();
 
     if Path::new("output.csv").exists() {
         info!("Incremental scan detected");
@@ -50,9 +52,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // Add root dir in case it's not known from previous scans
         if !registry.contains_key(&root) {
-            // Create CachedMetadata and insert into the registry
+            // Create ResourceMetadata and insert into the registry
             let p = Path::new(&root);
-            let m = CachedMetadata::new2(&root, p.is_dir(), p.is_symlink(), SystemTime::now());
+            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0);
             registry.insert(root.clone(), m);
         }
 
@@ -86,16 +88,26 @@ fn process_args() -> Result<String, Box<dyn Error>> {
     Ok(r)
 }
 
-// TODO figure out better encoding that deals with file characters like whitespace/comma
-fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), std::io::Error> {
-    let file = File::create("output.csv")?;
+fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(), std::io::Error> {
+    info!("Saving registry");
+
+    // Attempt to create the file
+    let out = "output.csv";
+    let file = match File::create(out) {
+        Ok(f) => f,
+        Err(e) => {
+            // Log the error and return it
+            error!("Error creating file: {}, error = {}", out, e);
+            return Err(e);
+        }
+    };
 
     // Create a CSV writer
     let mut writer = WriterBuilder::new().from_writer(file);
 
     // Write header
     for (_key, m) in registry {
-        let t = system_time_to_string(&m.modified());
+        let t = m.modified().to_string();
         let path = m.get_path().clone();
         let dir = m.is_dir().to_string();
         let sym = m.is_symlink().to_string();
@@ -105,12 +117,13 @@ fn save_registry(registry: &mut HashMap<String, CachedMetadata>) -> Result<(), s
 
     writer.flush()?;
 
-    info!("CSV file created successfully.");
+    info!("Persisted registry");
 
     Ok(())
 }
 
-fn load_registry(file_path: &str, registry: &mut HashMap<String, CachedMetadata>) -> Result<HashMap<String, CachedMetadata>, Box<dyn Error>> {
+fn load_registry(file_path: &str, registry: &mut HashMap<String, ResourceMetadata>) -> Result<HashMap<String, ResourceMetadata>, Box<dyn Error>> {
+   // TODO : Filter what is loaded to match the root dir that was passed in
     // Open the file using BufReader for efficiency
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
@@ -127,10 +140,10 @@ fn load_registry(file_path: &str, registry: &mut HashMap<String, CachedMetadata>
         let is_dir: bool = record.get(1).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing is_dir in CSV record"))?.parse()?;
         let is_symlink: bool = record.get(2).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing is_symlink in CSV record"))?.parse()?;
         // Assuming the system_time_from_string function parses the time correctly
-        let modified_time = str_to_system_time(record.get(3).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing modified_time in CSV record"))?)?;
+        let modified_time = record.get(3).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing modified_time in CSV record"))?.parse::<i64>()?;
 
-        // Create CachedMetadata and insert into the registry
-        let cached_metadata = CachedMetadata::new2(&path, is_dir, is_symlink, modified_time);
+        // Create ResourceMetadata and insert into the registry
+        let cached_metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified_time);
         registry.insert(path, cached_metadata);
     }
 
