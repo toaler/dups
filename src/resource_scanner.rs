@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use std::fs;
 use std::os::unix::fs::MetadataExt;
@@ -45,12 +44,14 @@ impl ResourceScanner {
     }
 
     pub(crate) fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
-        let keys: Vec<String> = registry
+        let mut keys: Vec<String> = registry
             .keys()
             .cloned()
             .filter(|key| key.starts_with(root))
             .collect();
 
+        // Sort the keys so lstat lookups have locality
+        keys.sort();
         info!("Scanning resources={}", keys.len());
 
         self.inspect_resources_for_change(registry, keys, visitors);
@@ -58,6 +59,7 @@ impl ResourceScanner {
 
     fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
         for key in keys {
+            debug!("evaluating key {}", key);
             self.inspect_resource_for_change(registry, &key, visitors);
         }
     }
@@ -65,29 +67,29 @@ impl ResourceScanner {
     pub(crate) fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
         match registry.get_mut(key) {
             Some(cached_metadata) => {
-                let p = Path::new(cached_metadata.get_path());
+                match fs::symlink_metadata(key) {
+                    Ok(value) => {
+                        let mtime = value.mtime();
 
-                if p.exists() {
+                        if cached_metadata.modified() != mtime {
+                            // Cached resource is invalid
+                            debug!("Resource changed : is_dir={} {} new modified time {:?}", value.is_dir(), key, mtime);
 
-                    let mtime = fs::symlink_metadata(p).unwrap().mtime();
-
-                    if cached_metadata.modified() != mtime {
-                        // Cached resource is invalid
-                        debug!("Resource changed : is_dir={} {} new modified time {:?}", p.is_dir(), p.to_string_lossy().to_string(), mtime);
-
-                        let current = ResourceMetadata::new(&p.to_string_lossy().to_string(), p.is_dir(), p.is_symlink(), mtime);
-                        if !cached_metadata.is_dir() {
-                            self.sync_file(registry, &current, visitors);
+                            let current = ResourceMetadata::new(&key, value.is_dir(), value.is_symlink(), mtime);
+                            if !cached_metadata.is_dir() {
+                                self.sync_file(registry, &current, visitors);
+                            } else {
+                                self.sync_dir(registry, &current, visitors);
+                            }
                         } else {
-                            self.sync_dir(registry, &current, visitors);
+                            // Cached resource is fresh
+                            Self::visit(cached_metadata, visitors);
                         }
-                    } else {
-                        // Cached resource is fresh
-                        Self::visit(cached_metadata, visitors);
                     }
-                } else {
-                    debug!("change detected : {} deleted", key);
-                    registry.remove(key);
+                    Err(_value) => {
+                        debug!("change detected : {} deleted", key);
+                        registry.remove(key);
+                    }
                 }
             }
             _ => {
