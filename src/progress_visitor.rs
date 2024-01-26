@@ -1,5 +1,7 @@
+use std::string::ToString;
 use crate::Visitable;
 use std::time::{Instant};
+use lazy_static::lazy_static;
 use log::info;
 use crate::resource_metadata::ResourceMetadata;
 use crate::util::add_groupings_usize;
@@ -97,5 +99,67 @@ impl Visitable for ProgressVisitor {
 
     fn name(&self) -> &'static str {
         "ProgressVisitor"
+    }
+}
+
+lazy_static! {
+    static ref DUMMY_METADATA: ResourceMetadata = ResourceMetadata::new(&("dummy".to_string()), false, false, 0);
+}
+
+#[cfg(test)]
+mod tests {
+    // Import necessary modules for testing
+    use super::*;
+
+    #[test]
+    fn test_new_progress_visitor() {
+        let progress_visitor = ProgressVisitor::new();
+
+        // Ensure initial counters are set to zero
+        assert_eq!(progress_visitor.total_files_scanned, 0);
+        assert_eq!(progress_visitor.total_dirs_scanned, 0);
+        assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
+        assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
+    }
+
+    #[test]
+    fn test_incremental_recap() {
+        let mut progress_visitor = ProgressVisitor::new();
+
+        // Simulate scanning some files and directories
+        for _ in 0..RECAP_THRESHOLD {
+            progress_visitor.visit(&DUMMY_METADATA);
+        }
+
+        // Ensure counters are incremented and recap is triggered
+        assert_eq!(progress_visitor.total_files_scanned, RECAP_THRESHOLD);
+        assert_eq!(progress_visitor.total_dirs_scanned, 0);
+        assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
+        assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
+    }
+
+    #[test]
+    fn test_recap() {
+        let mut progress_visitor = ProgressVisitor::new();
+
+        // Simulate scanning some files and directories
+        for _ in 0..(2 * RECAP_THRESHOLD) {
+            progress_visitor.visit(&DUMMY_METADATA);
+        }
+
+        // Ensure counters are incremented and recap is triggered
+        assert_eq!(progress_visitor.total_files_scanned, 2 * RECAP_THRESHOLD);
+        assert_eq!(progress_visitor.total_dirs_scanned, 0);
+        assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
+        assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
+
+        // Trigger manual recap
+        progress_visitor.recap();
+
+        // Ensure counters are reset after manual recap
+        assert_eq!(progress_visitor.total_files_scanned, 200000);
+        assert_eq!(progress_visitor.total_dirs_scanned, 0);
+        assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
+        assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
     }
 }

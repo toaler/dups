@@ -3,10 +3,10 @@ use std::{fmt};
 #[derive(Clone, Debug)]
 pub struct ResourceMetadata {
     path: String,
-    is_dir_cache: bool,
-    is_file_cache: bool,
-    is_symlink_cache: bool,
-    modified_cache: i64
+    is_dir: bool,
+    is_file: bool,
+    is_symlink: bool,
+    modified: i64
 }
 
 impl ResourceMetadata {
@@ -14,10 +14,10 @@ impl ResourceMetadata {
     pub(crate) fn new(p: &String, is_dir: bool, is_symlink: bool, modified: i64) -> Self {
         ResourceMetadata {
             path: p.clone(),
-            is_dir_cache: is_dir,
-            is_file_cache: !is_dir,
-            is_symlink_cache: is_symlink,
-            modified_cache: modified,
+            is_dir,
+            is_file: !is_dir,
+            is_symlink,
+            modified,
         }
     }
 
@@ -26,20 +26,20 @@ impl ResourceMetadata {
     }
 
     pub(crate) fn is_dir(&self) -> bool {
-        self.is_dir_cache
+        self.is_dir
     }
 
     #[allow(warnings)]
     pub(crate) fn is_file(&self) -> bool {
-        self.is_file_cache
+        self.is_file
     }
 
     pub(crate) fn is_symlink(&self) -> bool {
-        self.is_symlink_cache
+        self.is_symlink
     }
 
     pub(crate) fn modified(&self) -> i64 {
-        self.modified_cache
+        self.modified
     }
 }
 
@@ -49,10 +49,10 @@ impl fmt::Display for ResourceMetadata {
             f,
             "ResourceMetadata {{ path: {}, is_dir: {:?}, is_file: {:?}, is_symlink: {:?}, modified: {:?} }}",
             self.path,
-            self.is_dir_cache,
-            self.is_file_cache,
-            self.is_symlink_cache,
-            self.modified_cache,
+            self.is_dir,
+            self.is_file,
+            self.is_symlink,
+            self.modified,
         )
     }
 }
