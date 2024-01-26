@@ -6,8 +6,8 @@ mod progress_visitor;
 mod util;
 mod resource_metadata;
 
-use log::{debug, error, info};
 
+use log::{debug, error, info};
 use std::{env, io};
 use std::collections::HashMap;
 use std::fs::File;
@@ -24,7 +24,9 @@ use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::util::{add_groupings_usize};
 use crate::visitable::Visitable;
 
+
 fn main() -> Result<(), Box<dyn Error>> {
+
     // TODO better error handling for bubbled up Err's
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
     info!("Running dups!!!");
@@ -123,7 +125,7 @@ fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(),
 }
 
 fn load_registry(file_path: &str, registry: &mut HashMap<String, ResourceMetadata>) -> Result<HashMap<String, ResourceMetadata>, Box<dyn Error>> {
-   // TODO : Filter what is loaded to match the root dir that was passed in
+    // TODO : Filter what is loaded to match the root dir that was passed in
     // Open the file using BufReader for efficiency
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);

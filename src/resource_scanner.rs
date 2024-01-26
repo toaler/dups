@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use std::fs;
+use std::{fs};
 use std::os::unix::fs::MetadataExt;
-
 use log::{debug, info};
 
 use crate::resource_metadata::ResourceMetadata;
@@ -59,7 +58,6 @@ impl ResourceScanner {
 
     fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
         for key in keys {
-            debug!("evaluating key {}", key);
             self.inspect_resource_for_change(registry, &key, visitors);
         }
     }
