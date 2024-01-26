@@ -9,20 +9,15 @@ use crate::visitable::Visitable;
 
 
 pub struct ResourceScanner {
-    cache_accesses: usize,
-    cache_misses: usize,
 }
 
 impl ResourceScanner {
     pub fn new() -> ResourceScanner {
-        ResourceScanner { cache_accesses: 0, cache_misses: 0 }
+        ResourceScanner {  }
     }
 
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
-        self.cache_accesses += 1;
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
-            self.cache_misses += 1;
-
             let m = fs::symlink_metadata(path).unwrap();
             ResourceMetadata::new(&path, m.is_dir(), m.is_symlink(), m.mtime())
         });
@@ -154,9 +149,88 @@ impl ResourceScanner {
             visitor.visit(cached);
         }
     }
+}
 
-    #[allow(warnings)]
-    pub fn get_cache_stats(&self) -> (usize, usize) {
-        (self.cache_accesses, self.cache_misses)
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+    use super::*;
+
+    struct MockVisitor {
+        test: String
     }
+
+    impl Visitable for MockVisitor {
+        fn visit(&mut self, resource: &ResourceMetadata) {
+            // Mock implementation
+            println!("test={} resource={}", self.test, resource.get_path());
+        }
+
+        fn recap(&mut self) {
+            todo!()
+        }
+
+        fn name(&self) -> &'static str {
+            "mock visitor"
+        }
+    }
+
+    impl MockVisitor {
+        pub(crate) fn new(t: &String) -> Self {
+            MockVisitor {
+                test : t.clone()
+            }
+        }
+    }
+
+    #[test]
+    fn test_full_scan() {
+        let mut scanner = ResourceScanner::new();
+        let mut registry = HashMap::new();
+
+        let mut v = MockVisitor::new(&String::from("test_full_scan"));
+        let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
+        visitors.push(&mut v);
+
+        // Create a temporary directory and some files inside for testing
+        let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
+        let file_path = temp_dir.path().join("test_file.txt");
+        fs::write(&file_path, "test data").expect("Failed to write to file");
+
+        // Perform a full scan
+        scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors);
+
+        // Assert that the registry has been populated and visitors were called
+        assert_eq!(registry.len(), 1);
+    }
+
+    #[test]
+    fn test_incremental_scan() {
+        let mut scanner = ResourceScanner::new();
+        let mut registry = HashMap::new();
+        let mut v = MockVisitor::new(&String::from("test_incremental_scan"));
+
+        let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
+        visitors.push(&mut v);
+
+        // Create a temporary directory and some files inside for testing
+        let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
+        let td = temp_dir.path().to_string_lossy().to_string();
+
+        let file_path = temp_dir.path().join("test_file.txt");
+        fs::write(&file_path, "test data").expect("Failed to write to file");
+
+        // Register root
+        let p = Path::new(&td);
+        let m = ResourceMetadata::new(&td, p.is_dir(), p.is_symlink(), 0);
+        registry.insert(td.clone(), m);
+
+        // Perform an incremental scan
+        scanner.incremental_scan(&td, &mut registry, &mut visitors);
+
+        // Assert that the registry has been populated and visitors were called
+        assert_eq!(registry.len(), 2);
+    }
+
+    // Add more test cases for inspect_resource_for_change, sync_file, sync_dir, and other functions as needed.
 }
