@@ -6,7 +6,6 @@ mod progress_visitor;
 mod util;
 mod resource_metadata;
 
-
 use log::{debug, error, info};
 use std::{env, io};
 use std::collections::HashMap;

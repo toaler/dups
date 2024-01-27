@@ -63,3 +63,32 @@ pub fn add_groupings_u32(number: u32) -> String {
 
     result.iter().rev().collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_groupings_with_u64() {
+        assert_eq!(add_groupings(1234567890), "1,234,567,890");
+        assert_eq!(add_groupings(987654321), "987,654,321");
+        assert_eq!(add_groupings(123), "123");
+        assert_eq!(add_groupings(0), "0");
+    }
+
+    #[test]
+    fn test_add_groupings_with_usize() {
+        assert_eq!(add_groupings_usize(1234567890), "1,234,567,890");
+        assert_eq!(add_groupings_usize(987654321), "987,654,321");
+        assert_eq!(add_groupings_usize(123), "123");
+        assert_eq!(add_groupings_usize(0), "0");
+    }
+
+    #[test]
+    fn test_add_groupings_with_u32() {
+        assert_eq!(add_groupings_u32(1234567890), "1,234,567,890");
+        assert_eq!(add_groupings_u32(987654321), "987,654,321");
+        assert_eq!(add_groupings_u32(123), "123");
+        assert_eq!(add_groupings_u32(0), "0");
+    }
+}
