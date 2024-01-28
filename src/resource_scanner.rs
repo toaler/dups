@@ -151,7 +151,6 @@ impl ResourceScanner {
                                             self.added_files += 1;
                                             Self::visit(&new, visitors);
                                         } else {
-                                            self.added_dirs += 1;
                                             self.sync_dir(registry, &new, visitors);
                                         }
                                     }
