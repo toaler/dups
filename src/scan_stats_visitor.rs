@@ -61,8 +61,8 @@ mod tests {
         create_dir_all(&dir_path).unwrap();
 
         let mut visitor = ScanStatsVisitor::new();
-        let file = ResourceMetadata::new(&f.to_string(), false, false, 0);
-        let dir = ResourceMetadata::new(&d.to_string(), true, false, 0);
+        let file = ResourceMetadata::new(&f.to_string(), false, false, 0, 1024);
+        let dir = ResourceMetadata::new(&d.to_string(), true, false, 0, 1024);
         visitor.visit(&file);
         visitor.visit(&dir);
 

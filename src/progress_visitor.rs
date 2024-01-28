@@ -103,7 +103,7 @@ impl Visitable for ProgressVisitor {
 }
 
 lazy_static! {
-    static ref DUMMY_METADATA: ResourceMetadata = ResourceMetadata::new(&("dummy".to_string()), false, false, 0);
+    static ref DUMMY_METADATA: ResourceMetadata = ResourceMetadata::new(&("dummy".to_string()), false, false, 0, 0);
 }
 
 #[cfg(test)]

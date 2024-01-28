@@ -6,18 +6,20 @@ pub struct ResourceMetadata {
     is_dir: bool,
     is_file: bool,
     is_symlink: bool,
-    modified: i64
+    modified: i64,
+    file_size_bytes: u64
 }
 
 impl ResourceMetadata {
 
-    pub(crate) fn new(p: &String, is_dir: bool, is_symlink: bool, modified: i64) -> Self {
+    pub(crate) fn new(p: &String, is_dir: bool, is_symlink: bool, modified: i64, file_size_bytes: u64) -> Self {
         ResourceMetadata {
             path: p.clone(),
             is_dir,
             is_file: !is_dir,
             is_symlink,
             modified,
+            file_size_bytes: file_size_bytes
         }
     }
 
@@ -41,6 +43,8 @@ impl ResourceMetadata {
     pub(crate) fn modified(&self) -> i64 {
         self.modified
     }
+
+    pub(crate) fn size_bytes(&self) -> u64 { self.file_size_bytes }
 }
 
 impl fmt::Display for ResourceMetadata {
@@ -103,7 +107,7 @@ mod tests {
         let is_symlink = false;
         let modified = 123456789;
 
-        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified);
+        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0);
 
         let mut visitor = VisitorMock::new("TestVisitor");
         visitor.visit(&metadata);
@@ -123,7 +127,7 @@ mod tests {
         let is_symlink = false;
         let modified = 123456789;
 
-        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified);
+        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0);
 
         let mut visitor = VisitorMock::new("DisplayVisitor");
         visitor.visit(&metadata);

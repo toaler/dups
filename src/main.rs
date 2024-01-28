@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if !registry.contains_key(&root) {
             // Create ResourceMetadata and insert into the registry
             let p = Path::new(&root);
-            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0);
+            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0);
             registry.insert(root.clone(), m);
         }
 
@@ -112,8 +112,9 @@ fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(),
         let path = m.get_path().clone();
         let dir = m.is_dir().to_string();
         let sym = m.is_symlink().to_string();
+        let size = m.size_bytes().to_string();
 
-        writer.write_record(&[path, dir, sym, t])?;
+        writer.write_record(&[path, dir, sym, t, size])?;
     }
 
     writer.flush()?;
@@ -142,10 +143,11 @@ fn load_registry(file_path: &str, registry: &mut HashMap<String, ResourceMetadat
         let is_symlink: bool = record.get(2).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing is_symlink in CSV record"))?.parse()?;
         // Assuming the system_time_from_string function parses the time correctly
         let modified_time = record.get(3).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing modified_time in CSV record"))?.parse::<i64>()?;
+        let size_bytes : u64 = record.get(4).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing size in CSV record"))?.parse::<u64>()?;
 
         // Create ResourceMetadata and insert into the registry
-        let cached_metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified_time);
-        registry.insert(path, cached_metadata);
+        let resource_metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified_time, size_bytes);
+        registry.insert(path, resource_metadata);
     }
 
     Ok(registry.clone()) // Use clone() to return a new HashMap
