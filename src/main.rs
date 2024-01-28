@@ -25,7 +25,6 @@ use crate::visitable::Visitable;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
-
     // TODO better error handling for bubbled up Err's
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
     info!("Running dups!!!");
@@ -66,7 +65,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         scanner.full_scan(&mut registry, &root, &mut visitors);
         info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
     }
-    info!("Total elapsed time = {:?}", start_time.elapsed());
+    info!("Change Stats : ");
+    info!("added files   = {}", scanner.added_files());
+    info!("added dirs    = {}", scanner.added_dirs());
+    info!("updated files = {}", scanner.updated_files());
+    info!("updated dirs  = {}", scanner.updated_dirs());
+    info!("deleted files = {}", scanner.deleted_files());
+    info!("deleted dirs  = {}", scanner.deleted_dirs());
+    info!("elapsed time  = {:?}", start_time.elapsed());
 
     save_registry(&mut registry)?;
 

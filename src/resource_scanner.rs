@@ -9,12 +9,32 @@ use crate::visitable::Visitable;
 
 
 pub struct ResourceScanner {
+    added_files : u64,
+    added_dirs : u64,
+    deleted_files : u64,
+    deleted_dirs : u64,
+    updated_files : u64,
+    updated_dirs : u64
 }
 
 impl ResourceScanner {
     pub fn new() -> ResourceScanner {
-        ResourceScanner {  }
+        ResourceScanner {
+            added_files : 0,
+            added_dirs : 0,
+            deleted_files : 0,
+            deleted_dirs : 0,
+            updated_files : 0,
+            updated_dirs : 0
+        }
     }
+
+    pub(crate) fn added_files(&self) -> u64 {self.added_files}
+    pub(crate) fn added_dirs(&self) -> u64 {self.added_dirs}
+    pub(crate) fn updated_files(&self) -> u64 {self.updated_files}
+    pub(crate) fn updated_dirs(&self) -> u64 {self.updated_dirs}
+    pub(crate) fn deleted_files(&self) -> u64 {self.deleted_files}
+    pub(crate) fn deleted_dirs(&self) -> u64 {self.deleted_dirs}
 
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
@@ -57,9 +77,10 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
-        match registry.get_mut(key) {
-            Some(cached_metadata) => {
+    fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
+        let resource = registry.get_mut(key);
+        match resource {
+            Some(ref cached_metadata) => {
                 match fs::symlink_metadata(key) {
                     Ok(value) => {
                         let mtime = value.mtime();
@@ -81,6 +102,11 @@ impl ResourceScanner {
                     }
                     Err(_value) => {
                         debug!("change detected : {} deleted", key);
+                        if resource.unwrap().is_dir() {
+                            self.deleted_dirs += 1;
+                        } else {
+                            self.deleted_files += 1;
+                        }
                         registry.remove(key);
                     }
                 }
@@ -93,6 +119,7 @@ impl ResourceScanner {
 
     fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
         Self::update(registry, &current.get_path(), &current);
+        self.updated_files += 1;
         Self::visit(&current, visitors);
     }
 
@@ -100,6 +127,7 @@ impl ResourceScanner {
         debug!("Resource changed : {}", current.get_path());
 
         Self::update(registry, &current.get_path(), &current);
+        self.updated_dirs += 1;
         Self::visit(&current, visitors);
 
         match fs::read_dir(current.get_path()) {
@@ -111,19 +139,19 @@ impl ResourceScanner {
 
                             match registry.get(resource) {
                                 Some(_v) => {
-                                    // Resource is known so ignore. If it changed it was picked up in initial files
+                                    // Resource is known so ignore. If it changed it was picked as it's scanned
                                 }
                                 None => {
                                     // Resource not cached, validate existence & acquire metadata
                                     if let Ok(c) = fs::symlink_metadata(resource) {
-                                        // TODO : Reduce cloning and memory allocations, also redundant to_string
                                         let new = ResourceMetadata::new(&resource.to_string(), c.is_dir(), c.is_symlink(), c.mtime(), c.len());
                                         Self::update(registry, &new.get_path().to_string(), &new);
 
-                                        // Resource is known so ignore. If it changed it was picked up in initial files
                                         if !c.is_dir() {
+                                            self.added_files += 1;
                                             Self::visit(&new, visitors);
                                         } else {
+                                            self.added_dirs += 1;
                                             self.sync_dir(registry, &new, visitors);
                                         }
                                     }
