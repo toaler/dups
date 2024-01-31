@@ -1,6 +1,7 @@
 use std::{fmt};
+use std::cmp::Ordering;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ResourceMetadata {
     path: String,
     is_dir: bool,
@@ -58,6 +59,18 @@ impl fmt::Display for ResourceMetadata {
             self.is_symlink,
             self.modified,
         )
+    }
+}
+
+impl PartialOrd for ResourceMetadata {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.size_bytes().cmp(&other.size_bytes()))
+    }
+}
+
+impl Ord for ResourceMetadata {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.size_bytes().cmp(&other.size_bytes())
     }
 }
 
@@ -147,5 +160,19 @@ mod tests {
         let mut visitor = VisitorMock::new("RecapVisitor");
         visitor.recap();
         assert_eq!(visitor.recap_called, true);
+    }
+
+    #[test]
+    fn test_sort_by_size_bytes() {
+        let metadata1 = ResourceMetadata::new(&String::from("/path1"), true, false, 123, 100);
+        let metadata2 = ResourceMetadata::new(&String::from("/path2"), false, true, 456, 200);
+
+        assert!(metadata1 < metadata2);
+        assert!(metadata2 > metadata1);
+
+        let mut vec = vec![metadata2.clone(), metadata1.clone()];
+        vec.sort();
+
+        assert_eq!(vec, vec![metadata1, metadata2]);
     }
 }

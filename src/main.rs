@@ -5,6 +5,7 @@ mod scan_stats_visitor;
 mod progress_visitor;
 mod util;
 mod resource_metadata;
+mod largest_files_vistor;
 
 use log::{debug, error, info};
 use std::{env, io};
@@ -18,6 +19,7 @@ use csv::{ReaderBuilder, WriterBuilder};
 use env_logger::Env;
 use crate::resource_scanner::ResourceScanner;
 use crate::progress_visitor::ProgressVisitor;
+use crate::largest_files_vistor::Top50LargestResources;
 use crate::resource_metadata::ResourceMetadata;
 use crate::scan_stats_visitor::ScanStatsVisitor;
 use crate::util::{add_groupings_usize};
@@ -34,9 +36,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     debug!("Register visitors:");
     let mut scan_stats_visitor = ScanStatsVisitor::new();
     let mut progress_visitor = ProgressVisitor::new();
+    let mut top_resources_visitor = Top50LargestResources::new();
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
     visitors.push(&mut progress_visitor);
     visitors.push(&mut scan_stats_visitor);
+    visitors.push(&mut top_resources_visitor);
 
     for v in &mut *visitors {
         debug!("Visitor registered: {}", v.name());
