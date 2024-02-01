@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use crate::resource_metadata::ResourceMetadata;
 use crate::visitable::Visitable;
@@ -21,6 +22,25 @@ impl DirectoryAnalyzerVisitor {
             root: DirectoryNode::default(),
         }
     }
+
+    // Recursive function to enumerate and display statistics
+    fn recap_recursive(&self, node: &DirectoryNode, depth: usize) {
+        // Print information about the current node
+        println!(
+            "{:indent$}{}: {} files, {} directories, {} bytes",
+            "",
+            node.name,
+            node.child_files,
+            node.child_dirs,
+            node.total_size,
+            indent = depth * 2
+        );
+
+        // Recursively call the function for child nodes
+        for child_node in node.children.values() {
+            self.recap_recursive(child_node, depth + 1);
+        }
+    }
 }
 
 impl Visitable for DirectoryAnalyzerVisitor {
@@ -30,43 +50,31 @@ impl Visitable for DirectoryAnalyzerVisitor {
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
         let mut current_node = &mut self.root;
 
-        // Create a separate variable for path components
-        let last_component = *components.last().unwrap();
-
         for component in components.iter() {
-            if component != &last_component {
-                current_node = current_node
-                    .children
-                    .entry(component.to_string())
-                    .or_insert_with(|| DirectoryNode {
+            current_node = match current_node.children.entry(component.to_string()) {
+                Occupied(entry) => entry.into_mut(),
+                Vacant(entry) => {
+                    if metadata.is_file() {
+                        current_node.child_files += 1;
+                    } else if metadata.is_dir() {
+                        current_node.child_dirs += 1;
+                    }
+
+                    current_node.total_size += metadata.size_bytes();
+
+                    let new_node = DirectoryNode {
                         name: component.to_string(),
                         ..Default::default()
-                    });
-            } else {
-                if metadata.is_file() {
-                    current_node.child_files += 1;
-                } else if metadata.is_dir() {
-                    current_node.child_dirs += 1;
+                    };
+                    entry.insert(new_node)
                 }
-
-                current_node.total_size += metadata.size_bytes();
-
-                if metadata.is_dir() {
-                    current_node = current_node
-                        .children
-                        .entry(component.to_string())
-                        .or_insert_with(|| DirectoryNode {
-                            name: component.to_string(),
-                            ..Default::default()
-                        });
-                }
-            }
+            };
         }
     }
 
     fn recap(&mut self) {
-        // Implement recap logic if needed
-        // This could print or return aggregated statistics
+        // Start the recursive enumeration from the root
+        self.recap_recursive(&self.root, 0);
     }
 
     fn name(&self) -> &'static str {
