@@ -48,25 +48,40 @@ impl Visitable for DirectoryAnalyzerVisitor {
         let path = metadata.get_path();
 
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
-        let mut current_node = &mut self.root;
 
-        for component in components.iter() {
+        let mut current_node = &mut self.root;
+        let mut d = DirectoryNode {
+            name: "".to_string(),
+            ..Default::default()
+        };
+
+        for i in 0..components.len() {
+            let component = components[i];
             current_node = match current_node.children.entry(component.to_string()) {
                 Occupied(entry) => entry.into_mut(),
                 Vacant(entry) => {
-                    if metadata.is_file() {
-                        current_node.child_files += 1;
-                    } else if metadata.is_dir() {
-                        current_node.child_dirs += 1;
+                    // check if reached filename part of path
+                    if i == components.len() - 1 {
+                        // at filename so update stats of parent dir
+                        if metadata.is_file() {
+                            current_node.child_files += 1;
+                        } else if metadata.is_dir() {
+                            current_node.child_dirs += 1;
+                        }
+                        current_node.total_size += metadata.size_bytes();
                     }
 
-                    current_node.total_size += metadata.size_bytes();
-
-                    let new_node = DirectoryNode {
-                        name: component.to_string(),
-                        ..Default::default()
-                    };
-                    entry.insert(new_node)
+                    // add new node in tree if at a non filename node OR
+                    // at filename and it's a directory
+                    if !(i == components.len() - 1 && metadata.is_file()) {
+                        let new_node = DirectoryNode {
+                            name: component.to_string(),
+                            ..Default::default()
+                        };
+                        entry.insert(new_node)
+                    } else {
+                        &mut d
+                    }
                 }
             };
         }

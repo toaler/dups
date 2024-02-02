@@ -43,8 +43,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
     visitors.push(&mut progress_visitor);
     visitors.push(&mut scan_stats_visitor);
-    visitors.push(&mut top_resources_visitor);
     visitors.push(&mut directory_analyzer_visitor);
+    visitors.push(&mut top_resources_visitor);
 
     for v in &mut *visitors {
         debug!("Visitor registered: {}", v.name());
