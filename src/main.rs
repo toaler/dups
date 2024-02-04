@@ -31,7 +31,7 @@ use crate::visitable::Visitable;
 fn main() -> Result<(), Box<dyn Error>> {
     // TODO better error handling for bubbled up Err's
     // TODO add flag to enable fingerprinting
-    
+
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
     info!("Running Turbo Tasker (tt)!!!");
 
@@ -42,11 +42,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut progress_visitor = ProgressVisitor::new();
     let mut top_resources_visitor = Top50LargestResources::new();
     let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
-    let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
-    visitors.push(&mut progress_visitor);
-    visitors.push(&mut scan_stats_visitor);
-    visitors.push(&mut directory_analyzer_visitor);
-    visitors.push(&mut top_resources_visitor);
+
+    let mut visitors: Vec<&mut dyn Visitable> = vec![
+        &mut progress_visitor,
+        &mut scan_stats_visitor,
+        &mut directory_analyzer_visitor,
+        &mut top_resources_visitor,
+    ];
 
     for v in &mut *visitors {
         debug!("Visitor registered: {}", v.name());
@@ -123,7 +125,7 @@ fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(),
     let mut writer = WriterBuilder::new().from_writer(file);
 
     // Write header
-    for (_key, m) in registry {
+    for m in registry.values() {
         let t = m.modified().to_string();
         let path = m.get_path().clone();
         let dir = m.is_dir().to_string();

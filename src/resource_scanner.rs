@@ -39,7 +39,7 @@ impl ResourceScanner {
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
-            ResourceMetadata::new(&path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
+            ResourceMetadata::new(path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
         });
 
         for visitor in &mut *visitors {
@@ -60,8 +60,8 @@ impl ResourceScanner {
     pub(crate) fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
         let mut keys: Vec<String> = registry
             .keys()
-            .cloned()
             .filter(|key| key.starts_with(root))
+            .cloned()
             .collect();
 
         // Sort the keys so lstat lookups have locality
@@ -89,7 +89,7 @@ impl ResourceScanner {
                             // Cached resource is invalid
                             debug!("Resource changed : is_dir={} {} new modified time {:?}", value.is_dir(), key, mtime);
 
-                            let current = ResourceMetadata::new(&key, value.is_dir(), value.is_symlink(), mtime, value.len(), false);
+                            let current = ResourceMetadata::new(key, value.is_dir(), value.is_symlink(), mtime, value.len(), false);
                             if !cached_metadata.is_dir() {
                                 self.sync_file(registry, &current, visitors);
                             } else {
@@ -118,17 +118,17 @@ impl ResourceScanner {
     }
 
     fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
-        Self::update(registry, &current.get_path(), current);
+        Self::update(registry, current.get_path(), current);
         self.updated_files += 1;
-        Self::visit(&current, visitors);
+        Self::visit(current, visitors);
     }
 
     fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
         debug!("Resource changed : {}", current.get_path());
 
-        Self::update(registry, &current.get_path(), &current);
+        Self::update(registry, current.get_path(), &current);
         self.updated_dirs += 1;
-        Self::visit(&current, visitors);
+        Self::visit(current, visitors);
 
         match fs::read_dir(current.get_path()) {
             Ok(children) => {
@@ -165,8 +165,8 @@ impl ResourceScanner {
         }
     }
 
-    fn update(registry: &mut HashMap<String, ResourceMetadata>, k: &String, v: &ResourceMetadata) {
-        registry.entry(k.clone()).and_modify(|existing| {
+    fn update(registry: &mut HashMap<String, ResourceMetadata>, k: &str, v: &ResourceMetadata) {
+        registry.entry(k.to_string()).and_modify(|existing| {
             *existing = v.clone();
         }).or_insert(v.clone());
     }

@@ -29,7 +29,7 @@ impl ResourceMetadata {
             is_file: !is_dir,
             is_symlink,
             modified,
-            file_size_bytes: file_size_bytes,
+            file_size_bytes,
             fingerprint
         }
     }
