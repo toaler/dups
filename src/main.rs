@@ -7,6 +7,7 @@ mod util;
 mod resource_metadata;
 mod largest_files_vistor;
 mod directory_analyzer_visitor;
+mod fingerprinting_visitor;
 
 use log::{debug, error, info};
 use std::{env, io};
