@@ -57,6 +57,7 @@ impl ResourceMetadata {
 
     pub(crate) fn size_bytes(&self) -> u64 { self.file_size_bytes }
 
+    #[allow(warnings)]
     pub(crate) fn fingerprint(&self) -> u64 { self.fingerprint }
 }
 
