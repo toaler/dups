@@ -1,6 +1,6 @@
 # Turbo Tasker
 
-Turbo Tasker is a cross-platform PC task manager that strives to complete task execution efficiently.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
+Turbo Tasker is a cross-platform PC management task manager that strives to complete task execution efficiently.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
 
 ## Features
 
