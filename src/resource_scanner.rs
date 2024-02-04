@@ -9,33 +9,34 @@ use crate::visitable::Visitable;
 
 
 pub struct ResourceScanner {
-    added_files : u64,
-    added_dirs : u64,
-    deleted_files : u64,
-    deleted_dirs : u64,
-    updated_files : u64,
-    updated_dirs : u64
+    added_files: u64,
+    added_dirs: u64,
+    deleted_files: u64,
+    deleted_dirs: u64,
+    updated_files: u64,
+    updated_dirs: u64,
 }
 
 impl ResourceScanner {
     pub fn new() -> ResourceScanner {
         ResourceScanner {
-            added_files : 0,
-            added_dirs : 0,
-            deleted_files : 0,
-            deleted_dirs : 0,
-            updated_files : 0,
-            updated_dirs : 0
+            added_files: 0,
+            added_dirs: 0,
+            deleted_files: 0,
+            deleted_dirs: 0,
+            updated_files: 0,
+            updated_dirs: 0,
         }
     }
 
-    pub(crate) fn added_files(&self) -> u64 {self.added_files}
-    pub(crate) fn added_dirs(&self) -> u64 {self.added_dirs}
-    pub(crate) fn updated_files(&self) -> u64 {self.updated_files}
-    pub(crate) fn updated_dirs(&self) -> u64 {self.updated_dirs}
-    pub(crate) fn deleted_files(&self) -> u64 {self.deleted_files}
-    pub(crate) fn deleted_dirs(&self) -> u64 {self.deleted_dirs}
+    pub(crate) fn added_files(&self) -> u64 { self.added_files }
+    pub(crate) fn added_dirs(&self) -> u64 { self.added_dirs }
+    pub(crate) fn updated_files(&self) -> u64 { self.updated_files }
+    pub(crate) fn updated_dirs(&self) -> u64 { self.updated_dirs }
+    pub(crate) fn deleted_files(&self) -> u64 { self.deleted_files }
+    pub(crate) fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
 
+    #[warn(clippy::only_used_in_recursion)]
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
@@ -126,7 +127,7 @@ impl ResourceScanner {
     fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
         debug!("Resource changed : {}", current.get_path());
 
-        Self::update(registry, current.get_path(), &current);
+        Self::update(registry, current.get_path(), current);
         self.updated_dirs += 1;
         Self::visit(current, visitors);
 
@@ -184,7 +185,7 @@ mod tests {
     use super::*;
 
     struct MockVisitor {
-        test: String
+        test: String,
     }
 
     impl Visitable for MockVisitor {
@@ -205,7 +206,7 @@ mod tests {
     impl MockVisitor {
         pub(crate) fn new(t: &String) -> Self {
             MockVisitor {
-                test : t.clone()
+                test: t.clone()
             }
         }
     }
