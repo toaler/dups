@@ -31,7 +31,7 @@ use crate::visitable::Visitable;
 fn main() -> Result<(), Box<dyn Error>> {
     // TODO better error handling for bubbled up Err's
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
-    info!("Running dups!!!");
+    info!("Running Turbo Tasker (tt)!!!");
 
     let root = process_args()?;
 

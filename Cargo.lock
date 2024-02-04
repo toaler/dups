@@ -161,19 +161,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dups"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "csv",
- "env_logger",
- "lazy_static",
- "log",
- "tempdir",
- "tempfile",
-]
-
-[[package]]
 name = "env_filter"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -480,6 +467,19 @@ dependencies = [
  "redox_syscall",
  "rustix",
  "windows-sys",
+]
+
+[[package]]
+name = "tt"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "csv",
+ "env_logger",
+ "lazy_static",
+ "log",
+ "tempdir",
+ "tempfile",
 ]
 
 [[package]]
