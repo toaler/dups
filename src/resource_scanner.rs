@@ -118,7 +118,7 @@ impl ResourceScanner {
     }
 
     fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
-        Self::update(registry, &current.get_path(), &current);
+        Self::update(registry, &current.get_path(), current);
         self.updated_files += 1;
         Self::visit(&current, visitors);
     }
