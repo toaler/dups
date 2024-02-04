@@ -7,7 +7,6 @@ mod util;
 mod resource_metadata;
 mod largest_files_vistor;
 mod directory_analyzer_visitor;
-mod fingerprinting_visitor;
 
 use log::{debug, error, info};
 use std::{env, io};
@@ -31,6 +30,8 @@ use crate::visitable::Visitable;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // TODO better error handling for bubbled up Err's
+    // TODO add flag to enable fingerprinting
+    
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
     info!("Running Turbo Tasker (tt)!!!");
 
@@ -63,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if !registry.contains_key(&root) {
             // Create ResourceMetadata and insert into the registry
             let p = Path::new(&root);
-            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0);
+            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0, false);
             registry.insert(root.clone(), m);
         }
 
@@ -161,7 +162,7 @@ fn load_registry(file_path: &str, registry: &mut HashMap<String, ResourceMetadat
         let size_bytes : u64 = record.get(4).ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Missing size in CSV record"))?.parse::<u64>()?;
 
         // Create ResourceMetadata and insert into the registry
-        let resource_metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified_time, size_bytes);
+        let resource_metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified_time, size_bytes, false);
         registry.insert(path, resource_metadata);
     }
 

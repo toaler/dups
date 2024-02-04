@@ -1,5 +1,6 @@
 use std::{fmt};
 use std::cmp::Ordering;
+use xxhash_rust::xxh3::xxh3_64;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ResourceMetadata {
@@ -8,19 +9,28 @@ pub struct ResourceMetadata {
     is_file: bool,
     is_symlink: bool,
     modified: i64,
-    file_size_bytes: u64
+    file_size_bytes: u64,
+    fingerprint: u64
 }
 
 impl ResourceMetadata {
+    pub(crate) fn new(p: &String, is_dir: bool, is_symlink: bool, modified: i64, file_size_bytes: u64, fingerprint: bool) -> Self {
+        let fingerprint = if fingerprint {
+            let file_path = p;
+            let file_content = std::fs::read(file_path).expect("Failed to read file content");
+            xxh3_64(&file_content)
+        } else {
+            0
+        };
 
-    pub(crate) fn new(p: &String, is_dir: bool, is_symlink: bool, modified: i64, file_size_bytes: u64) -> Self {
         ResourceMetadata {
             path: p.clone(),
             is_dir,
             is_file: !is_dir,
             is_symlink,
             modified,
-            file_size_bytes: file_size_bytes
+            file_size_bytes: file_size_bytes,
+            fingerprint
         }
     }
 
@@ -46,6 +56,8 @@ impl ResourceMetadata {
     }
 
     pub(crate) fn size_bytes(&self) -> u64 { self.file_size_bytes }
+
+    pub(crate) fn fingerprint(&self) -> u64 { self.fingerprint }
 }
 
 impl fmt::Display for ResourceMetadata {
@@ -78,6 +90,8 @@ impl Ord for ResourceMetadata {
 mod tests {
     use super::*;
     use std::collections::HashMap;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
     use crate::visitable::Visitable;
 
     #[derive(Default)]
@@ -120,7 +134,7 @@ mod tests {
         let is_symlink = false;
         let modified = 123456789;
 
-        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0);
+        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0, false);
 
         let mut visitor = VisitorMock::new("TestVisitor");
         visitor.visit(&metadata);
@@ -140,7 +154,7 @@ mod tests {
         let is_symlink = false;
         let modified = 123456789;
 
-        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0);
+        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0, false);
 
         let mut visitor = VisitorMock::new("DisplayVisitor");
         visitor.visit(&metadata);
@@ -164,8 +178,8 @@ mod tests {
 
     #[test]
     fn test_sort_by_size_bytes() {
-        let metadata1 = ResourceMetadata::new(&String::from("/path1"), true, false, 123, 100);
-        let metadata2 = ResourceMetadata::new(&String::from("/path2"), false, true, 456, 200);
+        let metadata1 = ResourceMetadata::new(&String::from("/path1"), true, false, 123, 100, false);
+        let metadata2 = ResourceMetadata::new(&String::from("/path2"), false, true, 456, 200, false);
 
         assert!(metadata1 < metadata2);
         assert!(metadata2 > metadata1);
@@ -174,5 +188,26 @@ mod tests {
         vec.sort();
 
         assert_eq!(vec, vec![metadata1, metadata2]);
+    }
+
+    #[test]
+    fn test_hashing_visitor() {
+        // Create a temporary file and write content to it
+        let file_content = b"test content";
+        let mut temp_file = NamedTempFile::new().expect("Failed to create temporary file");
+        println!("{}", temp_file.path().to_string_lossy());
+        temp_file.write_all(file_content).expect("Failed to write to temporary file");
+        let path = temp_file.path().to_str().unwrap().to_string();
+
+        let is_dir = false;
+        let is_symlink = false;
+        let modified = 123456789;
+
+        let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0, true);
+
+        let hash = metadata.fingerprint();
+        assert_eq!(hash, 1307564309130158671);
+
+        // Optionally, you can add more assertions based on your specific needs
     }
 }

@@ -39,7 +39,7 @@ impl ResourceScanner {
     pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
-            ResourceMetadata::new(&path, m.is_dir(), m.is_symlink(), m.mtime(), m.len())
+            ResourceMetadata::new(&path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
         });
 
         for visitor in &mut *visitors {
@@ -89,7 +89,7 @@ impl ResourceScanner {
                             // Cached resource is invalid
                             debug!("Resource changed : is_dir={} {} new modified time {:?}", value.is_dir(), key, mtime);
 
-                            let current = ResourceMetadata::new(&key, value.is_dir(), value.is_symlink(), mtime, value.len());
+                            let current = ResourceMetadata::new(&key, value.is_dir(), value.is_symlink(), mtime, value.len(), false);
                             if !cached_metadata.is_dir() {
                                 self.sync_file(registry, &current, visitors);
                             } else {
@@ -144,7 +144,7 @@ impl ResourceScanner {
                                 None => {
                                     // Resource not cached, validate existence & acquire metadata
                                     if let Ok(c) = fs::symlink_metadata(resource) {
-                                        let new = ResourceMetadata::new(&resource.to_string(), c.is_dir(), c.is_symlink(), c.mtime(), c.len());
+                                        let new = ResourceMetadata::new(&resource.to_string(), c.is_dir(), c.is_symlink(), c.mtime(), c.len(), false);
                                         Self::update(registry, &new.get_path().to_string(), &new);
 
                                         if !c.is_dir() {
@@ -249,7 +249,7 @@ mod tests {
 
         // Register root
         let p = Path::new(&td);
-        let m = ResourceMetadata::new(&td, p.is_dir(), p.is_symlink(), 0, 1024);
+        let m = ResourceMetadata::new(&td, p.is_dir(), p.is_symlink(), 0, 1024, false);
         registry.insert(td.clone(), m);
 
         // Perform an incremental scan

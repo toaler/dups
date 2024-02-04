@@ -103,11 +103,11 @@ mod tests {
 
     #[test]
     fn test_directory_analyzer_visitor() {
-        let metadata1 = ResourceMetadata::new(&"/a".to_string(), true, false, 0, 96);
-        let metadata2 = ResourceMetadata::new(&"/a/foo.txt".to_string(), false, false, 0, 100);
-        let metadata3 = ResourceMetadata::new(&"/a/bar.txt".to_string(), false, false, 0, 150);
-        let metadata4 = ResourceMetadata::new(&"/a/b".to_string(), true, false, 0, 96);
-        let metadata5 = ResourceMetadata::new(&"/a/b/bif.txt".to_string(), false, false, 0, 75);
+        let metadata1 = ResourceMetadata::new(&"/a".to_string(), true, false, 0, 96, false);
+        let metadata2 = ResourceMetadata::new(&"/a/foo.txt".to_string(), false, false, 0, 100, false);
+        let metadata3 = ResourceMetadata::new(&"/a/bar.txt".to_string(), false, false, 0, 150, false);
+        let metadata4 = ResourceMetadata::new(&"/a/b".to_string(), true, false, 0, 96, false);
+        let metadata5 = ResourceMetadata::new(&"/a/b/bif.txt".to_string(), false, false, 0, 75, false);
 
         let mut visitor = DirectoryAnalyzerVisitor::new();
 

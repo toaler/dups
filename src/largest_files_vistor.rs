@@ -60,7 +60,7 @@ mod tests {
             let is_dir = false;
             let is_symlink = false;
             let modified = 123456789;
-            let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, size_bytes);
+            let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, size_bytes, false);
             visitor.visit(&metadata);
         }
 
