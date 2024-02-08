@@ -1,5 +1,6 @@
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
+use std::io;
 use crate::resource_metadata::ResourceMetadata;
 use crate::visitable::Visitable;
 
@@ -21,15 +22,15 @@ impl Visitable for Top50LargestResources {
         }
     }
 
-    fn recap(&mut self) {
+    fn recap(&mut self, w: &mut dyn io::Write) {
         let reversed_sorted_resources: Vec<_> = self.top_resources.clone().into_sorted_vec().into_iter().collect();
 
-        println!("Top 50 Largest Resources:");
+        write!(w, "Top 50 Largest Resources:\n").expect("TODO: panic message");
         for (i, metadata) in reversed_sorted_resources.iter().enumerate() {
             let metadata = &metadata.0;
             let padded_ranking = format!("{:<5}", i + 1); // Padded to 5 characters for ranking
             let padded_bytes = format!("{:>16}", metadata.size_bytes()); // Padded to 50 characters for bytes
-            println!("Rank: {}, Bytes: {}, Path: {}", padded_ranking, padded_bytes, metadata.get_path());
+            write!(w, "Rank: {}, Bytes: {}, Path: {}\n", padded_ranking, padded_bytes, metadata.get_path()).expect("TODO: panic message");
         }
     }
 

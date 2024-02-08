@@ -1,4 +1,4 @@
-use log::info;
+use std::io;
 use crate::resource_metadata::ResourceMetadata;
 use crate::scan_stats::ScanStats;
 use crate::util::add_groupings_u32;
@@ -17,9 +17,17 @@ impl Visitable for ScanStatsVisitor {
         }
     }
 
-    fn recap(&mut self) {
-        info!("");
-        info!("Scanning stats: directories={} files={}", add_groupings_u32(self.get_stats().get_directory_count()), add_groupings_u32(self.get_stats().get_file_count()));
+    fn recap(&mut self, w: &mut dyn io::Write) {
+        w.write_all(b"").expect("TODO: panic message");
+
+        // Format the string using the write! macro and write it to the writer
+        write!(
+            w,
+            "Scanning stats: directories={} files={}",
+            add_groupings_u32(self.get_stats().get_directory_count()),
+            add_groupings_u32(self.get_stats().get_file_count())
+        ).expect("TODO: panic message");
+
     }
 
     fn name(&self) -> &'static str {

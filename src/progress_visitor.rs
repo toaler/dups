@@ -1,3 +1,4 @@
+use std::io;
 use std::string::ToString;
 use crate::Visitable;
 use std::time::{Instant};
@@ -82,16 +83,16 @@ impl Visitable for ProgressVisitor {
     }
 
 
-    fn recap(&mut self) {
+    fn recap(&mut self, w: &mut dyn io::Write) {
         self.incremental_recap();
 
-        info!(
+        write!(
+            w,
             "Total resources={} dirs = {} files = {}",
             add_groupings_usize(self.total_resources()),
             add_groupings_usize(self.total_dirs_scanned),
             add_groupings_usize(self.total_files_scanned)
-
-        );
+        ).expect("TODO: panic message");
 
         // Reset counters for the next recap
         self.reset_recap_counters();

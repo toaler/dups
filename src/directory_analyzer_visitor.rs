@@ -1,5 +1,6 @@
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
+use std::io;
 use crate::resource_metadata::ResourceMetadata;
 use crate::visitable::Visitable;
 
@@ -24,7 +25,7 @@ impl DirectoryAnalyzerVisitor {
     }
 
     // Recursive function to enumerate and display statistics
-    fn recap_recursive(&self, node: &DirectoryNode, depth: usize) {
+    fn recap_recursive(&self, w: &mut dyn io::Write, node: &DirectoryNode, depth: usize) {
         // Print information about the current node
         println!(
             "{:indent$}{}: {} files, {} directories, {} bytes",
@@ -38,7 +39,7 @@ impl DirectoryAnalyzerVisitor {
 
         // Recursively call the function for child nodes
         for child_node in node.children.values() {
-            self.recap_recursive(child_node, depth + 1);
+            self.recap_recursive(w, child_node, depth + 1);
         }
     }
 }
@@ -87,9 +88,9 @@ impl Visitable for DirectoryAnalyzerVisitor {
         }
     }
 
-    fn recap(&mut self) {
+    fn recap(&mut self, w: &mut dyn io::Write) {
         // Start the recursive enumeration from the root
-        self.recap_recursive(&self.root, 0);
+        self.recap_recursive(w, &self.root, 0);
     }
 
     fn name(&self) -> &'static str {
