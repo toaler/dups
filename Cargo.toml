@@ -24,5 +24,8 @@ features = ["xxh3", "const_xxh3"]
 [profile.dev]
 opt-level = 3
 
+[profile.test]
+debug = true
+
 [profile.release]
 debug = true
