@@ -154,8 +154,12 @@ mod tests {
         assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
         assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
 
+
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         // Trigger manual recap
-        progress_visitor.recap();
+        progress_visitor.recap(&mut writer);
 
         // Ensure counters are reset after manual recap
         assert_eq!(progress_visitor.total_files_scanned, 200000);

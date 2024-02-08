@@ -181,6 +181,7 @@ impl ResourceScanner {
 
 #[cfg(test)]
 mod tests {
+    use std::io;
     use std::path::Path;
     use super::*;
 
@@ -194,8 +195,7 @@ mod tests {
             println!("test={} resource={}", self.test, resource.get_path());
         }
 
-        fn recap(&mut self) {
-            todo!()
+        fn recap(&mut self, _w: &mut dyn io::Write) {
         }
 
         fn name(&self) -> &'static str {

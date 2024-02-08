@@ -91,6 +91,7 @@ impl Ord for ResourceMetadata {
 mod tests {
     use super::*;
     use std::collections::HashMap;
+    use std::io;
     use std::io::Write;
     use tempfile::NamedTempFile;
     use crate::visitable::Visitable;
@@ -119,7 +120,7 @@ mod tests {
             assert_eq!(metadata.is_dir(), true);
         }
 
-        fn recap(&mut self) {
+        fn recap(&mut self, _w: &mut dyn io::Write) {
             self.recap_called = true;
         }
 
@@ -173,7 +174,10 @@ mod tests {
     #[test]
     fn test_recap_called() {
         let mut visitor = VisitorMock::new("RecapVisitor");
-        visitor.recap();
+
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+        visitor.recap(&mut writer);
         assert_eq!(visitor.recap_called, true);
     }
 
