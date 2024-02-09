@@ -52,7 +52,7 @@ mod tests {
     use std::path::Path;
     use super::*;
     use std::fs::create_dir_all;
-    use std::io::Write;
+    use std::io::{Write};
     use tempfile::TempDir;
 
     #[test]
@@ -76,6 +76,10 @@ mod tests {
 
         assert_eq!(visitor.get_stats().get_file_count(), 1);
         assert_eq!(visitor.get_stats().get_directory_count(), 1);
+
+        let mut output = Vec::new();
+        visitor.recap(&mut output);
+        assert_eq!("Scanning stats: directories=1 files=1", String::from_utf8(output).unwrap());
     }
 
     fn create_dummy_file(file_path: &Path) {
