@@ -5,7 +5,7 @@
     mod progress_visitor;
     mod util;
     mod resource_metadata;
-    mod largest_files_vistor;
+    mod top_k_resource_visitor;
     mod directory_analyzer_visitor;
     mod turbo_tasker_cli_config;
 
@@ -25,7 +25,7 @@
     use crate::directory_analyzer_visitor::DirectoryAnalyzerVisitor;
     use crate::resource_scanner::ResourceScanner;
     use crate::progress_visitor::ProgressVisitor;
-    use crate::largest_files_vistor::Top50LargestResources;
+    use crate::top_k_resource_visitor::TopKResourceVisitor;
     use crate::resource_metadata::ResourceMetadata;
     use crate::scan_stats_visitor::ScanStatsVisitor;
     use crate::util::{add_groupings_usize};
@@ -47,7 +47,7 @@
 
                 let mut scan_stats_visitor = ScanStatsVisitor::new();
                 let mut progress_visitor = ProgressVisitor::new();
-                let mut top_resources_visitor = Top50LargestResources::new();
+                let mut top_resources_visitor = TopKResourceVisitor::new();
                 let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
 
                 let mut visitors: Vec<&mut dyn Visitable> = vec![

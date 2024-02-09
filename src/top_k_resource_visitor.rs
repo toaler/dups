@@ -4,11 +4,11 @@ use std::io;
 use crate::resource_metadata::ResourceMetadata;
 use crate::visitable::Visitable;
 
-pub(crate) struct Top50LargestResources {
+pub(crate) struct TopKResourceVisitor {
     top_resources: BinaryHeap<Reverse<ResourceMetadata>>,
 }
 
-impl Visitable for Top50LargestResources {
+impl Visitable for TopKResourceVisitor {
     fn visit(&mut self, metadata: &ResourceMetadata) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
@@ -39,9 +39,9 @@ impl Visitable for Top50LargestResources {
     }
 }
 
-impl Top50LargestResources {
+impl TopKResourceVisitor {
     pub(crate) fn new() -> Self {
-        Top50LargestResources {
+        TopKResourceVisitor {
             top_resources: BinaryHeap::with_capacity(50),
         }
     }
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_recap() {
         // Prepare test data
-        let mut visitor = Top50LargestResources::new();
+        let mut visitor = TopKResourceVisitor::new();
 
         // Add resources in ascending order of size_bytes
         for size_bytes in (1..=100).step_by(2) {
