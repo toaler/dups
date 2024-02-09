@@ -163,7 +163,7 @@ mod tests {
 
         // Capture output for testing
         let mut output = Vec::new();
-        visitor.recap_recursive(&mut output, &visitor.root, 0);
+        visitor.recap(&mut output);
 
         // Assert output
         let output_str = String::from_utf8(output).unwrap();
