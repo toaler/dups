@@ -1,11 +1,9 @@
 use std::collections::HashMap;
-
 use std::{fs};
 use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
-
-use crate::resource_metadata::ResourceMetadata;
-use crate::visitable::Visitable;
+use crate::state::resource_metadata::ResourceMetadata;
+use crate::visitor::visitable::Visitable;
 
 
 pub struct ResourceScanner {
@@ -29,15 +27,15 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn added_files(&self) -> u64 { self.added_files }
-    pub(crate) fn added_dirs(&self) -> u64 { self.added_dirs }
-    pub(crate) fn updated_files(&self) -> u64 { self.updated_files }
-    pub(crate) fn updated_dirs(&self) -> u64 { self.updated_dirs }
-    pub(crate) fn deleted_files(&self) -> u64 { self.deleted_files }
-    pub(crate) fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
+    pub fn added_files(&self) -> u64 { self.added_files }
+    pub fn added_dirs(&self) -> u64 { self.added_dirs }
+    pub fn updated_files(&self) -> u64 { self.updated_files }
+    pub fn updated_dirs(&self) -> u64 { self.updated_dirs }
+    pub fn deleted_files(&self) -> u64 { self.deleted_files }
+    pub fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
 
     #[warn(clippy::only_used_in_recursion)]
-    pub(crate) fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
+    pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
             ResourceMetadata::new(path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
@@ -58,7 +56,7 @@ impl ResourceScanner {
         }
     }
 
-    pub(crate) fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
+    pub fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
         let mut keys: Vec<String> = registry
             .keys()
             .filter(|key| key.starts_with(root))
@@ -204,7 +202,7 @@ mod tests {
     }
 
     impl MockVisitor {
-        pub(crate) fn new(t: &String) -> Self {
+        pub fn new(t: &String) -> Self {
             MockVisitor {
                 test: t.clone()
             }

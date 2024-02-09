@@ -4,8 +4,8 @@ use crate::Visitable;
 use std::time::{Instant};
 use lazy_static::lazy_static;
 use log::info;
-use crate::resource_metadata::ResourceMetadata;
-use crate::util::add_groupings_usize;
+use crate::state::resource_metadata::ResourceMetadata;
+use crate::util::util::add_groupings_usize;
 
 const RECAP_THRESHOLD: usize = 100000;
 

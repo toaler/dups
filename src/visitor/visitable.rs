@@ -1,5 +1,5 @@
 use std::io;
-use crate::resource_metadata::ResourceMetadata;
+use crate::state::resource_metadata::ResourceMetadata;
 
 pub trait Visitable {
     fn visit(&mut self, metadata: &ResourceMetadata);

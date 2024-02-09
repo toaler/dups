@@ -1,8 +1,8 @@
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
-use crate::resource_metadata::ResourceMetadata;
-use crate::visitable::Visitable;
+use crate::state::resource_metadata::ResourceMetadata;
+use crate::visitor::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
     top_resources: BinaryHeap<Reverse<ResourceMetadata>>,

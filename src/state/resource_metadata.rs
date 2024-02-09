@@ -94,7 +94,7 @@ mod tests {
     use std::io;
     use std::io::Write;
     use tempfile::NamedTempFile;
-    use crate::visitable::Visitable;
+    use crate::visitor::visitable::Visitable;
 
     #[derive(Default)]
     struct VisitorMock {

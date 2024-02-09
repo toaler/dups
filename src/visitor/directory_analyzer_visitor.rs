@@ -1,8 +1,8 @@
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::io;
-use crate::resource_metadata::ResourceMetadata;
-use crate::visitable::Visitable;
+use crate::state::resource_metadata::ResourceMetadata;
+use crate::visitor::visitable::Visitable;
 
 #[derive(Debug, Default)]
 struct DirectoryNode {

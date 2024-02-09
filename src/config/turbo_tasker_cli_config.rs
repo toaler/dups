@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 #[command(name = "tt", version = "0.1.0", author = "toaler", about = "Turbo Tasker - Keeping PC's organized since 2024!")]
 pub struct TurboTaskerApp {
     #[command(subcommand)]
-    pub(crate) cmd: Option<Command>
+    pub cmd: Option<Command>
 }
 
 #[derive(Subcommand, Debug, Clone)]

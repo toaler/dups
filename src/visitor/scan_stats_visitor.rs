@@ -1,8 +1,8 @@
 use std::io;
-use crate::resource_metadata::ResourceMetadata;
-use crate::scan_stats::ScanStats;
-use crate::util::add_groupings_u32;
-use crate::visitable::Visitable;
+use crate::state::resource_metadata::ResourceMetadata;
+use crate::state::scan_stats::ScanStats;
+use crate::util::util::add_groupings_u32;
+use crate::visitor::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
     stats: ScanStats,
