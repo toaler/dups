@@ -66,11 +66,11 @@ impl fmt::Display for ResourceMetadata {
         write!(
             f,
             "ResourceMetadata {{ path: {}, is_dir: {:?}, is_file: {:?}, is_symlink: {:?}, modified: {:?} }}",
-            self.path,
-            self.is_dir,
-            self.is_file,
-            self.is_symlink,
-            self.modified,
+            self.get_path(),
+            self.is_dir(),
+            self.is_file(),
+            self.is_symlink(),
+            self.modified(),
         )
     }
 }
@@ -212,7 +212,5 @@ mod tests {
 
         let hash = metadata.fingerprint();
         assert_eq!(hash, 1307564309130158671);
-
-        // Optionally, you can add more assertions based on your specific needs
     }
 }
