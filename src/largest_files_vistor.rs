@@ -52,7 +52,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_top_50_largest_files() {
+    fn test_recap() {
+        // Prepare test data
         let mut visitor = Top50LargestResources::new();
 
         // Add resources in ascending order of size_bytes
@@ -65,6 +66,31 @@ mod tests {
             visitor.visit(&metadata);
         }
 
+        // Create a mock writer
+        let mut mock_writer = Vec::new();
+
+        // Call the recap method
+        visitor.recap(&mut mock_writer);
+
+        // Convert the bytes written to a string
+        let recap_output = String::from_utf8(mock_writer).expect("Invalid UTF-8 sequence");
+
+        // Split the output into lines
+        let lines: Vec<&str> = recap_output.trim().split('\n').collect();
+
+        // Check if the recap starts with the correct title
+        assert!(lines[0].contains("Top 50 Largest Resources"));
+
+        // Check if the recap contains 50 lines for the top 50 largest resources
+        assert_eq!(lines.len(), 51);
+
+        // Check if the rankings are in descending order
+        for i in 1..50 {
+            let current_line = lines[i];
+            let next_line = lines[i + 1];
+            let current_ranking = current_line.split_whitespace().nth(1).unwrap().parse::<usize>().unwrap();
+            let next_ranking = next_line.split_whitespace().nth(1).unwrap().parse::<usize>().unwrap();
+            assert!(current_ranking < next_ranking);
+        }
     }
 }
-
