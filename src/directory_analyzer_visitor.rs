@@ -27,15 +27,15 @@ impl DirectoryAnalyzerVisitor {
     // Recursive function to enumerate and display statistics
     fn recap_recursive(&self, w: &mut dyn io::Write, node: &DirectoryNode, depth: usize) {
         // Print information about the current node
-        println!(
-            "{:indent$}{}: {} files, {} directories, {} bytes",
-            "",
-            node.name,
-            node.child_files,
-            node.child_dirs,
-            node.total_size,
-            indent = depth * 2
-        );
+        write!(w,
+               "{:indent$}{}: {} files, {} directories, {} bytes\n",
+               "",
+               node.name,
+               node.child_files,
+               node.child_dirs,
+               node.total_size,
+               indent = depth * 2
+        ).expect("TODO: panic message");
 
         // Recursively call the function for child nodes
         for child_node in node.children.values() {
@@ -104,6 +104,7 @@ mod tests {
 
     #[test]
     fn test_directory_analyzer_visitor() {
+        // Test data
         let metadata1 = ResourceMetadata::new(&"/a".to_string(), true, false, 0, 96, false);
         let metadata2 = ResourceMetadata::new(&"/a/foo.txt".to_string(), false, false, 0, 100, false);
         let metadata3 = ResourceMetadata::new(&"/a/bar.txt".to_string(), false, false, 0, 150, false);
@@ -112,6 +113,7 @@ mod tests {
 
         let mut visitor = DirectoryAnalyzerVisitor::new();
 
+        // Visit each resource
         visitor.visit(&metadata1);
         visitor.visit(&metadata2);
         visitor.visit(&metadata3);
@@ -143,5 +145,36 @@ mod tests {
         } else {
             panic!("Missing node for '/a/b'");
         }
+    }
+
+    #[test]
+    fn test_recap_recursive() {
+        // Test data
+        let metadata1 = ResourceMetadata::new(&"/a".to_string(), true, false, 0, 96, false);
+        let metadata2 = ResourceMetadata::new(&"/a/b".to_string(), true, false, 0, 96, false);
+        let metadata3 = ResourceMetadata::new(&"/a/b/c".to_string(), true, false, 0, 96, false);
+
+        let mut visitor = DirectoryAnalyzerVisitor::new();
+
+        // Visit each resource
+        visitor.visit(&metadata1);
+        visitor.visit(&metadata2);
+        visitor.visit(&metadata3);
+
+        // Capture output for testing
+        let mut output = Vec::new();
+        visitor.recap_recursive(&mut output, &visitor.root, 0);
+
+        // Assert output
+        let output_str = String::from_utf8(output).unwrap();
+        assert!(output_str.contains("a: 0 files, 1 directories, 96 bytes"));
+        assert!(output_str.contains("  b: 0 files, 1 directories, 96 bytes"));
+        assert!(output_str.contains("    c: 0 files, 0 directories, 0 bytes"));
+    }
+
+    #[test]
+    fn test_name_validation() {
+        let visitor = DirectoryAnalyzerVisitor::new();
+        assert_eq!("DirectoryAnalyzerVisitor", visitor.name());
     }
 }
