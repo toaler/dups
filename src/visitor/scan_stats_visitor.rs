@@ -27,7 +27,6 @@ impl Visitable for ScanStatsVisitor {
             add_groupings_u32(self.get_stats().get_directory_count()),
             add_groupings_u32(self.get_stats().get_file_count())
         ).expect("TODO: panic message");
-
     }
 
     fn name(&self) -> &'static str {

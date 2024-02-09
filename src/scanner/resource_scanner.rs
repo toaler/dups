@@ -193,8 +193,7 @@ mod tests {
             println!("test={} resource={}", self.test, resource.get_path());
         }
 
-        fn recap(&mut self, _w: &mut dyn io::Write) {
-        }
+        fn recap(&mut self, _w: &mut dyn io::Write) {}
 
         fn name(&self) -> &'static str {
             "mock visitor"

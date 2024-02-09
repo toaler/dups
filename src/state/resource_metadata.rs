@@ -10,7 +10,7 @@ pub struct ResourceMetadata {
     is_symlink: bool,
     modified: i64,
     file_size_bytes: u64,
-    fingerprint: u64
+    fingerprint: u64,
 }
 
 impl ResourceMetadata {
@@ -30,7 +30,7 @@ impl ResourceMetadata {
             is_symlink,
             modified,
             file_size_bytes,
-            fingerprint
+            fingerprint,
         }
     }
 

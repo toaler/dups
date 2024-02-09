@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 #[command(name = "tt", version = "0.1.0", author = "toaler", about = "Turbo Tasker - Keeping PC's organized since 2024!")]
 pub struct TurboTaskerApp {
     #[command(subcommand)]
-    pub cmd: Option<Command>
+    pub cmd: Option<Command>,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -14,7 +14,7 @@ pub enum Command {
         duplicate_detection: bool,
 
         #[arg(long = "root", short = 'r', required = true, help = "root path to start resource analysis")]
-        root: String
+        root: String,
     },
     Cpu,
 }
