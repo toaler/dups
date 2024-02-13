@@ -49,8 +49,9 @@ jobs:
         id: coverage
         uses: actions-rs/grcov@v0.1
         with:
+          command: test
+          args: --all-features --no-fail-fast --manifest-path src-tauri/Cargo.toml
           coveralls-token: ${{ secrets.COVERALLS_TOKEN }}
-        working-directory: ./src-tauri
 
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
