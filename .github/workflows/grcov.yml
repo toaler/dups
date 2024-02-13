@@ -45,13 +45,12 @@ jobs:
           crate: grcov
           use-tool-cache: true
 
+      # Run grcov manually with custom arguments
       - name: Gather coverage data
-        id: coverage
-        uses: actions-rs/grcov@v0.1
-        with:
-          command: test
-          args: --all-features --no-fail-fast --manifest-path src-tauri/Cargo.toml
-          coveralls-token: ${{ secrets.COVERALLS_TOKEN }}
+        run: |
+          grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t coveralls --token ${{ secrets.COVERALLS_TOKEN }}
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
 
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
