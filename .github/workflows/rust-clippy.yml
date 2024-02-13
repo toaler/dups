@@ -39,11 +39,11 @@ jobs:
           override: true
 
       - name: Install required cargo
-        run: cargo install clippy-sarif sarif-fmt
+        run: cargo install --manifest-path src-tauri/Cargo.toml clippy-sarif sarif-fmt
 
       - name: Run rust-clippy
         run:
-          cargo clippy
+          cargo --manifest-path src-tauri/Cargo.toml clippy
           --all-features
           --message-format=json | clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt
         continue-on-error: true

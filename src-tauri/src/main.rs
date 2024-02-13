@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod util;
 mod visitor;
 mod state;
@@ -26,8 +28,21 @@ use visitor::progress_visitor::ProgressVisitor;
 use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
+// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+#[tauri::command]
+fn scan_filesystem(path: &str) -> String {
+    info!("{}", path);
+    format!("Hello, {}! You've been greeted from Rust!", path)
+}
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![scan_filesystem])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+
+fn main2() -> Result<(), Box<dyn Error>> {
     // TODO better error handling for bubbled up Err's
     // TODO add flag to enable fingerprinting
 
