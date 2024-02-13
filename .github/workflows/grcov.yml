@@ -50,6 +50,7 @@ jobs:
         uses: actions-rs/grcov@v0.1
         with:
           coveralls-token: ${{ secrets.COVERALLS_TOKEN }}
+        working-directory: ./src-tauri
 
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
