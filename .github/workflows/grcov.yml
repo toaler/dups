@@ -48,7 +48,7 @@ jobs:
       # Run grcov manually with custom arguments
       - name: Gather coverage data
         run: |
-          grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t coveralls --token ${{ secrets.COVERALLS_TOKEN }}
+          grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o ./coverage/lcov.info --token ${{ secrets.COVERALLS_TOKEN }} -e "*/.cargo/registry" -e "*/target/debug/deps" -e "*/rustc/*"
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
 
@@ -57,7 +57,7 @@ jobs:
         with:
           github-token: ${{ secrets.COVERALLS_TOKEN }}
           parallel: true
-          path-to-lcov: ${{ steps.coverage.outputs.report }}
+          path-to-lcov: ./coverage/lcov.info
 
   grcov_finalize:
     runs-on: ubuntu-latest
