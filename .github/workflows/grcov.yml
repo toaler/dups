@@ -58,6 +58,8 @@ jobs:
           github-token: ${{ secrets.COVERALLS_TOKEN }}
           parallel: true
           path-to-lcov: lcov.info
+          debug: true # Temporarily enable for more detailed logs
+
 
   grcov_finalize:
     runs-on: ubuntu-latest
