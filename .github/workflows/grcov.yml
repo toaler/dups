@@ -59,4 +59,5 @@ jobs:
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./src-tauri/lcov.info
+          base-path: ./src-tauri
           debug : true
