@@ -48,7 +48,8 @@ jobs:
       # Run grcov manually with custom arguments
       - name: Gather coverage data
         run: |
-          grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o lcov.info --token ${{ secrets.COVERALLS_TOKEN }} --ignore .cargo/registry --ignore target/debug/deps --ignore rustc --ignore-not-existing --ignore-dir ../../../.cargo
+          grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o lcov.info --ignore-dir .cargo/registry --ignore-dir target/debug/deps --ignore-dir rustc --ignore-not-existing
+
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
 
