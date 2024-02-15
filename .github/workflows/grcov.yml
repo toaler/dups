@@ -49,14 +49,11 @@ jobs:
       - name: Gather coverage data
         run: |
            grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o lcov.info --ignore "**/.cargo/registry/**" --ignore "**/target/debug/deps/**" --ignore "**/rustc/**" --ignore-not-existing
-        env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
 
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.COVERALLS_TOKEN }}
-          parallel: true
           path-to-lcov: lcov.info
           debug: true # Temporarily enable for more detailed logs
 
