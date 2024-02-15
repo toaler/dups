@@ -53,7 +53,7 @@ jobs:
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
         with:
-          github-token: ${{ secrets.COVERALLS_TOKEN }}
+          github-token:  ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: lcov.info
           debug: true # Temporarily enable for more detailed logs
 
@@ -65,5 +65,5 @@ jobs:
       - name: Coveralls finalization
         uses: coverallsapp/github-action@master
         with:
-          github-token: ${{ secrets.COVERALLS_TOKEN }}
+          github-token:  ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
