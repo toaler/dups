@@ -48,15 +48,15 @@ jobs:
       # Run grcov manually with custom arguments
       - name: Gather coverage data
         run: |
-           grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o /tmp/lcov.info --ignore "**/.cargo/registry/**" --ignore "**/target/debug/deps/**" --ignore-not-existing
+           grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o ./src-tauri/lcov.info --ignore "**/.cargo/registry/**" --ignore "**/target/debug/deps/**" --ignore-not-existing
 
       - name: Gather coverage data
         run: |
-          cat /tmp/lcov.info
+          cat ./src-tauri/lcov.info
 
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
         with:
           github-token:  ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: /tmp/lcov.info
+          path-to-lcov: ./src-tauri/lcov.info
           debug : true
