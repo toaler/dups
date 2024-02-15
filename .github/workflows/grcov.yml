@@ -51,7 +51,7 @@ jobs:
            grcov . --binary-path ./src-tauri/target/debug/ -s ./src-tauri -t lcov -o ./lcov.info --ignore "**/.cargo/registry/**" --ignore "**/target/debug/deps/**" --ignore-not-existing
 
       - name: Gather coverage data
-         run: |
+        run: |
           cat ./lcov.info
 
       - name: Coveralls upload
