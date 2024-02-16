@@ -17,3 +17,14 @@ Turbo Tasker is a cross-platform PC task manager that strives to complete task e
 6. Broken symlink detection - identifies dangling symbolic links
 7. Junk file cleaning
 8. Supports OSX, Linux and Windows
+
+
+## Build
+
+### Tauri
+
+<p>❯ npm install 
+<p>❯ npm run tauri init
+<p>❯ npm run build
+<p>❯ npm run tauri dev
+<p>❯ npm run tauri build
