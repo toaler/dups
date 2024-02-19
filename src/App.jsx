@@ -9,18 +9,14 @@ function App() {
   // State to hold the filesystem path input
   const [path, setPath] = useState('');
 
-  // Function to handle invoking the Rust function
-  const scanFilesystem = () => {
-    invoke('scan_filesystem', { path }) // Assuming your Rust function is named 'scan_filesystem'
-        .then((response) => {
-          // Handle response
-          console.log(response);
-        })
-        .catch((error) => {
-          // Handle error
-          console.error(error);
-        });
-  };
+  async function scanFilesystem(path) {
+    try {
+      const result = await invoke('scan_filesystem', { path });
+      console.log(result); // Process result
+    } catch (error) {
+      console.error(error); // Handle error
+    }
+  }
 
   return (
  <Tabs forceRenderTabPanel defaultIndex={0}>

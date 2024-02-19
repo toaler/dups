@@ -19,7 +19,7 @@ use std::process::exit;
 use clap::{CommandFactory, Parser};
 use csv::{ReaderBuilder, WriterBuilder};
 use env_logger::Env;
-use tauri::generate_context;
+use tauri::{command, generate_context};
 use state::resource_metadata::ResourceMetadata;
 use visitor::directory_analyzer_visitor::DirectoryAnalyzerVisitor;
 use visitor::top_k_resource_visitor::TopKResourceVisitor;
@@ -29,9 +29,26 @@ use visitor::progress_visitor::ProgressVisitor;
 use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
+#[command]
+async fn scan_filesystem(path: &str) -> Result<String, String> {
+    let path_owned = path.to_owned(); // Clone path into a new String
+
+    // Now use path_owned inside your async block
+    tauri::async_runtime::spawn(async move {
+        // Use path_owned instead of path
+        info!("{}", path_owned);
+        // Your async filesystem scanning logic here
+        // Make sure to replace path with path_owned in the rest of your async block
+
+        // Since path_owned is owned by the block, there's no issue with lifetimes
+        Ok(format!("Hello, {}! You've been greeted from Rust asynchronously!", path_owned))
+    }).await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)))
+}
+
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn scan_filesystem(path: &str) -> String {
+fn scan_filesystem1(path: &str) -> String {
     info!("{}", path);
     format!("Hello, {}! You've been greeted from Rust!", path);
 
