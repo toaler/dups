@@ -11,6 +11,7 @@ function App() {
 
   async function scanFilesystem(path) {
     try {
+      console.log("Scanning for = " + path);
       const result = await invoke('scan_filesystem', { path });
       console.log(result); // Process result
     } catch (error) {
@@ -43,7 +44,7 @@ function App() {
               placeholder="Enter filesystem path"
           />
           {/* Button to trigger Rust function */}
-          <button onClick={scanFilesystem}>Scan</button>
+          <button onClick={() => scanFilesystem(path)}>Scan</button>
         </TabPanel>
         <TabPanel>
           <p>Inspections enable automatic high-level analysis of storage</p>
