@@ -45,7 +45,7 @@ impl DirectoryAnalyzerVisitor {
 }
 
 impl Visitable for DirectoryAnalyzerVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
         let path = metadata.get_path();
 
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
@@ -113,12 +113,15 @@ mod tests {
 
         let mut visitor = DirectoryAnalyzerVisitor::new();
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         // Visit each resource
-        visitor.visit(&metadata1);
-        visitor.visit(&metadata2);
-        visitor.visit(&metadata3);
-        visitor.visit(&metadata4);
-        visitor.visit(&metadata5);
+        visitor.visit(&metadata1, &mut writer);
+        visitor.visit(&metadata2, &mut writer);
+        visitor.visit(&metadata3, &mut writer);
+        visitor.visit(&metadata4, &mut writer);
+        visitor.visit(&metadata5, &mut writer);
 
         // Check the root node
         assert_eq!(visitor.root.child_files, 0);
@@ -156,10 +159,13 @@ mod tests {
 
         let mut visitor = DirectoryAnalyzerVisitor::new();
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         // Visit each resource
-        visitor.visit(&metadata1);
-        visitor.visit(&metadata2);
-        visitor.visit(&metadata3);
+        visitor.visit(&metadata1, &mut writer);
+        visitor.visit(&metadata2, &mut writer);
+        visitor.visit(&metadata3, &mut writer);
 
         // Capture output for testing
         let mut output = Vec::new();

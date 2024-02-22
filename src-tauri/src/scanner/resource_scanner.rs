@@ -188,7 +188,7 @@ mod tests {
     }
 
     impl Visitable for MockVisitor {
-        fn visit(&mut self, resource: &ResourceMetadata) {
+        fn visit(&mut self, resource: &ResourceMetadata, _writer: &mut dyn io::Write) {
             // Mock implementation
             println!("test={} resource={}", self.test, resource.get_path());
         }
@@ -212,6 +212,8 @@ mod tests {
     fn test_full_scan() {
         let mut scanner = ResourceScanner::new();
         let mut registry = HashMap::new();
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut v = MockVisitor::new(&String::from("test_full_scan"));
         let mut visitors: Vec<&mut dyn Visitable> = Vec::new();
@@ -223,7 +225,7 @@ mod tests {
         fs::write(&file_path, "test data").expect("Failed to write to file");
 
         // Perform a full scan
-        scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors);
+        scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors, &mut writer);
 
         // Assert that the registry has been populated and visitors were called
         assert_eq!(registry.len(), 1);
@@ -250,8 +252,10 @@ mod tests {
         let m = ResourceMetadata::new(&td, p.is_dir(), p.is_symlink(), 0, 1024, false);
         registry.insert(td.clone(), m);
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
         // Perform an incremental scan
-        scanner.incremental_scan(&td, &mut registry, &mut visitors);
+        scanner.incremental_scan(&td, &mut registry, &mut visitors, &mut writer);
 
         // Assert that the registry has been populated and visitors were called
         assert_eq!(registry.len(), 2);

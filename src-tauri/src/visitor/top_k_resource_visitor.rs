@@ -9,7 +9,7 @@ pub(crate) struct TopKResourceVisitor {
 }
 
 impl Visitable for TopKResourceVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
                 // If the heap is not full, just push the new metadata
@@ -63,7 +63,10 @@ mod tests {
             let is_symlink = false;
             let modified = 123456789;
             let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, size_bytes, false);
-            visitor.visit(&metadata);
+
+            let mut buffer: Vec<u8> = Vec::new();
+            let mut writer = io::BufWriter::new(&mut buffer);
+            visitor.visit(&metadata, &mut writer);
         }
 
         // Create a mock writer

@@ -3,7 +3,6 @@ use std::string::ToString;
 use crate::Visitable;
 use std::time::{Instant};
 use lazy_static::lazy_static;
-use log::info;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::add_groupings_usize;
 
@@ -130,9 +129,12 @@ mod tests {
     fn test_incremental_recap() {
         let mut progress_visitor = ProgressVisitor::new();
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         // Simulate scanning some files and directories
         for _ in 0..RECAP_THRESHOLD {
-            progress_visitor.visit(&DUMMY_METADATA);
+            progress_visitor.visit(&DUMMY_METADATA, &mut writer);
         }
 
         // Ensure counters are incremented and recap is triggered
@@ -146,9 +148,12 @@ mod tests {
     fn test_recap() {
         let mut progress_visitor = ProgressVisitor::new();
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         // Simulate scanning some files and directories
         for _ in 0..(2 * RECAP_THRESHOLD) {
-            progress_visitor.visit(&DUMMY_METADATA);
+            progress_visitor.visit(&DUMMY_METADATA, &mut writer);
         }
 
         // Ensure counters are incremented and recap is triggered

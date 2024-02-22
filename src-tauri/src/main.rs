@@ -6,7 +6,6 @@ mod state;
 mod config;
 mod scanner;
 
-use config::turbo_tasker_cli_config::{Command, TurboTaskerApp};
 use log::{debug, error, info, LevelFilter};
 use std::{env, io};
 use std::collections::HashMap;
@@ -15,13 +14,9 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use std::error::Error;
-use std::process::exit;
-use clap::{CommandFactory, Parser};
 use csv::{ReaderBuilder, WriterBuilder};
-use env_logger::Env;
 use tauri::{command, generate_context};
 use state::resource_metadata::ResourceMetadata;
-use visitor::directory_analyzer_visitor::DirectoryAnalyzerVisitor;
 use visitor::top_k_resource_visitor::TopKResourceVisitor;
 use visitor::scan_stats_visitor::ScanStatsVisitor;
 use visitor::visitable::Visitable;
@@ -99,7 +94,7 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
         info!("deleted dirs  = {}", scanner.deleted_dirs());
         info!("elapsed time  = {:?}", start_time.elapsed());
 
-        save_registry(&mut registry, &file_path);
+        save_registry(&mut registry, &file_path).expect("TODO: panic message");
 
         for visitable_instance in &mut visitors {
             visitable_instance.recap(&mut writer);

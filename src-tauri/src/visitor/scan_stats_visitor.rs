@@ -9,7 +9,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         } else {
@@ -67,11 +67,14 @@ mod tests {
         create_dummy_file(&file_path);
         create_dir_all(&dir_path).unwrap();
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         let mut visitor = ScanStatsVisitor::new();
         let file = ResourceMetadata::new(&f.to_string(), false, false, 0, 1024, false);
         let dir = ResourceMetadata::new(&d.to_string(), true, false, 0, 1024, false);
-        visitor.visit(&file);
-        visitor.visit(&dir);
+        visitor.visit(&file, &mut writer);
+        visitor.visit(&dir, &mut writer);
 
         assert_eq!(visitor.get_stats().get_file_count(), 1);
         assert_eq!(visitor.get_stats().get_directory_count(), 1);

@@ -114,7 +114,7 @@ mod tests {
     }
 
     impl Visitable for VisitorMock {
-        fn visit(&mut self, metadata: &ResourceMetadata) {
+        fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
             self.visited.insert(self.name, true);
             // Add specific assertions based on your needs
             assert_eq!(metadata.is_dir(), true);
@@ -137,9 +137,11 @@ mod tests {
         let modified = 123456789;
 
         let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0, false);
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut visitor = VisitorMock::new("TestVisitor");
-        visitor.visit(&metadata);
+        visitor.visit(&metadata, &mut writer);
 
         assert_eq!(metadata.get_path(), &path);
         assert_eq!(metadata.is_dir(), is_dir);
@@ -158,8 +160,11 @@ mod tests {
 
         let metadata = ResourceMetadata::new(&path, is_dir, is_symlink, modified, 0, false);
 
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut writer = io::BufWriter::new(&mut buffer);
+
         let mut visitor = VisitorMock::new("DisplayVisitor");
-        visitor.visit(&metadata);
+        visitor.visit(&metadata, &mut writer);
 
         let display_format = format!("{}", metadata);
         println!("{}", display_format);
