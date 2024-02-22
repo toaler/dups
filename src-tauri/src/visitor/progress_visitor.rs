@@ -49,16 +49,19 @@ impl ProgressVisitor {
         self.total_dirs_scanned
     }
 
-    fn incremental_recap(&mut self) {
+    fn incremental_recap(&mut self, writer: &mut dyn io::Write) {
         let elapsed_time = self.recap_start_time.elapsed();
 
-        info!(
-            "resources = {} dirs = {} files = {} time = {:?}",
+        write!(
+            writer,
+            "resources = {} dirs = {} files = {} time = {:?}\n",
             add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.files_scanned_since_last_recap),
             elapsed_time
-        );
+        ).expect("TODO: panic message");
+        
+        writer.flush().expect("TODO: panic message");
 
         // Reset counters for the next recap
         self.reset_recap_counters();
@@ -66,7 +69,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {
@@ -78,16 +81,16 @@ impl Visitable for ProgressVisitor {
         }
 
         if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % RECAP_THRESHOLD == 0 {
-            self.incremental_recap();
+            self.incremental_recap(writer);
         }
     }
 
 
-    fn recap(&mut self, w: &mut dyn io::Write) {
-        self.incremental_recap();
+    fn recap(&mut self, writer: &mut dyn io::Write) {
+        self.incremental_recap(writer);
 
         write!(
-            w,
+            writer,
             "Total resources={} dirs = {} files = {}",
             add_groupings_usize(self.total_resources()),
             add_groupings_usize(self.total_dirs_scanned),

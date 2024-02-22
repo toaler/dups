@@ -9,7 +9,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         } else {

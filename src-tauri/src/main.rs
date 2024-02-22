@@ -7,12 +7,12 @@ mod config;
 mod scanner;
 
 use config::turbo_tasker_cli_config::{Command, TurboTaskerApp};
-use log::{debug, error, info};
-use std::io;
+use log::{debug, error, info, LevelFilter};
+use std::{env, io};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use std::error::Error;
 use std::process::exit;
@@ -31,6 +31,10 @@ use util::util::add_groupings_usize;
 
 #[command]
 async fn scan_filesystem(path: &str) -> Result<String, String> {
+    env_logger::builder().filter_level(LevelFilter::Info).init();
+    let temp_dir = env::temp_dir();
+    let file_path = temp_dir.join("output.csv");
+
     let path_owned = path.to_owned(); // Clone path into a new String
     info!("path = {}", path_owned);
 
@@ -49,12 +53,12 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
         let mut scan_stats_visitor = ScanStatsVisitor::new();
         let mut progress_visitor = ProgressVisitor::new();
         let mut top_resources_visitor = TopKResourceVisitor::new();
-        let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
+        // let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
 
         let mut visitors: Vec<&mut dyn Visitable> = vec![
             &mut progress_visitor,
             &mut scan_stats_visitor,
-            &mut directory_analyzer_visitor,
+            // &mut directory_analyzer_visitor,
             &mut top_resources_visitor,
         ];
 
@@ -65,10 +69,11 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
         let start_time = Instant::now();
         let mut scanner = ResourceScanner::new();
         let mut registry: HashMap<String, ResourceMetadata> = HashMap::new();
+        let mut writer = io::BufWriter::new(io::stdout());
 
-        if Path::new("output.csv").exists() {
+        if Path::new(file_path.to_str().unwrap()).exists() {
             info!("Incremental scan detected");
-            load_registry("output.csv", &mut registry);
+            load_registry(&mut registry, &file_path).expect("TODO: panic message");
 
             // Add root dir in case it's not known from previous scans
             if !registry.contains_key(&root) {
@@ -79,10 +84,10 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
             }
 
             info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
-            scanner.incremental_scan(&root, &mut registry, &mut visitors);
+            scanner.incremental_scan(&root, &mut registry, &mut visitors, &mut writer);
         } else {
             info!("Starting full resource scan");
-            scanner.full_scan(&mut registry, &root, &mut visitors);
+            scanner.full_scan(&mut registry, &root, &mut visitors, &mut writer);
             info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
         }
         info!("Change Stats : ");
@@ -94,9 +99,7 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
         info!("deleted dirs  = {}", scanner.deleted_dirs());
         info!("elapsed time  = {:?}", start_time.elapsed());
 
-        save_registry(&mut registry);
-
-        let mut writer = io::BufWriter::new(io::stdout());
+        save_registry(&mut registry, &file_path);
 
         for visitable_instance in &mut visitors {
             visitable_instance.recap(&mut writer);
@@ -107,74 +110,6 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
     }).await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)))
 }
 
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-fn scan_filesystem1(path: &str)  {
-    info!("{}", path);
-    format!("Hello, {}! You've been greeted from Rust!", path);
-
-    let root = path.to_string();
-
-    info!("Running Turbo Tasker (tt)!!!");
-    debug!("Register visitors:");
-
-    let mut scan_stats_visitor = ScanStatsVisitor::new();
-    let mut progress_visitor = ProgressVisitor::new();
-    let mut top_resources_visitor = TopKResourceVisitor::new();
-    let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
-
-    let mut visitors: Vec<&mut dyn Visitable> = vec![
-        &mut progress_visitor,
-        &mut scan_stats_visitor,
-        &mut directory_analyzer_visitor,
-        &mut top_resources_visitor,
-    ];
-
-    for v in &mut *visitors {
-        debug!("Visitor registered: {}", v.name());
-    }
-
-    let start_time = Instant::now();
-    let mut scanner = ResourceScanner::new();
-    let mut registry: HashMap<String, ResourceMetadata> = HashMap::new();
-
-    if Path::new("output.csv").exists() {
-        info!("Incremental scan detected");
-        load_registry("output.csv", &mut registry);
-
-        // Add root dir in case it's not known from previous scans
-        if !registry.contains_key(&root) {
-            // Create ResourceMetadata and insert into the registry
-            let p = Path::new(&root);
-            let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0, false);
-            registry.insert(root.clone(), m);
-        }
-
-        info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
-        scanner.incremental_scan(&root, &mut registry, &mut visitors);
-    } else {
-        info!("Starting full resource scan");
-        scanner.full_scan(&mut registry, &root, &mut visitors);
-        info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
-    }
-    info!("Change Stats : ");
-    info!("added files   = {}", scanner.added_files());
-    info!("added dirs    = {}", scanner.added_dirs());
-    info!("updated files = {}", scanner.updated_files());
-    info!("updated dirs  = {}", scanner.updated_dirs());
-    info!("deleted files = {}", scanner.deleted_files());
-    info!("deleted dirs  = {}", scanner.deleted_dirs());
-    info!("elapsed time  = {:?}", start_time.elapsed());
-
-    save_registry(&mut registry);
-
-    let mut writer = io::BufWriter::new(io::stdout());
-
-    for visitable_instance in &mut visitors {
-        visitable_instance.recap(&mut writer);
-    }
-}
-
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![scan_filesystem])
@@ -182,95 +117,14 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-fn main2() -> Result<(), Box<dyn Error>> {
-    // TODO better error handling for bubbled up Err's
-    // TODO add flag to enable fingerprinting
-
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).target(env_logger::Target::Stdout).init();
-
-
-    let cli = TurboTaskerApp::parse();
-    match cli.cmd {
-        Some(Command::Disk { duplicate_detection: _, root, .. }) => {
-            info!("Running Turbo Tasker (tt)!!!");
-            debug!("Register visitors:");
-
-            let mut scan_stats_visitor = ScanStatsVisitor::new();
-            let mut progress_visitor = ProgressVisitor::new();
-            let mut top_resources_visitor = TopKResourceVisitor::new();
-            let mut directory_analyzer_visitor = DirectoryAnalyzerVisitor::new();
-
-            let mut visitors: Vec<&mut dyn Visitable> = vec![
-                &mut progress_visitor,
-                &mut scan_stats_visitor,
-                &mut directory_analyzer_visitor,
-                &mut top_resources_visitor,
-            ];
-
-            for v in &mut *visitors {
-                debug!("Visitor registered: {}", v.name());
-            }
-
-            let start_time = Instant::now();
-            let mut scanner = ResourceScanner::new();
-            let mut registry: HashMap<String, ResourceMetadata> = HashMap::new();
-
-            if Path::new("output.csv").exists() {
-                info!("Incremental scan detected");
-                load_registry("output.csv", &mut registry)?;
-
-                // Add root dir in case it's not known from previous scans
-                if !registry.contains_key(&root) {
-                    // Create ResourceMetadata and insert into the registry
-                    let p = Path::new(&root);
-                    let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0, false);
-                    registry.insert(root.clone(), m);
-                }
-
-                info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
-                scanner.incremental_scan(&root, &mut registry, &mut visitors);
-            } else {
-                info!("Starting full resource scan");
-                scanner.full_scan(&mut registry, &root, &mut visitors);
-                info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
-            }
-            info!("Change Stats : ");
-            info!("added files   = {}", scanner.added_files());
-            info!("added dirs    = {}", scanner.added_dirs());
-            info!("updated files = {}", scanner.updated_files());
-            info!("updated dirs  = {}", scanner.updated_dirs());
-            info!("deleted files = {}", scanner.deleted_files());
-            info!("deleted dirs  = {}", scanner.deleted_dirs());
-            info!("elapsed time  = {:?}", start_time.elapsed());
-
-            save_registry(&mut registry)?;
-
-            let mut writer = io::BufWriter::new(io::stdout());
-
-            for visitable_instance in &mut visitors {
-                visitable_instance.recap(&mut writer);
-            }
-        }
-        _ => {
-            let help = TurboTaskerApp::command().render_long_help();
-            println!("{help}");
-            exit(1);
-        }
-    }
-
-    Ok(())
-}
-
-fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(), std::io::Error> {
+fn save_registry(registry: &mut HashMap<String, ResourceMetadata>, file_path: &PathBuf) -> Result<(), std::io::Error> {
     info!("Saving registry");
 
-    // Attempt to create the file
-    let out = "output.csv";
-    let file = match File::create(out) {
+    let file = match File::create(file_path) {
         Ok(f) => f,
         Err(e) => {
             // Log the error and return it
-            error!("Error creating file: {}, error = {}", out, e);
+            error!("Error creating file: {}, error = {}", file_path.to_string_lossy(), e);
             return Err(e);
         }
     };
@@ -296,7 +150,7 @@ fn save_registry(registry: &mut HashMap<String, ResourceMetadata>) -> Result<(),
     Ok(())
 }
 
-fn load_registry(file_path: &str, registry: &mut HashMap<String, ResourceMetadata>) -> Result<HashMap<String, ResourceMetadata>, Box<dyn Error>> {
+fn load_registry(registry: &mut HashMap<String, ResourceMetadata>, file_path: &PathBuf) -> Result<HashMap<String, ResourceMetadata>, Box<dyn Error>> {
     // TODO : Filter what is loaded to match the root dir that was passed in
     // Open the file using BufReader for efficiency
     let file = File::open(file_path)?;

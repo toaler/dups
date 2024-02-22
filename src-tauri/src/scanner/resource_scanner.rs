@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::{fs};
+use std::{fs, io};
 use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
 use crate::state::resource_metadata::ResourceMetadata;
@@ -35,28 +35,28 @@ impl ResourceScanner {
     pub fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
 
     #[warn(clippy::only_used_in_recursion)]
-    pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable]) {
+    pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
             ResourceMetadata::new(path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
         });
 
         for visitor in &mut *visitors {
-            visitor.visit(metadata);
+            visitor.visit(metadata, writer);
         }
 
         if metadata.is_dir() && !metadata.is_symlink() {
             if let Ok(entries) = fs::read_dir(path) {
                 for entry in entries {
                     if let Ok(e) = entry {
-                        self.full_scan(registry, &e.path().to_string_lossy().to_string(), visitors);
+                        self.full_scan(registry, &e.path().to_string_lossy().to_string(), visitors, writer);
                     }
                 }
             }
         }
     }
 
-    pub fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable]) {
+    pub fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         let mut keys: Vec<String> = registry
             .keys()
             .filter(|key| key.starts_with(root))
@@ -67,16 +67,16 @@ impl ResourceScanner {
         keys.sort();
         info!("Scanning resources={}", keys.len());
 
-        self.inspect_resources_for_change(registry, keys, visitors);
+        self.inspect_resources_for_change(registry, keys, visitors, writer);
     }
 
-    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable]) {
+    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         for key in keys {
-            self.inspect_resource_for_change(registry, &key, visitors);
+            self.inspect_resource_for_change(registry, &key, visitors, writer);
         }
     }
 
-    fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable]) {
+    fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         let resource = registry.get_mut(key);
         match resource {
             Some(ref cached_metadata) => {
@@ -90,13 +90,13 @@ impl ResourceScanner {
 
                             let current = ResourceMetadata::new(key, value.is_dir(), value.is_symlink(), mtime, value.len(), false);
                             if !cached_metadata.is_dir() {
-                                self.sync_file(registry, &current, visitors);
+                                self.sync_file(registry, &current, visitors, writer);
                             } else {
-                                self.sync_dir(registry, &current, visitors);
+                                self.sync_dir(registry, &current, visitors, writer);
                             }
                         } else {
                             // Cached resource is fresh
-                            Self::visit(cached_metadata, visitors);
+                            Self::visit(cached_metadata, visitors, writer);
                         }
                     }
                     Err(_value) => {
@@ -116,18 +116,18 @@ impl ResourceScanner {
         }
     }
 
-    fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
+    fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         Self::update(registry, current.get_path(), current);
         self.updated_files += 1;
-        Self::visit(current, visitors);
+        Self::visit(current, visitors, writer);
     }
 
-    fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
+    fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         debug!("Resource changed : {}", current.get_path());
 
         Self::update(registry, current.get_path(), current);
         self.updated_dirs += 1;
-        Self::visit(current, visitors);
+        Self::visit(current, visitors, writer);
 
         match fs::read_dir(current.get_path()) {
             Ok(children) => {
@@ -148,9 +148,9 @@ impl ResourceScanner {
 
                                         if !c.is_dir() {
                                             self.added_files += 1;
-                                            Self::visit(&new, visitors);
+                                            Self::visit(&new, visitors, writer);
                                         } else {
-                                            self.sync_dir(registry, &new, visitors);
+                                            self.sync_dir(registry, &new, visitors, writer);
                                         }
                                     }
                                 }
@@ -170,9 +170,9 @@ impl ResourceScanner {
         }).or_insert(v.clone());
     }
 
-    fn visit(cached: &ResourceMetadata, visitors: &mut [&mut dyn Visitable]) {
+    fn visit(cached: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write) {
         for visitor in &mut *visitors {
-            visitor.visit(cached);
+            visitor.visit(cached, writer);
         }
     }
 }

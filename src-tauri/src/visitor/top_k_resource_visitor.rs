@@ -9,7 +9,7 @@ pub(crate) struct TopKResourceVisitor {
 }
 
 impl Visitable for TopKResourceVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
                 // If the heap is not full, just push the new metadata

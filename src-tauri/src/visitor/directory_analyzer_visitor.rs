@@ -45,7 +45,7 @@ impl DirectoryAnalyzerVisitor {
 }
 
 impl Visitable for DirectoryAnalyzerVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
         let path = metadata.get_path();
 
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
