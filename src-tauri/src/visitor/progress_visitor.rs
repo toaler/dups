@@ -1,10 +1,11 @@
 use std::io;
 use std::string::ToString;
-use crate::Visitable;
+use crate::{emit_log, Visitable};
 use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::add_groupings_usize;
+use crate::visitor::tauri_logger::Logger;
 
 const RECAP_THRESHOLD: usize = 100000;
 
@@ -48,7 +49,7 @@ impl ProgressVisitor {
         self.total_dirs_scanned
     }
 
-    fn incremental_recap(&mut self, writer: &mut dyn io::Write) {
+    fn incremental_recap(&mut self, writer: &mut dyn io::Write, logger: &dyn Logger) {
         let elapsed_time = self.recap_start_time.elapsed();
 
         write!(
@@ -62,13 +63,24 @@ impl ProgressVisitor {
         
         writer.flush().expect("TODO: panic message");
 
+        let message = format!(
+            "resources = {} dirs = {} files = {} time = {:?}\n",
+            add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
+            add_groupings_usize(self.dirs_scanned_since_last_recap),
+            add_groupings_usize(self.files_scanned_since_last_recap),
+            elapsed_time
+        );
+
+        // Use the logger
+        logger.log(message);
+
         // Reset counters for the next recap
         self.reset_recap_counters();
     }
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write, logger: &dyn Logger) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {
@@ -80,13 +92,13 @@ impl Visitable for ProgressVisitor {
         }
 
         if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % RECAP_THRESHOLD == 0 {
-            self.incremental_recap(writer);
+            self.incremental_recap(writer, logger);
         }
     }
 
 
-    fn recap(&mut self, writer: &mut dyn io::Write) {
-        self.incremental_recap(writer);
+    fn recap(&mut self, writer: &mut dyn io::Write, logger: &dyn Logger) {
+        self.incremental_recap(writer, logger);
 
         write!(
             writer,

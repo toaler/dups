@@ -24,11 +24,21 @@ use visitor::progress_visitor::ProgressVisitor;
 use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
+use tauri::Window;
+use crate::visitor::tauri_logger::{Logger, TauriLogger};
+
 #[command]
-async fn scan_filesystem(path: &str) -> Result<String, String> {
+fn emit_log(window: Window, message: &str) {
+    window.emit("log-event", format!("{}: {}", chrono::Local::now().format("%H:%M:%S"), message)).expect("failed to emit log event");
+}
+
+#[command]
+async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
     let temp_dir = env::temp_dir();
     let file_path = temp_dir.join("output.csv");
+
+    let logger = TauriLogger {window: w};
 
     let path_owned = path.to_owned(); // Clone path into a new String
     info!("path = {}", path_owned);
@@ -79,10 +89,10 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
             }
 
             info!("Registry loaded with {} resources", add_groupings_usize(registry.len()));
-            scanner.incremental_scan(&root, &mut registry, &mut visitors, &mut writer);
+            scanner.incremental_scan(&root, &mut registry, &mut visitors, &mut writer, &logger);
         } else {
             info!("Starting full resource scan");
-            scanner.full_scan(&mut registry, &root, &mut visitors, &mut writer);
+            scanner.full_scan(&mut registry, &root, &mut visitors, &mut writer, &logger);
             info!("Finished full resource scan elapsed time = {:?}", start_time.elapsed());
         }
         info!("Change Stats : ");
@@ -97,7 +107,7 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
         save_registry(&mut registry, &file_path).expect("TODO: panic message");
 
         for visitable_instance in &mut visitors {
-            visitable_instance.recap(&mut writer);
+            visitable_instance.recap(&mut writer, &logger);
         }
 
         // Since path_owned is owned by the block, there's no issue with lifetimes
@@ -107,7 +117,7 @@ async fn scan_filesystem(path: &str) -> Result<String, String> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![scan_filesystem])
+        .invoke_handler(tauri::generate_handler![scan_filesystem, emit_log])
         .run(generate_context!())
         .expect("error while running tauri application");
 }

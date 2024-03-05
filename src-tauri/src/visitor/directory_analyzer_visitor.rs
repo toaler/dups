@@ -2,6 +2,7 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
+use crate::visitor::tauri_logger::Logger;
 use crate::visitor::visitable::Visitable;
 
 #[derive(Debug, Default)]
@@ -45,7 +46,7 @@ impl DirectoryAnalyzerVisitor {
 }
 
 impl Visitable for DirectoryAnalyzerVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
         let path = metadata.get_path();
 
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
@@ -88,7 +89,7 @@ impl Visitable for DirectoryAnalyzerVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write) {
+    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
         // Start the recursive enumeration from the root
         self.recap_recursive(w, &self.root, 0);
     }

@@ -2,6 +2,7 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
+use crate::visitor::tauri_logger::Logger;
 use crate::visitor::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
@@ -9,7 +10,7 @@ pub(crate) struct TopKResourceVisitor {
 }
 
 impl Visitable for TopKResourceVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
                 // If the heap is not full, just push the new metadata
@@ -22,7 +23,7 @@ impl Visitable for TopKResourceVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write) {
+    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
         let reversed_sorted_resources: Vec<_> = self.top_resources.clone().into_sorted_vec().into_iter().collect();
 
         write!(w, "Top 50 Largest Resources:\n").expect("TODO: panic message");

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from '@tauri-apps/api/event'
 import "./App.css";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -8,6 +9,23 @@ function App() {
 
   // State to hold the filesystem path input
   const [path, setPath] = useState('');
+  const [logs, setLogs] = useState([]);
+
+
+  useEffect(() => {
+    // Function to handle incoming log events
+    const handleLogEvent = (event) => {
+      setLogs((currentLogs) => [...currentLogs, event.payload]);
+    };
+
+    // Start listening for log events from the Rust side
+    const unsubscribe = listen("log-event", handleLogEvent);
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      unsubscribe.then((unsub) => unsub());
+    };
+  }, []);
 
   async function scanFilesystem(path) {
     try {
@@ -45,6 +63,12 @@ function App() {
           />
           {/* Button to trigger Rust function */}
           <button onClick={() => scanFilesystem(path)}>Scan</button>
+
+          <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
+            {logs.map((log, index) => (
+                <div key={index}>{log}</div>
+            ))}
+          </div>
         </TabPanel>
         <TabPanel>
           <p>Inspections enable automatic high-level analysis of storage</p>

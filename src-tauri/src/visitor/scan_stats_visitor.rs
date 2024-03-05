@@ -2,6 +2,7 @@ use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::state::scan_stats::ScanStats;
 use crate::util::util::add_groupings_u32;
+use crate::visitor::tauri_logger::Logger;
 use crate::visitor::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
@@ -9,7 +10,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         } else {
@@ -17,7 +18,7 @@ impl Visitable for ScanStatsVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write) {
+    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
         w.write_all(b"").expect("TODO: panic message");
 
         // Format the string using the write! macro and write it to the writer
