@@ -63,6 +63,15 @@ impl ProgressVisitor {
         
         writer.flush().expect("TODO: panic message");
 
+
+        let json_payload = format!(
+            r#"{{"resources": {}, "directories": {}, "files": {}, "wall_time_ms" : "{:?}"}}"#,
+            self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap,
+            self.dirs_scanned_since_last_recap,
+            self.files_scanned_since_last_recap,
+            elapsed_time
+        );
+
         let message = format!(
             "resources = {} dirs = {} files = {} time = {:?}\n",
             add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
@@ -72,7 +81,7 @@ impl ProgressVisitor {
         );
 
         // Use the logger
-        logger.log(message);
+        logger.log(json_payload);
 
         // Reset counters for the next recap
         self.reset_recap_counters();

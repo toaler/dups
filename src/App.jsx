@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from '@tauri-apps/api/event'
 import "./App.css";
@@ -11,11 +11,42 @@ function App() {
   const [path, setPath] = useState('');
   const [logs, setLogs] = useState([]);
 
+  // Create a ref for the log container
+  const endOfLogsRef = useRef(null);
+  const [resources, setResources] = useState(0);
+  const [directories, setDirectories] = useState(0);
+  const [files, setFiles] = useState(0);
+
+  // Effect to scroll to the bottom whenever logs update
+  useEffect(() => {
+    endOfLogsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]); // Dependency array, this effect runs when `logs` changes
+
 
   useEffect(() => {
     // Function to handle incoming log events
     const handleLogEvent = (event) => {
-      setLogs((currentLogs) => [...currentLogs, event.payload]);
+
+      console.log(event.payload);
+
+      try {
+        const data = JSON.parse(event.payload);
+        console.log(data); // Now `data` is a JavaScript object.
+        setLogs((currentLogs) => [...currentLogs, event.payload]);
+
+        // Update resources
+        setResources((currentResources) => currentResources + data.resources);
+
+        // Update directories
+        setDirectories((currentDirectories) => currentDirectories + data.directories);
+
+        // Update files
+        setFiles((currentFiles) => currentFiles + data.files);
+      } catch (e) {
+        console.error(`Error parsing JSON: ${e}`);
+      }
+
+
     };
 
     // Start listening for log events from the Rust side
@@ -37,6 +68,16 @@ function App() {
     }
   }
 
+  const handleScanClick = () => {
+    // Reset states
+    setResources(0);
+    setDirectories(0);
+    setFiles(0);
+
+    // Then initiate the scan
+    scanFilesystem(path);
+  };
+
   return (
  <Tabs forceRenderTabPanel defaultIndex={0}>
     <TabList>
@@ -55,19 +96,36 @@ function App() {
         <TabPanel>
           <p>Scan filesystem</p>
           {/* Input field for filesystem path */}
-          <input
-              type="text"
-              value={path}
-              onChange={(e) => setPath(e.target.value)}
-              placeholder="Enter filesystem path"
-          />
+
           {/* Button to trigger Rust function */}
-          <button onClick={() => scanFilesystem(path)}>Scan</button>
+
+          <table>
+            <tr>
+              <td>
+                <input
+                  type="text"
+                  value={path}
+                  onChange={(e) => setPath(e.target.value)}
+                  placeholder="Enter filesystem path"
+                />
+                <button onClick={() => handleScanClick(path)}>Scan</button>
+              </td>
+              <td>Resources</td>
+              <td>{resources.toLocaleString()}</td>
+              <td>Directories</td>
+              <td>{directories.toLocaleString()}</td>
+              <td>Files</td>
+              <td>{files.toLocaleString()}</td>
+            </tr>
+          </table>
+
 
           <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
             {logs.map((log, index) => (
                 <div key={index}>{log}</div>
             ))}
+            {/* Invisible div at the end of your logs */}
+            <div ref={endOfLogsRef}/>
           </div>
         </TabPanel>
         <TabPanel>
@@ -81,35 +139,11 @@ function App() {
     <TabPanel>
       <Tabs forceRenderTabPanel>
         <TabList>
-          <Tab>Philip J. Fry</Tab>
-          <Tab>Turanga Leela</Tab>
-          <Tab>Bender Bending Rodriguez</Tab>
-          <Tab>Amy Wong</Tab>
-          <Tab>Professor Hubert J. Farnsworth</Tab>
-          <Tab>Doctor John Zoidberg</Tab>
+          <Tab>Foo</Tab>
         </TabList>
         <TabPanel>
-          <p>Protagonist, from the 20th Century. Delivery boy. Many times great-uncle to Professor Hubert Farnsworth. Suitor of Leela.</p>
+          <p>bar</p>
           <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/28/Philip_Fry.png/175px-Philip_Fry.png" alt="Philip J. Fry" />
-        </TabPanel>
-        <TabPanel>
-          <p>Mutant cyclops. Captain of the Planet Express Ship. Love interest of Fry.</p>
-          <img src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Turanga_Leela.png/150px-Turanga_Leela.png" alt="Turanga Leela" />
-        </TabPanel>
-        <TabPanel>
-          <p>A kleptomaniacal, lazy, cigar-smoking, heavy-drinking robot who is Fry's best friend. Built in Tijuana, Mexico, he is the Planet Express Ship's cook.</p>
-          <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Bender_Rodriguez.png/220px-Bender_Rodriguez.png" alt="Bender Bending Rodriguez" />
-        </TabPanel>
-        <TabPanel>
-          <p>Chinese-Martian intern at Planet Express. Fonfon Ru of Kif Kroker.</p>
-        </TabPanel>
-        <TabPanel>
-          <p>Many times great-nephew of Fry. CEO and owner of Planet Express delivery company. Tenured professor of Mars University.</p>
-          <img src="https://upload.wikimedia.org/wikipedia/en/thumb/0/0f/FuturamaProfessorFarnsworth.png/175px-FuturamaProfessorFarnsworth.png" alt="Professor Hubert J. Farnsworth" />
-        </TabPanel>
-        <TabPanel>
-          <p>Alien from Decapod 10. Planet Express' staff doctor and steward. Has a medical degree and Ph.D in art history.</p>
-          <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4a/Dr_John_Zoidberg.png/200px-Dr_John_Zoidberg.png" alt="Doctor John Zoidberg" />
         </TabPanel>
       </Tabs>
     </TabPanel>
