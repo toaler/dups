@@ -10,7 +10,7 @@ pub(crate) struct ScanStatsVisitor {
 }
 
 impl Visitable for ScanStatsVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
         if metadata.is_dir() {
             self.stats.increment_directory();
         } else {
@@ -18,7 +18,7 @@ impl Visitable for ScanStatsVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
+    fn recap(&mut self, w: &mut dyn io::Write, _logger: &dyn Logger) {
         w.write_all(b"").expect("TODO: panic message");
 
         // Format the string using the write! macro and write it to the writer
@@ -54,6 +54,7 @@ mod tests {
     use std::fs::create_dir_all;
     use std::io::{Write};
     use tempfile::TempDir;
+    use crate::visitor::noop_logger::NoopLogger;
 
     #[test]
     fn test_visit_files_and_directories() {
@@ -70,18 +71,19 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
 
         let mut visitor = ScanStatsVisitor::new();
         let file = ResourceMetadata::new(&f.to_string(), false, false, 0, 1024, false);
         let dir = ResourceMetadata::new(&d.to_string(), true, false, 0, 1024, false);
-        visitor.visit(&file, &mut writer);
-        visitor.visit(&dir, &mut writer);
+        visitor.visit(&file, &mut writer, &logger);
+        visitor.visit(&dir, &mut writer, &logger);
 
         assert_eq!(visitor.get_stats().get_file_count(), 1);
         assert_eq!(visitor.get_stats().get_directory_count(), 1);
 
         let mut output = Vec::new();
-        visitor.recap(&mut output);
+        visitor.recap(&mut output, &logger);
         assert_eq!("Scanning stats: directories=1 files=1", String::from_utf8(output).unwrap());
     }
 

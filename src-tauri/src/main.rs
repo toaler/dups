@@ -25,7 +25,7 @@ use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
 use tauri::Window;
-use crate::visitor::tauri_logger::{Logger, TauriLogger};
+use crate::visitor::tauri_logger::{TauriLogger};
 
 #[command]
 fn emit_log(window: Window, message: &str) {
@@ -117,7 +117,7 @@ async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
 
 fn main() {
     env_logger::builder().filter_level(LevelFilter::Info).init();
-    
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![scan_filesystem, emit_log])
         .run(generate_context!())

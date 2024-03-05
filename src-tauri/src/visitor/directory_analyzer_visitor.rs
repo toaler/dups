@@ -46,7 +46,7 @@ impl DirectoryAnalyzerVisitor {
 }
 
 impl Visitable for DirectoryAnalyzerVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
         let path = metadata.get_path();
 
         let components: Vec<&str> = path.trim_start_matches('/').split('/').collect();
@@ -89,7 +89,7 @@ impl Visitable for DirectoryAnalyzerVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
+    fn recap(&mut self, w: &mut dyn io::Write, _logger: &dyn Logger) {
         // Start the recursive enumeration from the root
         self.recap_recursive(w, &self.root, 0);
     }
@@ -101,6 +101,7 @@ impl Visitable for DirectoryAnalyzerVisitor {
 
 #[cfg(test)]
 mod tests {
+    use crate::visitor::noop_logger::NoopLogger;
     use super::*;
 
     #[test]
@@ -117,12 +118,14 @@ mod tests {
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
 
+        let logger = NoopLogger{};
+
         // Visit each resource
-        visitor.visit(&metadata1, &mut writer);
-        visitor.visit(&metadata2, &mut writer);
-        visitor.visit(&metadata3, &mut writer);
-        visitor.visit(&metadata4, &mut writer);
-        visitor.visit(&metadata5, &mut writer);
+        visitor.visit(&metadata1, &mut writer, &logger);
+        visitor.visit(&metadata2, &mut writer, &logger);
+        visitor.visit(&metadata3, &mut writer, &logger);
+        visitor.visit(&metadata4, &mut writer, &logger);
+        visitor.visit(&metadata5, &mut writer, &logger);
 
         // Check the root node
         assert_eq!(visitor.root.child_files, 0);
@@ -162,15 +165,16 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
 
         // Visit each resource
-        visitor.visit(&metadata1, &mut writer);
-        visitor.visit(&metadata2, &mut writer);
-        visitor.visit(&metadata3, &mut writer);
+        visitor.visit(&metadata1, &mut writer, &logger);
+        visitor.visit(&metadata2, &mut writer, &logger);
+        visitor.visit(&metadata3, &mut writer, &logger);
 
         // Capture output for testing
         let mut output = Vec::new();
-        visitor.recap(&mut output);
+        visitor.recap(&mut output, &logger);
 
         // Assert output
         let output_str = String::from_utf8(output).unwrap();

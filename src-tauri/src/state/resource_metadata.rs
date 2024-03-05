@@ -94,6 +94,8 @@ mod tests {
     use std::io;
     use std::io::Write;
     use tempfile::NamedTempFile;
+    use crate::visitor::noop_logger::NoopLogger;
+    use crate::visitor::tauri_logger::Logger;
     use crate::visitor::visitable::Visitable;
 
     #[derive(Default)]
@@ -114,13 +116,13 @@ mod tests {
     }
 
     impl Visitable for VisitorMock {
-        fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write) {
+        fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
             self.visited.insert(self.name, true);
             // Add specific assertions based on your needs
             assert_eq!(metadata.is_dir(), true);
         }
 
-        fn recap(&mut self, _w: &mut dyn io::Write) {
+        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn Logger) {
             self.recap_called = true;
         }
 
@@ -141,7 +143,9 @@ mod tests {
         let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut visitor = VisitorMock::new("TestVisitor");
-        visitor.visit(&metadata, &mut writer);
+        let logger = crate::visitor::noop_logger::NoopLogger {};
+
+        visitor.visit(&metadata, &mut writer, &logger);
 
         assert_eq!(metadata.get_path(), &path);
         assert_eq!(metadata.is_dir(), is_dir);
@@ -164,7 +168,9 @@ mod tests {
         let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut visitor = VisitorMock::new("DisplayVisitor");
-        visitor.visit(&metadata, &mut writer);
+        let logger = NoopLogger{};
+
+        visitor.visit(&metadata, &mut writer, &logger);
 
         let display_format = format!("{}", metadata);
         println!("{}", display_format);
@@ -182,7 +188,9 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        visitor.recap(&mut writer);
+
+        let logger = NoopLogger{};
+        visitor.recap(&mut writer, &logger);
         assert_eq!(visitor.recap_called, true);
     }
 

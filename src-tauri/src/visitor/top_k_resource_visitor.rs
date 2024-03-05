@@ -10,7 +10,7 @@ pub(crate) struct TopKResourceVisitor {
 }
 
 impl Visitable for TopKResourceVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
                 // If the heap is not full, just push the new metadata
@@ -23,7 +23,7 @@ impl Visitable for TopKResourceVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn Logger) {
+    fn recap(&mut self, w: &mut dyn io::Write, _logger: &dyn Logger) {
         let reversed_sorted_resources: Vec<_> = self.top_resources.clone().into_sorted_vec().into_iter().collect();
 
         write!(w, "Top 50 Largest Resources:\n").expect("TODO: panic message");
@@ -50,6 +50,7 @@ impl TopKResourceVisitor {
 
 #[cfg(test)]
 mod tests {
+    use crate::visitor::noop_logger::NoopLogger;
     use super::*;
 
     #[test]
@@ -67,14 +68,17 @@ mod tests {
 
             let mut buffer: Vec<u8> = Vec::new();
             let mut writer = io::BufWriter::new(&mut buffer);
-            visitor.visit(&metadata, &mut writer);
+
+            let logger = NoopLogger{};
+            visitor.visit(&metadata, &mut writer, &logger);
         }
 
         // Create a mock writer
         let mut mock_writer = Vec::new();
 
+        let logger = NoopLogger{};
         // Call the recap method
-        visitor.recap(&mut mock_writer);
+        visitor.recap(&mut mock_writer, &logger);
 
         // Convert the bytes written to a string
         let recap_output = String::from_utf8(mock_writer).expect("Invalid UTF-8 sequence");

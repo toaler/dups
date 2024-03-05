@@ -182,6 +182,7 @@ impl ResourceScanner {
 mod tests {
     use std::io;
     use std::path::Path;
+    use crate::visitor::noop_logger::NoopLogger;
     use super::*;
 
     struct MockVisitor {
@@ -189,12 +190,12 @@ mod tests {
     }
 
     impl Visitable for MockVisitor {
-        fn visit(&mut self, resource: &ResourceMetadata, _writer: &mut dyn io::Write) {
+        fn visit(&mut self, resource: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
             // Mock implementation
             println!("test={} resource={}", self.test, resource.get_path());
         }
 
-        fn recap(&mut self, _w: &mut dyn io::Write) {}
+        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn Logger) {}
 
         fn name(&self) -> &'static str {
             "mock visitor"
@@ -224,9 +225,9 @@ mod tests {
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let file_path = temp_dir.path().join("test_file.txt");
         fs::write(&file_path, "test data").expect("Failed to write to file");
-
+        let logger = NoopLogger{};
         // Perform a full scan
-        scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors, &mut writer);
+        scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors, &mut writer, &logger);
 
         // Assert that the registry has been populated and visitors were called
         assert_eq!(registry.len(), 1);
@@ -255,8 +256,9 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
         // Perform an incremental scan
-        scanner.incremental_scan(&td, &mut registry, &mut visitors, &mut writer);
+        scanner.incremental_scan(&td, &mut registry, &mut visitors, &mut writer, &logger);
 
         // Assert that the registry has been populated and visitors were called
         assert_eq!(registry.len(), 2);

@@ -1,6 +1,6 @@
 use std::io;
 use std::string::ToString;
-use crate::{emit_log, Visitable};
+use crate::{Visitable};
 use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
@@ -123,6 +123,7 @@ lazy_static! {
 
 #[cfg(test)]
 mod tests {
+    use crate::visitor::noop_logger::NoopLogger;
     // Import necessary modules for testing
     use super::*;
 
@@ -143,10 +144,11 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
 
         // Simulate scanning some files and directories
         for _ in 0..RECAP_THRESHOLD {
-            progress_visitor.visit(&DUMMY_METADATA, &mut writer);
+            progress_visitor.visit(&DUMMY_METADATA, &mut writer, &logger);
         }
 
         // Ensure counters are incremented and recap is triggered
@@ -162,10 +164,11 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
 
         // Simulate scanning some files and directories
         for _ in 0..(2 * RECAP_THRESHOLD) {
-            progress_visitor.visit(&DUMMY_METADATA, &mut writer);
+            progress_visitor.visit(&DUMMY_METADATA, &mut writer, &logger);
         }
 
         // Ensure counters are incremented and recap is triggered
@@ -174,12 +177,12 @@ mod tests {
         assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
         assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);
 
-
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
+        let logger = NoopLogger{};
 
         // Trigger manual recap
-        progress_visitor.recap(&mut writer);
+        progress_visitor.recap(&mut writer, &logger);
 
         // Ensure counters are reset after manual recap
         assert_eq!(progress_visitor.total_files_scanned, 200000);
