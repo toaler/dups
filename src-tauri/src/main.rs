@@ -34,7 +34,7 @@ fn emit_log(window: Window, message: &str) {
 
 #[command]
 async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
-    env_logger::builder().filter_level(LevelFilter::Info).init();
+
     let temp_dir = env::temp_dir();
     let file_path = temp_dir.join("output.csv");
 
@@ -116,6 +116,8 @@ async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
 }
 
 fn main() {
+    env_logger::builder().filter_level(LevelFilter::Info).init();
+    
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![scan_filesystem, emit_log])
         .run(generate_context!())
