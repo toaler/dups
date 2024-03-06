@@ -72,7 +72,7 @@ impl ProgressVisitor {
             elapsed_time
         );
 
-        let message = format!(
+        let _message = format!(
             "resources = {} dirs = {} files = {} time = {:?}\n",
             add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.dirs_scanned_since_last_recap),

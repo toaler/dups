@@ -165,7 +165,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopEventHandler{};;
+        let logger = NoopEventHandler{};
 
         // Visit each resource
         visitor.visit(&metadata1, &mut writer, &logger);
