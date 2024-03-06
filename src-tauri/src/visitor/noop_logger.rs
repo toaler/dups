@@ -1,8 +1,8 @@
-use crate::visitor::tauri_logger::Logger;
+use crate::visitor::tauri_logger::EventHandler;
 
 pub struct NoopLogger {
 }
-impl Logger for NoopLogger {
-    fn log(&self, _message: String) {
+impl EventHandler for NoopLogger {
+    fn publish(&self, _event: &str, _message: String) {
     }
 }

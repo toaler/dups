@@ -3,7 +3,7 @@ use std::{fs, io};
 use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::visitor::tauri_logger::Logger;
+use crate::visitor::tauri_logger::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 
@@ -36,7 +36,7 @@ impl ResourceScanner {
     pub fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
 
     #[warn(clippy::only_used_in_recursion)]
-    pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         let metadata = registry.entry(path.clone()).or_insert_with(|| {
             let m = fs::symlink_metadata(path).unwrap();
             ResourceMetadata::new(path, m.is_dir(), m.is_symlink(), m.mtime(), m.len(), false)
@@ -57,7 +57,7 @@ impl ResourceScanner {
         }
     }
 
-    pub fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    pub fn incremental_scan(&mut self, root: &String, registry: &mut HashMap<String, ResourceMetadata>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         let mut keys: Vec<String> = registry
             .keys()
             .filter(|key| key.starts_with(root))
@@ -71,13 +71,13 @@ impl ResourceScanner {
         self.inspect_resources_for_change(registry, keys, visitors, writer, logger);
     }
 
-    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn inspect_resources_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, keys: Vec<String>, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         for key in keys {
             self.inspect_resource_for_change(registry, &key, visitors, writer, logger);
         }
     }
 
-    fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn inspect_resource_for_change(&mut self, registry: &mut HashMap<String, ResourceMetadata>, key: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         let resource = registry.get_mut(key);
         match resource {
             Some(ref cached_metadata) => {
@@ -117,13 +117,13 @@ impl ResourceScanner {
         }
     }
 
-    fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn sync_file(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         Self::update(registry, current.get_path(), current);
         self.updated_files += 1;
         Self::visit(current, visitors, writer, logger);
     }
 
-    fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn sync_dir(&mut self, registry: &mut HashMap<String, ResourceMetadata>, current: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         debug!("Resource changed : {}", current.get_path());
 
         Self::update(registry, current.get_path(), current);
@@ -171,7 +171,7 @@ impl ResourceScanner {
         }).or_insert(v.clone());
     }
 
-    fn visit(cached: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn visit(cached: &ResourceMetadata, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         for visitor in &mut *visitors {
             visitor.visit(cached, writer, logger);
         }
@@ -190,12 +190,12 @@ mod tests {
     }
 
     impl Visitable for MockVisitor {
-        fn visit(&mut self, resource: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
+        fn visit(&mut self, resource: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn EventHandler) {
             // Mock implementation
             println!("test={} resource={}", self.test, resource.get_path());
         }
 
-        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn Logger) {}
+        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn EventHandler) {}
 
         fn name(&self) -> &'static str {
             "mock visitor"

@@ -25,11 +25,11 @@ use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
 use tauri::Window;
-use crate::visitor::tauri_logger::{TauriLogger};
+use crate::visitor::tauri_logger::{TauriEventHandler};
 
 #[command]
-fn emit_log(window: Window, message: &str) {
-    window.emit("log-event", format!("{}: {}", chrono::Local::now().format("%H:%M:%S"), message)).expect("failed to emit log event");
+fn emit_log(window: Window, event: &str, message: &str) {
+    window.emit(event, format!("{}: {}", chrono::Local::now().format("%H:%M:%S"), message)).expect("failed to emit log event");
 }
 
 #[command]
@@ -38,7 +38,7 @@ async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
     let temp_dir = env::temp_dir();
     let file_path = temp_dir.join("output.csv");
 
-    let logger = TauriLogger {window: w};
+    let logger = TauriEventHandler {window: w};
 
     let path_owned = path.to_owned(); // Clone path into a new String
     info!("path = {}", path_owned);

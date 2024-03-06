@@ -2,7 +2,7 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::visitor::tauri_logger::Logger;
+use crate::visitor::tauri_logger::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
@@ -10,7 +10,7 @@ pub(crate) struct TopKResourceVisitor {
 }
 
 impl Visitable for TopKResourceVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
+    fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn EventHandler) {
         if !metadata.is_dir() {
             if self.top_resources.len() < 50 {
                 // If the heap is not full, just push the new metadata
@@ -23,16 +23,31 @@ impl Visitable for TopKResourceVisitor {
         }
     }
 
-    fn recap(&mut self, w: &mut dyn io::Write, _logger: &dyn Logger) {
+    fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn EventHandler) {
         let reversed_sorted_resources: Vec<_> = self.top_resources.clone().into_sorted_vec().into_iter().collect();
 
+        let mut s = String::from("[");
+
+        let mut first = true;
         write!(w, "Top 50 Largest Resources:\n").expect("TODO: panic message");
         for (i, metadata) in reversed_sorted_resources.iter().enumerate() {
             let metadata = &metadata.0;
             let padded_ranking = format!("{:<5}", i + 1); // Padded to 5 characters for ranking
             let padded_bytes = format!("{:>16}", metadata.size_bytes()); // Padded to 50 characters for bytes
             write!(w, "Rank: {}, Bytes: {}, Path: {}\n", padded_ranking, padded_bytes, metadata.get_path()).expect("TODO: panic message");
+
+            if !first {
+                s.push_str(",");
+            } else {
+                first = false;
+            }
+            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\"}}", i + 1, metadata.size_bytes(), metadata.get_path()));
+
         }
+
+        s.push_str("]");
+
+        logger.publish("top-k-event", s);
     }
 
     fn name(&self) -> &'static str {

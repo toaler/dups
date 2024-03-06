@@ -95,7 +95,7 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
     use crate::visitor::noop_logger::NoopLogger;
-    use crate::visitor::tauri_logger::Logger;
+    use crate::visitor::tauri_logger::EventHandler;
     use crate::visitor::visitable::Visitable;
 
     #[derive(Default)]
@@ -116,13 +116,13 @@ mod tests {
     }
 
     impl Visitable for VisitorMock {
-        fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn Logger) {
+        fn visit(&mut self, metadata: &ResourceMetadata, _writer: &mut dyn io::Write, _logger: &dyn EventHandler) {
             self.visited.insert(self.name, true);
             // Add specific assertions based on your needs
             assert_eq!(metadata.is_dir(), true);
         }
 
-        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn Logger) {
+        fn recap(&mut self, _w: &mut dyn io::Write, _logger: &dyn EventHandler) {
             self.recap_called = true;
         }
 

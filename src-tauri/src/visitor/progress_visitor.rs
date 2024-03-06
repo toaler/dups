@@ -5,7 +5,7 @@ use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::add_groupings_usize;
-use crate::visitor::tauri_logger::Logger;
+use crate::visitor::tauri_logger::EventHandler;
 
 const RECAP_THRESHOLD: usize = 100000;
 
@@ -49,7 +49,7 @@ impl ProgressVisitor {
         self.total_dirs_scanned
     }
 
-    fn incremental_recap(&mut self, writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn incremental_recap(&mut self, writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         let elapsed_time = self.recap_start_time.elapsed();
 
         write!(
@@ -81,7 +81,7 @@ impl ProgressVisitor {
         );
 
         // Use the logger
-        logger.log(json_payload);
+        logger.publish("log-event", json_payload);
 
         // Reset counters for the next recap
         self.reset_recap_counters();
@@ -89,7 +89,7 @@ impl ProgressVisitor {
 }
 
 impl Visitable for ProgressVisitor {
-    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         // Simulate file and directory scanning logic here
         // For demonstration purposes, let's just increment the counters
         if metadata.is_dir() {
@@ -106,7 +106,7 @@ impl Visitable for ProgressVisitor {
     }
 
 
-    fn recap(&mut self, writer: &mut dyn io::Write, logger: &dyn Logger) {
+    fn recap(&mut self, writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         self.incremental_recap(writer, logger);
 
         write!(

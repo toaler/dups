@@ -1,13 +1,14 @@
 use tauri::Window;
 
-pub trait Logger {
-    fn log(&self, message: String);
+pub trait EventHandler {
+    fn publish(&self, event: &str, message: String);
 }
-pub struct TauriLogger {
+pub struct TauriEventHandler {
     pub(crate) window: Window,
 }
-impl Logger for TauriLogger {
-    fn log(&self, message: String) {
-        self.window.emit("log-event", &message).expect("Failed to emit log event");
+impl EventHandler for TauriEventHandler {
+    fn publish(&self, event: &str,  message: String) {
+
+        self.window.emit(event, &message).expect("Failed to emit log event");
     }
 }
