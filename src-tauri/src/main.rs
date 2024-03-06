@@ -5,6 +5,7 @@ mod visitor;
 mod state;
 mod config;
 mod scanner;
+mod handler;
 
 use log::{debug, error, info, LevelFilter};
 use std::{env, io};
@@ -25,7 +26,7 @@ use scanner::resource_scanner::ResourceScanner;
 use util::util::add_groupings_usize;
 
 use tauri::Window;
-use crate::visitor::tauri_logger::{TauriEventHandler};
+use crate::handler::tauri_event_handler::{TauriEventHandler};
 
 #[command]
 fn emit_log(window: Window, event: &str, message: &str) {

@@ -2,7 +2,7 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::visitor::tauri_logger::EventHandler;
+use crate::handler::event_handler::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
@@ -65,7 +65,7 @@ impl TopKResourceVisitor {
 
 #[cfg(test)]
 mod tests {
-    use crate::visitor::noop_logger::NoopLogger;
+    use crate::handler::noop_event_handler::NoopEventHandler;
     use super::*;
 
     #[test]
@@ -84,14 +84,14 @@ mod tests {
             let mut buffer: Vec<u8> = Vec::new();
             let mut writer = io::BufWriter::new(&mut buffer);
 
-            let logger = NoopLogger{};
+            let logger = NoopEventHandler{};
             visitor.visit(&metadata, &mut writer, &logger);
         }
 
         // Create a mock writer
         let mut mock_writer = Vec::new();
 
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
         // Call the recap method
         visitor.recap(&mut mock_writer, &logger);
 

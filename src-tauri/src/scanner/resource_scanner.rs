@@ -3,7 +3,7 @@ use std::{fs, io};
 use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::visitor::tauri_logger::EventHandler;
+use crate::handler::event_handler::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 
@@ -182,7 +182,7 @@ impl ResourceScanner {
 mod tests {
     use std::io;
     use std::path::Path;
-    use crate::visitor::noop_logger::NoopLogger;
+    use crate::handler::noop_event_handler::NoopEventHandler;
     use super::*;
 
     struct MockVisitor {
@@ -225,7 +225,7 @@ mod tests {
         let temp_dir = tempfile::tempdir().expect("Failed to create temporary directory");
         let file_path = temp_dir.path().join("test_file.txt");
         fs::write(&file_path, "test data").expect("Failed to write to file");
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
         // Perform a full scan
         scanner.full_scan(&mut registry, &file_path.to_string_lossy().to_string(), &mut visitors, &mut writer, &logger);
 
@@ -256,7 +256,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
         // Perform an incremental scan
         scanner.incremental_scan(&td, &mut registry, &mut visitors, &mut writer, &logger);
 

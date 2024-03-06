@@ -94,8 +94,8 @@ mod tests {
     use std::io;
     use std::io::Write;
     use tempfile::NamedTempFile;
-    use crate::visitor::noop_logger::NoopLogger;
-    use crate::visitor::tauri_logger::EventHandler;
+    use crate::handler::event_handler::EventHandler;
+    use crate::handler::noop_event_handler::NoopEventHandler;
     use crate::visitor::visitable::Visitable;
 
     #[derive(Default)]
@@ -143,7 +143,7 @@ mod tests {
         let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut visitor = VisitorMock::new("TestVisitor");
-        let logger = crate::visitor::noop_logger::NoopLogger {};
+        let logger = NoopEventHandler{};
 
         visitor.visit(&metadata, &mut writer, &logger);
 
@@ -168,7 +168,7 @@ mod tests {
         let mut writer = io::BufWriter::new(&mut buffer);
 
         let mut visitor = VisitorMock::new("DisplayVisitor");
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         visitor.visit(&metadata, &mut writer, &logger);
 
@@ -189,7 +189,9 @@ mod tests {
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
 
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
+
+        let logger = NoopEventHandler{};
         visitor.recap(&mut writer, &logger);
         assert_eq!(visitor.recap_called, true);
     }

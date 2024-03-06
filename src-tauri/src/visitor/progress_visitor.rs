@@ -5,7 +5,7 @@ use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::add_groupings_usize;
-use crate::visitor::tauri_logger::EventHandler;
+use crate::handler::event_handler::EventHandler;
 
 const RECAP_THRESHOLD: usize = 100000;
 
@@ -132,7 +132,7 @@ lazy_static! {
 
 #[cfg(test)]
 mod tests {
-    use crate::visitor::noop_logger::NoopLogger;
+    use crate::handler::noop_event_handler::NoopEventHandler;
     // Import necessary modules for testing
     use super::*;
 
@@ -153,7 +153,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         // Simulate scanning some files and directories
         for _ in 0..RECAP_THRESHOLD {
@@ -173,7 +173,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         // Simulate scanning some files and directories
         for _ in 0..(2 * RECAP_THRESHOLD) {
@@ -188,7 +188,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         // Trigger manual recap
         progress_visitor.recap(&mut writer, &logger);
