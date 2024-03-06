@@ -19,6 +19,7 @@ pub struct DirectoryAnalyzerVisitor {
 }
 
 impl DirectoryAnalyzerVisitor {
+    #[allow(warnings)]
     pub fn new() -> Self {
         DirectoryAnalyzerVisitor {
             root: DirectoryNode::default(),

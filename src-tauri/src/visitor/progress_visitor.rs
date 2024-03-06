@@ -4,7 +4,7 @@ use crate::{Visitable};
 use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::util::util::add_groupings_usize;
+use crate::util::util::{add_groupings_u64, add_groupings_usize};
 use crate::handler::event_handler::EventHandler;
 
 const RECAP_THRESHOLD: usize = 100000;
@@ -12,8 +12,10 @@ const RECAP_THRESHOLD: usize = 100000;
 pub struct ProgressVisitor {
     total_files_scanned: usize,
     total_dirs_scanned: usize,
+    total_size_scanned: u64,
     files_scanned_since_last_recap: usize,
     dirs_scanned_since_last_recap: usize,
+    total_size_scanned_since_last_recap: u64,
     recap_start_time: Instant,
 }
 
@@ -22,8 +24,10 @@ impl ProgressVisitor {
         Self {
             total_files_scanned: 0,
             total_dirs_scanned: 0,
+            total_size_scanned: 0,
             files_scanned_since_last_recap: 0,
             dirs_scanned_since_last_recap: 0,
+            total_size_scanned_since_last_recap: 0,
             recap_start_time: Instant::now(),
         }
     }
@@ -31,6 +35,7 @@ impl ProgressVisitor {
     fn reset_recap_counters(&mut self) {
         self.files_scanned_since_last_recap = 0;
         self.dirs_scanned_since_last_recap = 0;
+        self.total_size_scanned_since_last_recap = 0;
         self.recap_start_time = Instant::now();
     }
 
@@ -49,6 +54,9 @@ impl ProgressVisitor {
         self.total_dirs_scanned
     }
 
+    #[allow(warnings)]
+    pub fn total_size_scanned(&self) -> u64 { self.total_size_scanned }
+
     fn incremental_recap(&mut self, writer: &mut dyn io::Write, logger: &dyn EventHandler) {
         let elapsed_time = self.recap_start_time.elapsed();
 
@@ -65,18 +73,20 @@ impl ProgressVisitor {
 
 
         let json_payload = format!(
-            r#"{{"resources": {}, "directories": {}, "files": {}, "wall_time_ms" : "{:?}"}}"#,
+            r#"{{"resources": {}, "directories": {}, "files": {}, "size": {}, "wall_time_ms" : "{:?}"}}"#,
             self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap,
             self.dirs_scanned_since_last_recap,
             self.files_scanned_since_last_recap,
+            self.total_size_scanned_since_last_recap,
             elapsed_time
         );
 
         let _message = format!(
-            "resources = {} dirs = {} files = {} time = {:?}\n",
+            "resources = {} dirs = {} files = {} size = {} time = {:?}\n",
             add_groupings_usize(self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.files_scanned_since_last_recap),
+            add_groupings_u64(self.total_size_scanned_since_last_recap),
             elapsed_time
         );
 
@@ -100,6 +110,9 @@ impl Visitable for ProgressVisitor {
             self.files_scanned_since_last_recap += 1;
         }
 
+        self.total_size_scanned += metadata.size_bytes();
+        self.total_size_scanned_since_last_recap += metadata.size_bytes();
+
         if (self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap) % RECAP_THRESHOLD == 0 {
             self.incremental_recap(writer, logger);
         }
@@ -111,10 +124,11 @@ impl Visitable for ProgressVisitor {
 
         write!(
             writer,
-            "Total resources={} dirs = {} files = {}",
+            "Total resources={} dirs = {} files = {} size = {}",
             add_groupings_usize(self.total_resources()),
             add_groupings_usize(self.total_dirs_scanned),
-            add_groupings_usize(self.total_files_scanned)
+            add_groupings_usize(self.total_files_scanned),
+            add_groupings_u64(self.total_size_scanned),
         ).expect("TODO: panic message");
 
         // Reset counters for the next recap

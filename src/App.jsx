@@ -14,6 +14,7 @@ function App() {
   const [resources, setResources] = useState(0);
   const [directories, setDirectories] = useState(0);
   const [files, setFiles] = useState(0);
+  const [size, setSize] = useState(0);
 
   // Sample initial data
   const [topKFiles, setTopKFiles] = useState([
@@ -71,6 +72,8 @@ function App() {
 
         // Update files
         setFiles((currentFiles) => currentFiles + data.files);
+
+        setSize((currentSize) => currentSize + data.size);
       } catch (e) {
         console.error(`Error parsing JSON: ${e}`);
       }
@@ -130,19 +133,21 @@ function App() {
             <tr>
               <td>
                 <input
-                  type="text"
-                  value={path}
-                  onChange={(e) => setPath(e.target.value)}
-                  placeholder="Enter filesystem path"
+                    type="text"
+                    value={path}
+                    onChange={(e) => setPath(e.target.value)}
+                    placeholder="Enter filesystem path"
                 />
                 <button onClick={() => handleScanClick(path)}>Scan</button>
               </td>
               <td>Resources</td>
-              <td>{resources.toLocaleString()}</td>
+              <td>{Number(resources).toLocaleString()}</td>
               <td>Directories</td>
-              <td>{directories.toLocaleString()}</td>
+              <td>{Number(directories).toLocaleString()}</td>
               <td>Files</td>
-              <td>{files.toLocaleString()}</td>
+              <td>{Number(files).toLocaleString()}</td>
+              <td>Size</td>
+              <td>{Number(size).toLocaleString()}</td>
             </tr>
           </table>
 
