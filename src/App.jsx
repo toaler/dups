@@ -14,11 +14,28 @@ function App() {
   const [resources, setResources] = useState(0);
   const [directories, setDirectories] = useState(0);
   const [files, setFiles] = useState(0);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [topKFiles, setTopKFiles] = useState([]);
 
-  // Sample initial data
-  const [topKFiles, setTopKFiles] = useState([
-    // add more objects as needed
-  ]);
+  const handleCheckboxChange = (event) => {
+    console.log(event);
+    const value = event.target.value;
+    const isChecked = event.target.checked;
+
+    // Update the state based on whether the checkbox was checked or unchecked
+    if (isChecked) {
+      console.log("checked");
+      // Add the row index to the selectedRows state
+      setSelectedRows(prev => [...prev, value]);
+    } else {
+      // Remove the row index from the selectedRows state
+
+      console.log("unchecked");
+      setSelectedRows(prev => prev.filter(row => row !== value));
+    }
+  };
+
+
 
   // Suppose you might update this data dynamically, for example, fetching from an API
   useEffect(() => {
@@ -160,6 +177,7 @@ function App() {
           <table>
             <thead>
             <tr>
+              <th>Stage</th>
               <th>Rank</th>
               <th style={{textAlign: "right"}}>Bytes</th>
               {/* Right-align the header */}
@@ -169,6 +187,9 @@ function App() {
             <tbody>
             {topKFiles.map((row, index) => (
                 <tr key={index}>
+                  <td>
+                    <input type="checkbox" value={row.path} onChange={handleCheckboxChange}/>
+                  </td>
                   <td>{row.rank}</td>
                   <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
                   {/* Right-align and format the bytes column */}
@@ -179,7 +200,24 @@ function App() {
           </table>
         </TabPanel>
         <TabPanel>
-          <p>The staging view is used for preparing changes to be carried out on the filesystem</p>
+        <p>The staging view is used for preparing changes to be carried out on the filesystem</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th style={{textAlign: "left"}}>Resource</th>
+              </tr>
+            </thead>
+            <tbody>
+            {selectedRows.map((path, index) => (
+                <tr key={index}>
+                  <td>{path}</td>
+
+                </tr>
+            ))}
+            </tbody>
+          </table>
+
         </TabPanel>
       </Tabs>
     </TabPanel>
