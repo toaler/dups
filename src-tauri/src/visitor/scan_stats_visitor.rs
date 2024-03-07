@@ -1,8 +1,8 @@
 use std::io;
+use crate::handler::event_handler::EventHandler;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::state::scan_stats::ScanStats;
 use crate::util::util::add_groupings_u32;
-use crate::visitor::tauri_logger::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
@@ -54,7 +54,7 @@ mod tests {
     use std::fs::create_dir_all;
     use std::io::{Write};
     use tempfile::TempDir;
-    use crate::visitor::noop_logger::NoopLogger;
+    use crate::handler::noop_event_handler::NoopEventHandler;
 
     #[test]
     fn test_visit_files_and_directories() {
@@ -71,7 +71,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         let mut visitor = ScanStatsVisitor::new();
         let file = ResourceMetadata::new(&f.to_string(), false, false, 0, 1024, false);

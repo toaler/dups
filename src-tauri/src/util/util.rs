@@ -64,6 +64,28 @@ pub fn add_groupings_u32(number: u32) -> String {
     result.iter().rev().collect()
 }
 
+pub fn add_groupings_u64(number: u64) -> String {
+    let mut result = Vec::new();
+    let mut count = 0;
+
+    let mut num = number;
+    loop {
+        result.push((b'0' + (num % 10) as u8) as char);
+        num /= 10;
+        count += 1;
+
+        if num == 0 {
+            break;
+        }
+
+        if count % 3 == 0 {
+            result.push(',');
+        }
+    }
+
+    result.iter().rev().collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

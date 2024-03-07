@@ -2,7 +2,7 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::visitor::tauri_logger::EventHandler;
+use crate::handler::event_handler::EventHandler;
 use crate::visitor::visitable::Visitable;
 
 #[derive(Debug, Default)]
@@ -19,6 +19,7 @@ pub struct DirectoryAnalyzerVisitor {
 }
 
 impl DirectoryAnalyzerVisitor {
+    #[allow(warnings)]
     pub fn new() -> Self {
         DirectoryAnalyzerVisitor {
             root: DirectoryNode::default(),
@@ -101,7 +102,7 @@ impl Visitable for DirectoryAnalyzerVisitor {
 
 #[cfg(test)]
 mod tests {
-    use crate::visitor::noop_logger::NoopLogger;
+    use crate::handler::noop_event_handler::NoopEventHandler;
     use super::*;
 
     #[test]
@@ -118,7 +119,7 @@ mod tests {
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
 
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         // Visit each resource
         visitor.visit(&metadata1, &mut writer, &logger);
@@ -165,7 +166,7 @@ mod tests {
 
         let mut buffer: Vec<u8> = Vec::new();
         let mut writer = io::BufWriter::new(&mut buffer);
-        let logger = NoopLogger{};
+        let logger = NoopEventHandler{};
 
         // Visit each resource
         visitor.visit(&metadata1, &mut writer, &logger);
