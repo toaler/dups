@@ -18,6 +18,14 @@ function App() {
   const [topKFiles, setTopKFiles] = useState([]);
   const [size, setSize] = useState(0);
 
+  const ScanStatus = {
+    Stopped: "Stopped",
+    Scanning: "Scanning",
+    Completed: "Completed",
+    Failed: "Failed",
+  };
+
+  const [scanStatus, setScanStatus] = useState(ScanStatus.Stopped);
 
   const handleCheckboxChange = (event) => {
     console.log(event);
@@ -110,9 +118,12 @@ function App() {
   async function scanFilesystem(path) {
     try {
       console.log("Scanning for = " + path);
+      setScanStatus(ScanStatus.Scanning);
       const result = await invoke('scan_filesystem', { path });
+      setScanStatus(ScanStatus.Completed);
       console.log(result); // Process result
     } catch (error) {
+      setScanStatus(ScanStatus.Failed);
       console.error(error); // Handle error
     }
   }
@@ -159,6 +170,8 @@ function App() {
                 />
                 <button onClick={() => handleScanClick(path)}>Scan</button>
               </td>
+              <td>Status</td>
+              <td>{scanStatus}</td>
               <td>Resources</td>
               <td>{Number(resources).toLocaleString()}</td>
               <td>Directories</td>
