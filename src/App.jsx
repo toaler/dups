@@ -7,6 +7,14 @@ import 'react-tabs/style/react-tabs.css';
 
 function App() {
 
+  const ScanStatus = {
+    Stopped: "Stopped",
+    Scanning: "Scanning",
+    Completed: "Completed",
+    Failed: "Failed",
+  };
+
+
   const endOfLogsRef = useRef(null);
 
   const [path, setPath] = useState('');
@@ -17,15 +25,21 @@ function App() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [topKFiles, setTopKFiles] = useState([]);
   const [size, setSize] = useState(0);
-
-  const ScanStatus = {
-    Stopped: "Stopped",
-    Scanning: "Scanning",
-    Completed: "Completed",
-    Failed: "Failed",
-  };
-
   const [scanStatus, setScanStatus] = useState(ScanStatus.Stopped);
+  const [startTime, setStartTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [timer, setTimer] = useState(null);
+
+  const formatElapsedTime = () => {
+    // Convert elapsed time to hours, minutes, and milliseconds
+    const hours = Math.floor(elapsedTime / 3600000); // Total hours
+    const minutes = Math.floor((elapsedTime % 3600000) / 60000); // Remaining minutes
+    const seconds = Math.floor((elapsedTime % 60000) / 1000); // Convert remainder to seconds
+    const milliseconds = elapsedTime % 1000; // Milliseconds are the remainder of elapsed time divided by 1000
+
+    // Format milliseconds to ensure it's always displayed as a three-digit number
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+  };
 
   const handleCheckboxChange = (event) => {
     console.log(event);
@@ -115,9 +129,34 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    let interval = null;
+
+    console.log("setting TIMER TIMER TIMER timer = " + Math.floor((Date.now() - startTime)));
+    if (scanStatus === ScanStatus.Scanning && !timer) {
+      setStartTime(Date.now());
+      interval = setInterval(() => {
+        setElapsedTime(oldElapsedTime => Math.floor((Date.now() - startTime)));
+        console.log("setting TIMER TIMER TIMER timer = " + Math.floor((Date.now() - startTime)));
+      }, 100);
+      setTimer(interval);
+    } else if (scanStatus !== ScanStatus.Scanning && timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [scanStatus]);
+
   async function scanFilesystem(path) {
     try {
       console.log("Scanning for = " + path);
+      setStartTime(Date.now());
+      setElapsedTime(0); // Reset elapsed time
       setScanStatus(ScanStatus.Scanning);
       const result = await invoke('scan_filesystem', { path });
       setScanStatus(ScanStatus.Completed);
@@ -134,7 +173,7 @@ function App() {
     setDirectories(0);
     setFiles(0);
 
-    // Then initiate the scan
+
     scanFilesystem(path);
   };
 
@@ -171,7 +210,7 @@ function App() {
                 <button onClick={() => handleScanClick(path)}>Scan</button>
               </td>
               <td>Status</td>
-              <td>{scanStatus}</td>
+              <td>{scanStatus} {scanStatus === 'Scanning' ? formatElapsedTime() : ''}</td>
               <td>Resources</td>
               <td>{Number(resources).toLocaleString()}</td>
               <td>Directories</td>
