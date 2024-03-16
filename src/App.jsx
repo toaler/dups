@@ -4,6 +4,7 @@ import { listen } from '@tauri-apps/api/event'
 import "./App.css";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import StorageStagingTab from "./StorageStagingTab.jsx";
 
 function App() {
 
@@ -194,10 +195,6 @@ function App() {
         </TabList>
         <TabPanel>
           <p>Scan filesystem</p>
-          {/* Input field for filesystem path */}
-
-          {/* Button to trigger Rust function */}
-
           <table>
             <tr>
               <td>
@@ -259,24 +256,7 @@ function App() {
           </table>
         </TabPanel>
         <TabPanel>
-        <p>The staging view is used for preparing changes to be carried out on the filesystem</p>
-
-          <table>
-            <thead>
-              <tr>
-                <th style={{textAlign: "left"}}>Resource</th>
-              </tr>
-            </thead>
-            <tbody>
-            {selectedRows.map((path, index) => (
-                <tr key={index}>
-                  <td>{path}</td>
-
-                </tr>
-            ))}
-            </tbody>
-          </table>
-
+          <StorageStagingTab selectedRows={selectedRows}></StorageStagingTab>
         </TabPanel>
       </Tabs>
     </TabPanel>
