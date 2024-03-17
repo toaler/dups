@@ -5,6 +5,7 @@ import "./App.css";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import StorageStagingTab from "./StorageStagingTab.jsx";
+import StorageInspectionTab from "./StorageInspectionTab.jsx";
 
 function App() {
 
@@ -42,23 +43,7 @@ function App() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
   };
 
-  const handleCheckboxChange = (event) => {
-    console.log(event);
-    const value = event.target.value;
-    const isChecked = event.target.checked;
 
-    // Update the state based on whether the checkbox was checked or unchecked
-    if (isChecked) {
-      console.log("checked");
-      // Add the row index to the selectedRows state
-      setSelectedRows(prev => [...prev, value]);
-    } else {
-      // Remove the row index from the selectedRows state
-
-      console.log("unchecked");
-      setSelectedRows(prev => prev.filter(row => row !== value));
-    }
-  };
 
 
 
@@ -229,31 +214,7 @@ function App() {
           </div>
         </TabPanel>
         <TabPanel>
-          <p>Inspections enable automatic high-level analysis of storage</p>
-          <table>
-            <thead>
-            <tr>
-              <th>Stage</th>
-              <th>Rank</th>
-              <th style={{textAlign: "right"}}>Bytes</th>
-              {/* Right-align the header */}
-              <th style={{textAlign: "left"}}>Path</th>
-            </tr>
-            </thead>
-            <tbody>
-            {topKFiles.map((row, index) => (
-                <tr key={index}>
-                  <td>
-                    <input type="checkbox" value={row.path} onChange={handleCheckboxChange}/>
-                  </td>
-                  <td>{row.rank}</td>
-                  <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-                  {/* Right-align and format the bytes column */}
-                  <td style={{textAlign: "left"}}>{row.path}</td>
-                </tr>
-            ))}
-            </tbody>
-          </table>
+          <StorageInspectionTab setSelectedRows={setSelectedRows} topKFiles={topKFiles}></StorageInspectionTab>
         </TabPanel>
         <TabPanel>
           <StorageStagingTab selectedRows={selectedRows}></StorageStagingTab>
