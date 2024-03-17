@@ -1,6 +1,35 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import {listen} from "@tauri-apps/api/event";
 
-function StorageInspectionTab({ setSelectedRows, topKFiles }) {
+function StorageInspectionTab({setSelectedRows}) {
+
+
+    const [topKFiles, setTopKFiles] = useState([]);
+
+    // Suppose you might update this data dynamically, for example, fetching from an API
+    useEffect(() => {
+        // Function to handle incoming log events
+        const handleTopKEvent = (event) => {
+
+            console.log(event.payload);
+
+            try {
+                const data = JSON.parse(event.payload);
+                console.log(data); // Now `data` is a JavaScript object.
+                setTopKFiles(data);
+            } catch (e) {
+                console.error(`Error parsing JSON: ${e}`);
+            }
+        };
+
+        // Start listening for log events from the Rust side
+        const unsubscribe = listen("top-k-event", handleTopKEvent);
+
+        // Cleanup the listener when the component unmounts
+        return () => {
+            unsubscribe.then((unsub) => unsub());
+        };
+    }, []); // Empty dependency array means this effect runs once after the initial render
 
     const handleCheckboxChange = (event) => {
         console.log(event);
