@@ -2,12 +2,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 
-function StorageScanTab() {
+function ScanTab() {
     const ScanStatus = {
-        Stopped: "Stopped",
-        Scanning: "Scanning",
-        Completed: "Completed",
-        Failed: "Failed",
+        Stopped: "Stopped", Scanning: "Scanning", Completed: "Completed", Failed: "Failed",
     };
 
     const endOfLogsRef = useRef(null);
@@ -83,7 +80,7 @@ function StorageScanTab() {
 
 // Effect to scroll to the bottom whenever logs update
     useEffect(() => {
-        endOfLogsRef.current?.scrollIntoView({ behavior: 'smooth' });
+        endOfLogsRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [logs]); // Dependency array, this effect runs when `logs` changes
 
 
@@ -104,7 +101,7 @@ function StorageScanTab() {
             setStartTime(Date.now());
             setElapsedTime(0); // Reset elapsed time
             setScanStatus(ScanStatus.Scanning);
-            const result = await invoke('scan_filesystem', { path });
+            const result = await invoke('scan_filesystem', {path});
             setScanStatus(ScanStatus.Completed);
             console.log(result); // Process result
         } catch (error) {
@@ -125,7 +122,6 @@ function StorageScanTab() {
 
 
     return (
-
         <div>
             <p>Scan filesystem</p>
 
@@ -155,14 +151,11 @@ function StorageScanTab() {
 
 
             <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
-                {logs.map((log, index) => (
-                    <div key={index}>{log}</div>
-                ))}
+                {logs.map((log, index) => (<div key={index}>{log}</div>))}
                 {/* Invisible div at the end of your logs */}
                 <div ref={endOfLogsRef}/>
             </div>
-        </div>
-    );
+        </div>);
 }
 
-export default StorageScanTab;
+export default ScanTab;

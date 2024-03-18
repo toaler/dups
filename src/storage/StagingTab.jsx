@@ -1,6 +1,6 @@
 import React from 'react';
 
-function StorageStagingTab({ selectedRows }) {
+function StagingTab({selectedRows}) {
     return (
         <div>
             <p>The staging view is used for preparing changes to be carried out on the filesystem</p>
@@ -12,16 +12,13 @@ function StorageStagingTab({ selectedRows }) {
                 </tr>
                 </thead>
                 <tbody>
-                {selectedRows.map((path, index) => (
-                    <tr key={index}>
+                {selectedRows.map((path, index) => (<tr key={index}>
                         <td>{path}</td>
 
-                    </tr>
-                ))}
+                    </tr>))}
                 </tbody>
             </table>
-        </div>
-    );
+        </div>);
 }
 
-export default StorageStagingTab;
+export default StagingTab;
