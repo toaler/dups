@@ -1,12 +1,10 @@
 mod util;
-mod visitor;
 mod state;
 mod config;
-mod scanner;
-mod handler;
-mod command;
+mod ui;
+mod services;
 
-use crate::command::scan_filesystem::scan_filesystem;
+use crate::ui::command::scan_filesystem::scan_filesystem;
 use log::{error, info, LevelFilter};
 use std::{env, io};
 use std::collections::HashMap;
@@ -17,7 +15,7 @@ use std::error::Error;
 use csv::{ReaderBuilder, WriterBuilder};
 use tauri::{generate_context};
 use state::resource_metadata::ResourceMetadata;
-use visitor::visitable::Visitable;
+use services::scanner_impl::visitor::visitable::Visitable;
 
 fn main() {
     env_logger::builder().filter_level(LevelFilter::Info).init();

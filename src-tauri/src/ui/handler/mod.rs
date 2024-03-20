@@ -1,0 +1,1 @@
+pub(crate) mod tauri_event_handler;

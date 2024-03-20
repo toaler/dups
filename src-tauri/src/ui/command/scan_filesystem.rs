@@ -4,15 +4,15 @@ use std::path::Path;
 use std::time::Instant;
 use log::{debug, info};
 use tauri::{command, Window};
-use crate::handler::tauri_event_handler::TauriEventHandler;
+use crate::ui::handler::tauri_event_handler::TauriEventHandler;
 use crate::{load_registry, save_registry};
-use crate::scanner::resource_scanner::ResourceScanner;
+use crate::services::scanner_impl::resource_scanner::ResourceScanner;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::add_groupings_usize;
-use crate::visitor::progress_visitor::ProgressVisitor;
-use crate::visitor::scan_stats_visitor::ScanStatsVisitor;
-use crate::visitor::top_k_resource_visitor::TopKResourceVisitor;
-use crate::visitor::visitable::Visitable;
+use crate::services::scanner_impl::visitor::progress_visitor::ProgressVisitor;
+use crate::services::scanner_impl::visitor::scan_stats_visitor::ScanStatsVisitor;
+use crate::services::scanner_impl::visitor::top_k_resource_visitor::TopKResourceVisitor;
+use crate::services::scanner_impl::visitor::visitable::Visitable;
 
 #[command]
 pub async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {

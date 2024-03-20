@@ -2,8 +2,8 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::handler::event_handler::EventHandler;
-use crate::visitor::visitable::Visitable;
+use crate::services::scanner_api::event_handler::EventHandler;
+use crate::services::scanner_impl::visitor::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
     top_resources: BinaryHeap<Reverse<ResourceMetadata>>,
@@ -65,7 +65,7 @@ impl TopKResourceVisitor {
 
 #[cfg(test)]
 mod tests {
-    use crate::handler::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
     use super::*;
 
     #[test]

@@ -1,5 +1,5 @@
 use tauri::Window;
-use crate::handler::event_handler::EventHandler;
+use crate::services::scanner_api::event_handler::EventHandler;
 
 pub struct TauriEventHandler {
     pub(crate) window: Window,

@@ -94,9 +94,9 @@ mod tests {
     use std::io;
     use std::io::Write;
     use tempfile::NamedTempFile;
-    use crate::handler::event_handler::EventHandler;
-    use crate::handler::noop_event_handler::NoopEventHandler;
-    use crate::visitor::visitable::Visitable;
+    use crate::services::scanner_api::event_handler::EventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::visitor::visitable::Visitable;
 
     #[derive(Default)]
     struct VisitorMock {

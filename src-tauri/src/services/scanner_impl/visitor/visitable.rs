@@ -1,6 +1,6 @@
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::handler::event_handler::EventHandler;
+use crate::services::scanner_api::event_handler::EventHandler;
 
 pub trait Visitable {
     fn visit(&mut self, metadata: &ResourceMetadata, writer: &mut dyn io::Write, logger: &dyn EventHandler);

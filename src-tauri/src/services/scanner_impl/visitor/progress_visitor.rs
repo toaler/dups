@@ -5,7 +5,7 @@ use std::time::{Instant};
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::{add_groupings_u64, add_groupings_usize};
-use crate::handler::event_handler::EventHandler;
+use crate::services::scanner_api::event_handler::EventHandler;
 
 const RECAP_THRESHOLD: usize = 100000;
 
@@ -146,7 +146,7 @@ lazy_static! {
 
 #[cfg(test)]
 mod tests {
-    use crate::handler::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
     // Import necessary modules for testing
     use super::*;
 

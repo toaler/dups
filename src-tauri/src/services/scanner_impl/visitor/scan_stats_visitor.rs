@@ -1,9 +1,9 @@
 use std::io;
-use crate::handler::event_handler::EventHandler;
+use crate::services::scanner_api::event_handler::EventHandler;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::state::scan_stats::ScanStats;
 use crate::util::util::add_groupings_u32;
-use crate::visitor::visitable::Visitable;
+use crate::services::scanner_impl::visitor::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
     stats: ScanStats,
@@ -54,7 +54,7 @@ mod tests {
     use std::fs::create_dir_all;
     use std::io::{Write};
     use tempfile::TempDir;
-    use crate::handler::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
 
     #[test]
     fn test_visit_files_and_directories() {

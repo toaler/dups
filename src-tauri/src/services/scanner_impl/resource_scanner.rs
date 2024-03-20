@@ -3,8 +3,8 @@ use std::{fs, io};
 use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::handler::event_handler::EventHandler;
-use crate::visitor::visitable::Visitable;
+use crate::services::scanner_api::event_handler::EventHandler;
+use crate::services::scanner_impl::visitor::visitable::Visitable;
 
 
 pub struct ResourceScanner {
@@ -182,7 +182,7 @@ impl ResourceScanner {
 mod tests {
     use std::io;
     use std::path::Path;
-    use crate::handler::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
     use super::*;
 
     struct MockVisitor {

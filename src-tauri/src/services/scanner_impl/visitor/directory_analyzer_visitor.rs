@@ -2,8 +2,8 @@ use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
-use crate::handler::event_handler::EventHandler;
-use crate::visitor::visitable::Visitable;
+use crate::services::scanner_api::event_handler::EventHandler;
+use crate::services::scanner_impl::visitor::visitable::Visitable;
 
 #[derive(Debug, Default)]
 struct DirectoryNode {
@@ -102,7 +102,7 @@ impl Visitable for DirectoryAnalyzerVisitor {
 
 #[cfg(test)]
 mod tests {
-    use crate::handler::noop_event_handler::NoopEventHandler;
+    use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
     use super::*;
 
     #[test]
