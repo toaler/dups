@@ -96,7 +96,7 @@ mod tests {
     use tempfile::NamedTempFile;
     use crate::services::scanner_api::event_handler::EventHandler;
     use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
-    use crate::services::scanner_impl::visitor::visitable::Visitable;
+    use crate::services::scanner_api::visitable::Visitable;
 
     #[derive(Default)]
     struct VisitorMock {

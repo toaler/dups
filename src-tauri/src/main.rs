@@ -15,7 +15,7 @@ use std::error::Error;
 use csv::{ReaderBuilder, WriterBuilder};
 use tauri::{generate_context};
 use state::resource_metadata::ResourceMetadata;
-use services::scanner_impl::visitor::visitable::Visitable;
+use services::scanner_api::visitable::Visitable;
 
 fn main() {
     env_logger::builder().filter_level(LevelFilter::Info).init();

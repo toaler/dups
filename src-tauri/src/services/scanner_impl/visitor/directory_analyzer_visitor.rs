@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_api::event_handler::EventHandler;
-use crate::services::scanner_impl::visitor::visitable::Visitable;
+use crate::services::scanner_api::visitable::Visitable;
 
 #[derive(Debug, Default)]
 struct DirectoryNode {

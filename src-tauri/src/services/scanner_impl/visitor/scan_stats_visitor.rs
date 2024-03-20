@@ -3,7 +3,7 @@ use crate::services::scanner_api::event_handler::EventHandler;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::state::scan_stats::ScanStats;
 use crate::util::util::add_groupings_u32;
-use crate::services::scanner_impl::visitor::visitable::Visitable;
+use crate::services::scanner_api::visitable::Visitable;
 
 pub(crate) struct ScanStatsVisitor {
     stats: ScanStats,

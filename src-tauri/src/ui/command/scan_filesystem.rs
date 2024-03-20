@@ -12,7 +12,7 @@ use crate::util::util::add_groupings_usize;
 use crate::services::scanner_impl::visitor::progress_visitor::ProgressVisitor;
 use crate::services::scanner_impl::visitor::scan_stats_visitor::ScanStatsVisitor;
 use crate::services::scanner_impl::visitor::top_k_resource_visitor::TopKResourceVisitor;
-use crate::services::scanner_impl::visitor::visitable::Visitable;
+use crate::services::scanner_api::visitable::Visitable;
 
 #[command]
 pub async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {

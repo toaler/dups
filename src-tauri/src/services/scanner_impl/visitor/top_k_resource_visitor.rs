@@ -3,7 +3,7 @@ use std::cmp::Reverse;
 use std::io;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_api::event_handler::EventHandler;
-use crate::services::scanner_impl::visitor::visitable::Visitable;
+use crate::services::scanner_api::visitable::Visitable;
 
 pub(crate) struct TopKResourceVisitor {
     top_resources: BinaryHeap<Reverse<ResourceMetadata>>,

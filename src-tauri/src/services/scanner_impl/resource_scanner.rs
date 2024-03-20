@@ -4,7 +4,7 @@ use std::os::unix::fs::MetadataExt;
 use log::{debug, info};
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_api::event_handler::EventHandler;
-use crate::services::scanner_impl::visitor::visitable::Visitable;
+use crate::services::scanner_api::visitable::Visitable;
 
 
 pub struct ResourceScanner {
