@@ -1,0 +1,1 @@
+pub(crate) mod magic_number_file_type_detector;
