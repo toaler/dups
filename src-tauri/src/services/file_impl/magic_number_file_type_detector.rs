@@ -94,11 +94,17 @@ use super::*;
     #[test]
     fn detects_unknown_file() {
         setup();
-        // Create an empty file which should be unknown.
-        create_test_file("tests/files/unknown.file", &[]).unwrap();
+        let path = "tests/files/unknown.file";
+        // Ensure the file is created. Panic with a message if not.
+        create_test_file(path, &[]).expect("Failed to create unknown file for testing.");
+
         let detector = MagicNumberFileTypeDetector;
-        let file_type = detector.get_file_type("tests/files/unknown.file").unwrap();
-        assert_eq!(file_type, "unknown");
+        // Handle the error gracefully instead of unwrapping.
+        match detector.get_file_type(path) {
+            Ok(file_type) => assert_eq!(file_type, "unknown", "File type should be identified as 'unknown'."),
+            Err(e) => panic!("Failed to get file type: {:?}", e),
+        }
+
         teardown();
     }
 }
