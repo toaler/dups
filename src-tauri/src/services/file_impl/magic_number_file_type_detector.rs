@@ -25,7 +25,9 @@ impl FileTypeDetector for MagicNumberFileTypeDetector {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::fs;
+use std::path::Path;
+use super::*;
 
     /// Helper function to create a test file with specified bytes.
     fn create_test_file(path: &str, bytes: &[u8]) -> std::io::Result<()> {
@@ -37,7 +39,7 @@ mod tests {
 
     /// Setup function to create example files with known magic numbers.
     fn setup() {
-        std::fs::create_dir_all("tests/files").unwrap();
+        std::fs::create_dir_all("tests/files").expect("Failed to create test directory");
         // PNG: The first bytes of a PNG file
         create_test_file("tests/files/example.png", &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
         // JPEG: The first bytes of a JPEG file
@@ -49,7 +51,17 @@ mod tests {
 
     /// Teardown function to clean up test files.
     fn teardown() {
-        std::fs::remove_dir_all("tests/files").unwrap();
+        let path = Path::new("tests/files");
+        if path.exists() {
+            if let Ok(entries) = fs::read_dir(path) {
+                for entry in entries {
+                    if let Ok(entry) = entry {
+                        let _ = fs::remove_file(entry.path()); // Ignore errors here
+                    }
+                }
+            }
+        }
+        let _ = fs::remove_dir_all(path); // Ignore the result
     }
 
     #[test]
