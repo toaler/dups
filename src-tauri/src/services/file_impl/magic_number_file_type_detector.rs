@@ -41,11 +41,6 @@ use super::*;
     fn setup() {
         std::fs::create_dir_all("tests/files").expect("Failed to create test directory");
         // PNG: The first bytes of a PNG file
-        create_test_file("tests/files/example.png", &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
-        // JPEG: The first bytes of a JPEG file
-        create_test_file("tests/files/example.jpg", &[0xFF, 0xD8, 0xFF]).unwrap();
-        // GIF: The first bytes of a GIF file
-        create_test_file("tests/files/example.gif", &[b'G', b'I', b'F', b'8', b'9', b'a']).unwrap();
 
     }
 
@@ -67,6 +62,8 @@ use super::*;
     #[test]
     fn detects_png_file() {
         setup();
+        create_test_file("tests/files/example.png", &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
+
         let detector = MagicNumberFileTypeDetector;
         let file_type = detector.get_file_type("tests/files/example.png").unwrap();
         assert_eq!(file_type, "PNG image");
@@ -76,6 +73,8 @@ use super::*;
     #[test]
     fn detects_jpeg_file() {
         setup();
+        create_test_file("tests/files/example.jpg", &[0xFF, 0xD8, 0xFF]).unwrap();
+
         let detector = MagicNumberFileTypeDetector;
         let file_type = detector.get_file_type("tests/files/example.jpg").unwrap();
         assert_eq!(file_type, "JPEG image");
@@ -85,6 +84,8 @@ use super::*;
     #[test]
     fn detects_gif_file() {
         setup();
+        create_test_file("tests/files/example.gif", &[b'G', b'I', b'F', b'8', b'9', b'a']).unwrap();
+
         let detector = MagicNumberFileTypeDetector;
         let file_type = detector.get_file_type("tests/files/example.gif").unwrap();
         assert_eq!(file_type, "GIF image");
