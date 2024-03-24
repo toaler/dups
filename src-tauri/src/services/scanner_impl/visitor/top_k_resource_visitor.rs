@@ -1,6 +1,8 @@
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
+use crate::services::file_api::file_type_detector::FileTypeDetector;
+use crate::services::file_impl::magic_number_file_type_detector::MagicNumberFileTypeDetector;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_api::event_handler::EventHandler;
 use crate::services::scanner_api::visitable::Visitable;
@@ -41,7 +43,9 @@ impl Visitable for TopKResourceVisitor {
             } else {
                 first = false;
             }
-            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\"}}", i + 1, metadata.size_bytes(), metadata.get_path()));
+
+            let detector = MagicNumberFileTypeDetector;
+            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"type\": \"{}\"}}", i + 1, metadata.size_bytes(), metadata.get_path(), detector.get_file_type(metadata.get_path()).unwrap()));
 
         }
 
