@@ -180,7 +180,6 @@ impl ResourceScanner {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
     use std::path::Path;
     use crate::services::scanner_impl::noop_event_handler::NoopEventHandler;
     use super::*;

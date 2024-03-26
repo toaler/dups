@@ -1,5 +1,4 @@
 use std::io;
-use std::string::ToString;
 use crate::{Visitable};
 use std::time::{Instant};
 use lazy_static::lazy_static;

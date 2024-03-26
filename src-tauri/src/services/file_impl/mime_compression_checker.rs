@@ -31,8 +31,8 @@ impl CompressionChecker for MimeCompressionChecker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::services::file_api::compression_checker::CompressionChecker; // Ensure this path is correct
+    use crate::services::file_api::compression_checker::CompressionChecker;
+    use crate::services::file_impl::mime_compression_checker::MimeCompressionChecker; // Ensure this path is correct
 
     #[test]
     fn test_compressible() {
