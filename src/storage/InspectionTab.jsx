@@ -51,7 +51,9 @@ function InspectionTab({setSelectedRows}) {
                 <th>Stage</th>
                 <th>Rank</th>
                 <th style={{textAlign: "right"}}>Bytes</th>
-                <th>Type</th>
+                <th>MimeType</th>
+                <th>Compressible</th>
+                <th>modified</th>
                 {/* Right-align the header */}
                 <th style={{textAlign: "left"}}>Path</th>
             </tr>
@@ -63,7 +65,9 @@ function InspectionTab({setSelectedRows}) {
                 </td>
                 <td>{row.rank}</td>
                 <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-                <td>{row.type}</td>
+                <td>{row.mime_type}</td>
+                <td style={{textAlign: "right"}}>{row.compressible}</td>
+                <td>{row.modified}</td>
                 {/* Right-align and format the bytes column */}
                 <td style={{textAlign: "left"}}>{row.path}</td>
             </tr>))}

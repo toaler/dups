@@ -1,8 +1,10 @@
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::io;
+use crate::services::file_api::compression_checker::CompressionChecker;
 use crate::services::file_api::file_type_detector::FileTypeDetector;
-use crate::services::file_impl::magic_number_file_type_detector::MagicNumberFileTypeDetector;
+use crate::services::file_impl::mime_compression_checker::MimeCompressionChecker;
+use crate::services::file_impl::mime_guess_file_type_detector::MimeGuessFileTypeDetector;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_api::event_handler::EventHandler;
 use crate::services::scanner_api::visitable::Visitable;
@@ -44,8 +46,11 @@ impl Visitable for TopKResourceVisitor {
                 first = false;
             }
 
-            let detector = MagicNumberFileTypeDetector;
-            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"type\": \"{}\"}}", i + 1, metadata.size_bytes(), metadata.get_path(), detector.get_file_type(metadata.get_path()).unwrap()));
+            let detector = MimeGuessFileTypeDetector;
+            let mimetype = detector.get_file_type(metadata.get_path()).unwrap();
+            let compression_checker = MimeCompressionChecker;
+            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"mime_type\": \"{}\", \"compressible\": \"{}\", \"modified\": \"{}\"}}",
+                                i + 1, metadata.size_bytes(), metadata.get_path(), mimetype.clone(), compression_checker.is_compressible(&mimetype), metadata.modified()));
 
         }
 
