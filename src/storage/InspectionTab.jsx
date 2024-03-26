@@ -53,7 +53,10 @@ function InspectionTab({setSelectedRows}) {
                 <th style={{textAlign: "right"}}>Bytes</th>
                 <th>MimeType</th>
                 <th>Compressible</th>
-                <th>modified</th>
+                <th>Modified</th>
+                <th>Accessed</th>
+                <th>Modified Days</th>
+                <th>Accessed Days</th>
                 {/* Right-align the header */}
                 <th style={{textAlign: "left"}}>Path</th>
             </tr>
@@ -68,6 +71,9 @@ function InspectionTab({setSelectedRows}) {
                 <td>{row.mime_type}</td>
                 <td style={{textAlign: "right"}}>{row.compressible}</td>
                 <td>{row.modified}</td>
+                <td>{row.accessed}</td>
+                <td>{row.modified_days}</td>
+                <td>{row.accessed_days}</td>
                 {/* Right-align and format the bytes column */}
                 <td style={{textAlign: "left"}}>{row.path}</td>
             </tr>))}

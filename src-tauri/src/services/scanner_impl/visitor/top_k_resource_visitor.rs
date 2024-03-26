@@ -1,6 +1,7 @@
 use std::collections::BinaryHeap;
 use std::cmp::Reverse;
-use std::io;
+use std::{fs, io};
+use chrono::{DateTime, Utc};
 use crate::services::file_api::compression_checker::CompressionChecker;
 use crate::services::file_api::file_type_detector::FileTypeDetector;
 use crate::services::file_impl::mime_compression_checker::MimeCompressionChecker;
@@ -46,11 +47,39 @@ impl Visitable for TopKResourceVisitor {
                 first = false;
             }
 
+
+            let m = match fs::metadata(metadata.get_path()) {
+                Ok(metadata) => metadata,
+                Err(e) => {
+                    println!("Error accessing file metadata: {:?}", e);
+                    continue; // Skip this iteration of the loop
+                }
+            };
+
+
+            let now = Utc::now();
+            // Last access time
+            let last_access_time = m.accessed().unwrap();
+            let last_access_datetime: DateTime<Utc> = last_access_time.into();
+            let last_access_iso_string = last_access_datetime.to_rfc3339();
+            let last_access_duration = now.signed_duration_since(last_access_datetime);
+            let last_access_days = last_access_duration.num_days();
+
+            // Modified time
+            let modified_time = m.modified().unwrap();
+            let modified_datetime: DateTime<Utc> = modified_time.into();
+            let modified_iso_string = modified_datetime.to_rfc3339();
+            let modified_duration = now.signed_duration_since(modified_datetime);
+            let modified_days = modified_duration.num_days();
+
+
             let detector = MimeGuessFileTypeDetector;
             let mimetype = detector.get_file_type(metadata.get_path()).unwrap();
             let compression_checker = MimeCompressionChecker;
-            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"mime_type\": \"{}\", \"compressible\": \"{}\", \"modified\": \"{}\"}}",
-                                i + 1, metadata.size_bytes(), metadata.get_path(), mimetype.clone(), compression_checker.is_compressible(&mimetype), metadata.modified()));
+
+
+            s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"mime_type\": \"{}\", \"compressible\": \"{}\", \"modified\": {:?}, \"accessed\": {:?}, \"modified_days\": {}, \"accessed_days\": {}}}",
+                                i + 1, metadata.size_bytes(), metadata.get_path(), mimetype.clone(), compression_checker.is_compressible(&mimetype), modified_iso_string, last_access_iso_string, modified_days, last_access_days));
 
         }
 
