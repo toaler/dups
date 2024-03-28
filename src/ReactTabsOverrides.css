@@ -1,0 +1,36 @@
+.react-tabs {
+    font-family: San "San Francisco", sans-serif;
+}
+
+.react-tabs__tab-list {
+    border-bottom: 2px solid #002473;
+    padding: 0;
+}
+
+.react-tabs__tab {
+    border: 1px solid #002473;
+    border-bottom: none;
+    padding: 10px;
+    list-style-type: none;
+    cursor: pointer;
+}
+
+.react-tabs__tab--selected {
+    background: #006abc;
+    border-color: #006abc;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.react-tabs__tab-panel {
+    background: #002473;
+    padding: 1px;
+    /*border: 1px solid #ffffff;*/
+}
+
+.react-tabs__tab:hover {
+    background-color: #006abc; /* Light grey background on hover */
+    color: #ffffff; /* Darker text color on hover */
+    font-weight: bold;
+    cursor: pointer; /* Changes the mouse cursor to indicate the item is clickable */
+}

@@ -2,6 +2,7 @@ import {useState} from "react";
 import "./App.css";
 import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import './ReactTabsOverrides.css'
 import StagingTab from "./storage/StagingTab.jsx";
 import InspectionTab from "./storage/InspectionTab.jsx";
 import ScanTab from "./storage/ScanTab.jsx";

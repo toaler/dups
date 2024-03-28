@@ -1,11 +1,11 @@
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: San Francisco;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #FFFFFF;
+  background-color: #001d64;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -106,4 +106,5 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
+
 }
