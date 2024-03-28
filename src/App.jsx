@@ -37,13 +37,9 @@ function App() {
         <TabPanel>
             <Tabs forceRenderTabPanel>
                 <TabList>
-                    <Tab>Foo</Tab>
+                    <Tab>Info</Tab>
                 </TabList>
                 <TabPanel>
-                    <p>bar</p>
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/en/thumb/2/28/Philip_Fry.png/175px-Philip_Fry.png"
-                        alt="Philip J. Fry"/>
                 </TabPanel>
             </Tabs>
         </TabPanel>
