@@ -22,12 +22,10 @@ function ScanTab() {
     useEffect(() => {
         let interval = null;
 
-        console.log("setting TIMER TIMER TIMER timer = " + Math.floor((Date.now() - startTime)));
         if (scanStatus === ScanStatus.Scanning && !timer) {
             setStartTime(Date.now());
             interval = setInterval(() => {
                 setElapsedTime(oldElapsedTime => Math.floor((Date.now() - startTime)));
-                console.log("setting TIMER TIMER TIMER timer = " + Math.floor((Date.now() - startTime)));
             }, 100);
             setTimer(interval);
         } else if (scanStatus !== ScanStatus.Scanning && timer) {
@@ -124,7 +122,6 @@ function ScanTab() {
     return (
         <div>
             <p>Scan filesystem</p>
-
             <table>
                 <tr>
                     <td>

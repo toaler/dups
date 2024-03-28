@@ -7,22 +7,64 @@ import StagingTab from "./storage/StagingTab.jsx";
 import InspectionTab from "./storage/InspectionTab.jsx";
 import ScanTab from "./storage/ScanTab.jsx";
 
+import StorageIcon from '@mui/icons-material/Storage';
+import ComputeIcon from '@mui/icons-material/Computer'; // Assuming this icon for Compute
+import MemoryIcon from '@mui/icons-material/Memory';
+import NetworkCheckIcon from '@mui/icons-material/NetworkCheck'; // Assuming this icon for Network
+import SearchIcon from '@mui/icons-material/Search';
+import FindInPageIcon from '@mui/icons-material/FindInPage';
+import LayersIcon from '@mui/icons-material/Layers';
+
+
 function App() {
     const [selectedRows, setSelectedRows] = useState([]);
 
     return (<Tabs forceRenderTabPanel defaultIndex={0}>
         <TabList>
-            <Tab>Storage</Tab>
-            <Tab>Compute</Tab>
-            <Tab>Memory</Tab>
-            <Tab>Network</Tab>
+            <TabList>
+                <Tab>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <StorageIcon style={{ marginRight: '8px' }} />Storage
+                    </div>
+                </Tab>
+                <Tab>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <ComputeIcon style={{ marginRight: '8px' }} />Compute
+                    </div>
+                </Tab>
+                <Tab>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <MemoryIcon style={{ marginRight: '8px' }} />Memory
+                    </div>
+                </Tab>
+                <Tab>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <NetworkCheckIcon style={{ marginRight: '8px' }} />Network
+                    </div>
+                </Tab>
+            </TabList>
+            <TabPanel>
+                {/* Your TabPanel content */}
+            </TabPanel>
         </TabList>
         <TabPanel>
             <Tabs forceRenderTabPanel>
                 <TabList>
-                    <Tab>Scan</Tab>
-                    <Tab>Inspections</Tab>
-                    <Tab>Staging</Tab>
+                    <Tab>
+                        <div style={{display: 'flex', alignItems: 'center' }}>
+                            <SearchIcon style={{ marginRight: '8px' }} />Scan
+                        </div>
+                    </Tab>
+                    <Tab>
+                        <div style={{display: 'flex', alignItems: 'center' }}>
+                            <FindInPageIcon style={{ marginRight: '8px' }} />Inspections
+                        </div>
+                    </Tab>
+                    <Tab>
+                        <div style={{display: 'flex', alignItems: 'center' }}>
+                            <LayersIcon style={{ marginRight: '8px' }} />Staging
+                        </div>
+                    </Tab>
                 </TabList>
                 <TabPanel>
                     <ScanTab></ScanTab>

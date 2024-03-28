@@ -1,31 +1,31 @@
 .react-tabs {
     font-family: San "San Francisco", sans-serif;
+    border: none;
 }
 
 .react-tabs__tab-list {
-    border-bottom: 2px solid #002473;
+    border-bottom: 0px solid #001d64;
     padding: 0;
 }
 
 .react-tabs__tab {
-    border: 1px solid #002473;
+    border: none;
     border-bottom: none;
-    padding: 10px;
     list-style-type: none;
     cursor: pointer;
 }
 
 .react-tabs__tab--selected {
     background: #006abc;
-    border-color: #006abc;
+    border-color: #001d64;
     color: #ffffff;
     font-weight: bold;
+    border-radius: 0;
 }
 
 .react-tabs__tab-panel {
     background: #002473;
-    padding: 1px;
-    /*border: 1px solid #ffffff;*/
+    border: none
 }
 
 .react-tabs__tab:hover {
