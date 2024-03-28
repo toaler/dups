@@ -4,8 +4,13 @@ import FolderZipIcon from '@mui/icons-material/FolderZip';
 import CompressIcon from '@mui/icons-material/Compress';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
+import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 
 function getMimeTypeIcon(mime_type) {
+    if (mime_type.startsWith('text/')) {
+        return <TextSnippetIcon />; // Use an appropriate icon for text MIME types
+    }
+
     switch (mime_type) {
         case 'application/octet-stream':
             return <NotListedLocationIcon />;
@@ -100,7 +105,7 @@ function InspectionTab({setSelectedRows}) {
                 <td style={{textAlign: "left"}}><DeleteIcon/>{row.compressible === "1" ? <CompressIcon/> : null}</td>
                 <td>{row.rank}</td>
                 <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-                <td>{row.compressible === "1" ? <FolderZipIcon/> : getMimeTypeIcon(row.mime_type)}</td>
+                <td>{row.compressible === "-1" ? <FolderZipIcon/> : getMimeTypeIcon(row.mime_type)}</td>
                 <td style={{textAlign: "right"}}>{row.compressible}</td>
                 <td style={{textAlign: "right"}}>{row.modified}</td>
                 <td style={{textAlign: "right"}}>{row.accessed}</td>
