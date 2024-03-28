@@ -14,6 +14,7 @@ import NetworkCheckIcon from '@mui/icons-material/NetworkCheck'; // Assuming thi
 import SearchIcon from '@mui/icons-material/Search';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import LayersIcon from '@mui/icons-material/Layers';
+import Co2Icon from '@mui/icons-material/Co2';
 
 
 function App() {
@@ -40,6 +41,12 @@ function App() {
                 <Tab>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <NetworkCheckIcon style={{ marginRight: '8px' }} />Network
+                    </div>
+                </Tab>
+
+                <Tab>
+                    <div style={{display: 'flex', alignItems: 'center' }}>
+                        <Co2Icon style={{ marginRight: '8px' }} />Carbon Aware
                     </div>
                 </Tab>
             </TabList>
