@@ -1,5 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import {listen} from "@tauri-apps/api/event";
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import CompressIcon from '@mui/icons-material/Compress';
+import DeleteIcon from '@mui/icons-material/Delete';
+import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
+
+function getMimeTypeIcon(mime_type) {
+    switch (mime_type) {
+        case 'application/octet-stream':
+            return <NotListedLocationIcon />;
+        case 'image/svg':
+            return <ImageIcon />;
+        // Add more cases as needed for other mime_types
+        default:
+            return mime_type; // Default case if no specific icon is needed
+    }
+}
 
 function InspectionTab({setSelectedRows}) {
 
@@ -49,14 +65,29 @@ function InspectionTab({setSelectedRows}) {
             <thead>
             <tr>
                 <th>Stage</th>
+                <th style={{textAlign: "left"}}>Action</th>
                 <th>Rank</th>
                 <th style={{textAlign: "right"}}>Bytes</th>
                 <th>MimeType</th>
-                <th>Compressible</th>
-                <th>Modified</th>
-                <th>Accessed</th>
-                <th>Modified Days</th>
-                <th>Accessed Days</th>
+                <th>Comp</th>
+                <th>
+                    <span style={{display: "block", textAlign: "right"}}>Last</span>
+                    <span style={{display: "block", textAlign: "right"}}>Modified</span>
+                </th>
+                <th>
+                    <span style={{display: "block", textAlign: "right"}}>Last</span>
+                    <span style={{display: "block", textAlign: "right"}}>Accessed</span>
+                </th>
+                <th>
+                    <span style={{display: "block", textAlign: "right"}}>Last</span>
+                    <span style={{display: "block", textAlign: "right"}}>Modified</span>
+                    <span style={{display: "block", textAlign: "right"}}>Days</span>
+                </th>
+                <th>
+                    <span style={{display: "block", textAlign: "right"}}>Last</span>
+                    <span style={{display: "block", textAlign: "right"}}>Accessed</span>
+                    <span style={{display: "block", textAlign: "right"}}>Days</span>
+                </th>
                 {/* Right-align the header */}
                 <th style={{textAlign: "left"}}>Path</th>
             </tr>
@@ -66,14 +97,15 @@ function InspectionTab({setSelectedRows}) {
                 <td>
                     <input type="checkbox" value={row.path} onChange={handleCheckboxChange}/>
                 </td>
+                <td style={{textAlign: "left"}}><DeleteIcon/>{row.compressible === "1" ? <CompressIcon/> : null}</td>
                 <td>{row.rank}</td>
                 <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-                <td>{row.mime_type}</td>
+                <td>{row.compressible === "1" ? <FolderZipIcon/> : getMimeTypeIcon(row.mime_type)}</td>
                 <td style={{textAlign: "right"}}>{row.compressible}</td>
-                <td>{row.modified}</td>
-                <td>{row.accessed}</td>
-                <td>{row.modified_days}</td>
-                <td>{row.accessed_days}</td>
+                <td style={{textAlign: "right"}}>{row.modified}</td>
+                <td style={{textAlign: "right"}}>{row.accessed}</td>
+                <td style={{textAlign: "right"}}>{row.modified_days}</td>
+                <td style={{textAlign: "right"}}>{row.accessed_days}</td>
                 {/* Right-align and format the bytes column */}
                 <td style={{textAlign: "left"}}>{row.path}</td>
             </tr>))}

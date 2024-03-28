@@ -57,18 +57,19 @@ impl Visitable for TopKResourceVisitor {
             };
 
 
+            let custom_format = "%y%m%d";
             let now = Utc::now();
             // Last access time
             let last_access_time = m.accessed().unwrap();
             let last_access_datetime: DateTime<Utc> = last_access_time.into();
-            let last_access_iso_string = last_access_datetime.to_rfc3339();
+            let last_access_iso_string = last_access_datetime.format(custom_format).to_string();
             let last_access_duration = now.signed_duration_since(last_access_datetime);
             let last_access_days = last_access_duration.num_days();
 
             // Modified time
             let modified_time = m.modified().unwrap();
             let modified_datetime: DateTime<Utc> = modified_time.into();
-            let modified_iso_string = modified_datetime.to_rfc3339();
+            let modified_iso_string = modified_datetime.format(custom_format).to_string();
             let modified_duration = now.signed_duration_since(modified_datetime);
             let modified_days = modified_duration.num_days();
 
