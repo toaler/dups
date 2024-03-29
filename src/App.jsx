@@ -50,9 +50,6 @@ function App() {
                     </div>
                 </Tab>
             </TabList>
-            <TabPanel>
-                {/* Your TabPanel content */}
-            </TabPanel>
         </TabList>
         <TabPanel>
             <Tabs forceRenderTabPanel>
