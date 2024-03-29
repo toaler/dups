@@ -1,24 +1,63 @@
 import React, {useEffect, useState} from 'react';
 import {listen} from "@tauri-apps/api/event";
+
+import Tooltip from '@mui/material/Tooltip';
 import FolderZipIcon from '@mui/icons-material/FolderZip';
 import CompressIcon from '@mui/icons-material/Compress';
 import DeleteIcon from '@mui/icons-material/Delete';
-import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
+import ArchiveIcon from '@mui/icons-material/Archive';
+import CodeIcon from '@mui/icons-material/Code';
+import HtmlIcon from '@mui/icons-material/Html';
 
-function getMimeTypeIcon(mime_type) {
+function getMimeTypeIcon(compressible, mime_type) {
+    if (compressible === "-1") {
+        return (
+            <Tooltip title={mime_type} placement="right">
+                <FolderZipIcon/>
+            </Tooltip>
+        );
+    }
+
     if (mime_type.startsWith('text/')) {
-        return <TextSnippetIcon />; // Use an appropriate icon for text MIME types
+        return (
+            <Tooltip title={mime_type} placement="right">
+                <TextSnippetIcon/>
+            </Tooltip>
+        );
+    }
+
+    if (mime_type.startsWith('image/')) {
+        return (
+            <Tooltip title={mime_type} placement="right">
+                <ImageIcon/>;
+            </Tooltip>
+        );
     }
 
     switch (mime_type) {
         case 'application/octet-stream':
-            return <NotListedLocationIcon />;
-        case 'image/svg':
-            return <ImageIcon />;
-        // Add more cases as needed for other mime_types
+            return (
+                <Tooltip title={mime_type} placement="right">
+                    <NotListedLocationIcon/>
+                </Tooltip>
+            );
+        case 'application/x-tar':
+            return (
+                <Tooltip title={mime_type}>
+                    <ArchiveIcon/>
+                </Tooltip>
+            );
         default:
-            return mime_type; // Default case if no specific icon is needed
+            if (mime_type.startsWith('application/')) {
+                return (
+                    <Tooltip title={mime_type} placement="right">
+                        <CodeIcon/>
+                    </Tooltip>
+                );
+            }
+            return mime_type;
     }
 }
 
@@ -65,35 +104,43 @@ function InspectionTab({setSelectedRows}) {
     };
 
     return (<div>
-        <p>Inspections enable automatic high-level analysis of storage</p>
-        <table>
+        <style>
+            {`
+                table, th, td {
+                    border: 2px solid grey; /* Adjust the border size and color as needed */
+                    border-collapse: collapse; /* Removes the space between borders */
+                }
+                tr:hover {
+                    background-color: #006abc; /* Light grey background on hover */
+                }
+            `}
+        </style>
+        <table style={{borderCollapse: "collapse"}}>
             <thead>
             <tr>
                 <th>Stage</th>
-                <th style={{textAlign: "left"}}>Action</th>
+                <th style={{textAlign: "center"}}>Action</th>
                 <th>Rank</th>
                 <th style={{textAlign: "right"}}>Bytes</th>
-                <th>MimeType</th>
-                <th>Comp</th>
                 <th>
                     <span style={{display: "block", textAlign: "right"}}>Last</span>
-                    <span style={{display: "block", textAlign: "right"}}>Modified</span>
+                    <span style={{display: "block", textAlign: "right"}}>Write</span>
                 </th>
                 <th>
                     <span style={{display: "block", textAlign: "right"}}>Last</span>
-                    <span style={{display: "block", textAlign: "right"}}>Accessed</span>
+                    <span style={{display: "block", textAlign: "right"}}>Read</span>
                 </th>
                 <th>
                     <span style={{display: "block", textAlign: "right"}}>Last</span>
-                    <span style={{display: "block", textAlign: "right"}}>Modified</span>
+                    <span style={{display: "block", textAlign: "right"}}>Write</span>
                     <span style={{display: "block", textAlign: "right"}}>Days</span>
                 </th>
                 <th>
                     <span style={{display: "block", textAlign: "right"}}>Last</span>
-                    <span style={{display: "block", textAlign: "right"}}>Accessed</span>
+                    <span style={{display: "block", textAlign: "right"}}>Read</span>
                     <span style={{display: "block", textAlign: "right"}}>Days</span>
                 </th>
-                {/* Right-align the header */}
+                <th style={{textAlign: "left"}}>Type</th>
                 <th style={{textAlign: "left"}}>Path</th>
             </tr>
             </thead>
@@ -102,16 +149,15 @@ function InspectionTab({setSelectedRows}) {
                 <td>
                     <input type="checkbox" value={row.path} onChange={handleCheckboxChange}/>
                 </td>
-                <td style={{textAlign: "left"}}><DeleteIcon/>{row.compressible === "1" ? <CompressIcon/> : null}</td>
-                <td>{row.rank}</td>
+                <td style={{textAlign: "center"}}><DeleteIcon/>{row.compressible === "1" ? <CompressIcon/> : null}</td>
+                <td style={{textAlign: "center"}}>{row.rank}</td>
                 <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-                <td>{row.compressible === "-1" ? <FolderZipIcon/> : getMimeTypeIcon(row.mime_type)}</td>
-                <td style={{textAlign: "right"}}>{row.compressible}</td>
+
                 <td style={{textAlign: "right"}}>{row.modified}</td>
                 <td style={{textAlign: "right"}}>{row.accessed}</td>
                 <td style={{textAlign: "right"}}>{row.modified_days}</td>
                 <td style={{textAlign: "right"}}>{row.accessed_days}</td>
-                {/* Right-align and format the bytes column */}
+                <td style={{textAlign: "center"}}>{getMimeTypeIcon(row.compressible, row.mime_type)}</td>
                 <td style={{textAlign: "left"}}>{row.path}</td>
             </tr>))}
             </tbody>
