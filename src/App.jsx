@@ -71,13 +71,19 @@ function App() {
                     </Tab>
                 </TabList>
                 <TabPanel>
-                    <ScanTab></ScanTab>
+                    <div className="scrollable-content">
+                        <ScanTab></ScanTab>
+                    </div>
                 </TabPanel>
                 <TabPanel>
-                    <InspectionTab setActions={setActions}></InspectionTab>
+                    <div className="scrollable-content">
+                        <InspectionTab setActions={setActions}></InspectionTab>
+                    </div>
                 </TabPanel>
                 <TabPanel>
-                    <StagingTab actions={actions}></StagingTab>
+                    <div className="scrollable-content">
+                        <StagingTab actions={actions}></StagingTab>
+                    </div>
                 </TabPanel>
             </Tabs>
         </TabPanel>

@@ -34,3 +34,8 @@
     font-weight: bold;
     cursor: pointer; /* Changes the mouse cursor to indicate the item is clickable */
 }
+
+.scrollable-content {
+    max-height: 500px; /* Adjust based on your layout */
+    overflow-y: auto;
+}
