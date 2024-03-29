@@ -61,7 +61,7 @@ function App() {
                     </Tab>
                     <Tab>
                         <div style={{display: 'flex', alignItems: 'center' }}>
-                            <FindInPageIcon style={{ marginRight: '8px' }} />Inspections
+                            <FindInPageIcon style={{ marginRight: '8px' }} />Inspect
                         </div>
                     </Tab>
                     <Tab>
