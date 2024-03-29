@@ -61,7 +61,7 @@ function getMimeTypeIcon(compressible, mime_type) {
     }
 }
 
-function InspectionTab({setSelectedRows}) {
+function InspectionTab({setActions}) {
 
     const [topKFiles, setTopKFiles] = useState([]);
 
@@ -90,17 +90,24 @@ function InspectionTab({setSelectedRows}) {
         };
     }, []); // Empty dependency array means this effect runs once after the initial render
 
-    const handleCheckboxChange = (event) => {
-        console.log(event);
-        const value = event.target.value;
-        const isChecked = event.target.checked;
+    const handleIconClick = (event, action, path, bytes) => {
+        event.stopPropagation(); // Prevent the click event from bubbling up
+        console.log(`${action} action for path: ${path} with bytes: ${bytes}`);
 
-        // Update the state based on whether the checkbox was checked or unchecked
-        if (isChecked) {
-            setSelectedRows(prev => [...prev, value]);
-        } else {
-            setSelectedRows(prev => prev.filter(row => row !== value));
-        }
+        setActions(prevActions => {
+            // Determine if the path already exists in the actions array
+            const existingIndex = prevActions.findIndex(actionObj => actionObj.path === path);
+
+            if (existingIndex !== -1) {
+                // If the path exists, create a new array with the updated action and bytes for the existing path
+                return prevActions.map((actionObj, index) =>
+                    index === existingIndex ? {...actionObj, action, bytes} : actionObj
+                );
+            } else {
+                // If the path does not exist, add the new action/path/bytes object to the array
+                return [...prevActions, {action, path, bytes}];
+            }
+        });
     };
 
     return (<div>
@@ -118,7 +125,6 @@ function InspectionTab({setSelectedRows}) {
         <table style={{borderCollapse: "collapse"}}>
             <thead>
             <tr>
-                <th>Stage</th>
                 <th style={{textAlign: "center"}}>Action</th>
                 <th>Rank</th>
                 <th style={{textAlign: "right"}}>Bytes</th>
@@ -146,13 +152,12 @@ function InspectionTab({setSelectedRows}) {
             </thead>
             <tbody>
             {topKFiles.map((row, index) => (<tr key={index}>
-                <td>
-                    <input type="checkbox" value={row.path} onChange={handleCheckboxChange}/>
+                <td style={{textAlign: "center"}}>
+                    <DeleteIcon onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}/>
+                    {row.compressible === "1" ? <CompressIcon onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}/> : null}
                 </td>
-                <td style={{textAlign: "center"}}><DeleteIcon/>{row.compressible === "1" ? <CompressIcon/> : null}</td>
                 <td style={{textAlign: "center"}}>{row.rank}</td>
                 <td style={{textAlign: "right"}}>{Number(row.bytes).toLocaleString("en-US")}</td>
-
                 <td style={{textAlign: "right"}}>{row.modified}</td>
                 <td style={{textAlign: "right"}}>{row.accessed}</td>
                 <td style={{textAlign: "right"}}>{row.modified_days}</td>

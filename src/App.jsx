@@ -18,7 +18,7 @@ import Co2Icon from '@mui/icons-material/Co2';
 
 
 function App() {
-    const [selectedRows, setSelectedRows] = useState([]);
+    const [actions, setActions] = useState([]);
 
     return (<Tabs forceRenderTabPanel defaultIndex={0}>
         <TabList>
@@ -77,10 +77,10 @@ function App() {
                     <ScanTab></ScanTab>
                 </TabPanel>
                 <TabPanel>
-                    <InspectionTab setSelectedRows={setSelectedRows}></InspectionTab>
+                    <InspectionTab setActions={setActions}></InspectionTab>
                 </TabPanel>
                 <TabPanel>
-                    <StagingTab selectedRows={selectedRows}></StagingTab>
+                    <StagingTab actions={actions}></StagingTab>
                 </TabPanel>
             </Tabs>
         </TabPanel>
