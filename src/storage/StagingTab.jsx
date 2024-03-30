@@ -1,5 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton'; // Assuming you use MUI IconButton for better click handling
+import StagingHeader from "./StagingHeader.jsx";
+import React from "react"; // Assuming you use MUI IconButton for better click handling
 
 function StagingTab({ actions, setActions }) {
     // Function to handle deletion of an item from the actions array
@@ -7,12 +8,15 @@ function StagingTab({ actions, setActions }) {
         setActions(currentActions => currentActions.filter((_, index) => index !== indexToDelete));
     };
 
+    const totalBytes = actions.reduce((acc, action) => acc + action.bytes, 0);
+
     return (
         <div>
+            <StagingHeader totalBytes={totalBytes}></StagingHeader>
             <table>
                 <thead>
                 <tr>
-                    <th style={{textAlign: "left"}}>Remove</th>
+                    <th style={{textAlign: "center"}}>Remove</th>
                     <th style={{textAlign: "left"}}>Action</th>
                     <th style={{textAlign: "left"}}>Resource</th>
                     <th style={{textAlign: "right"}}>Bytes</th>
@@ -22,7 +26,7 @@ function StagingTab({ actions, setActions }) {
                 {actions.map((actionObj, index) => (
                     <tr key={index}>
                         <td>
-                            <DeleteIcon onClick={() => handleDelete(index)} style={{padding: 0}}/>
+                            <DeleteIcon style={{padding: 0, textAlign: "center"}} onClick={() => handleDelete(index)} />
                         </td>
                         <td>{actionObj.action}</td>
                         <td>{actionObj.path}</td>

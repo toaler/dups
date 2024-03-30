@@ -9,7 +9,6 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import CodeIcon from '@mui/icons-material/Code';
-import HtmlIcon from '@mui/icons-material/Html';
 
 function getMimeTypeIcon(compressible, mime_type) {
     if (compressible === "-1") {
