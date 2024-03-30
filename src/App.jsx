@@ -82,7 +82,7 @@ function App() {
                 </TabPanel>
                 <TabPanel>
                     <div className="scrollable-content">
-                        <StagingTab actions={actions}></StagingTab>
+                        <StagingTab actions={actions} setActions={setActions}></StagingTab>
                     </div>
                 </TabPanel>
             </Tabs>
