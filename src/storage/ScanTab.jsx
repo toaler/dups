@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import ScanHeader from "./ScanHeader.jsx";
 
 function ScanTab() {
     const ScanStatus = {
@@ -123,6 +124,7 @@ function ScanTab() {
     return (
         <div>
             <p>Scan filesystem</p>
+            <ScanHeader></ScanHeader>
             <table>
                 <tr>
                     <td>
