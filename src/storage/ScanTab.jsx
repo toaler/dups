@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 
 function ScanTab() {
     const ScanStatus = {
@@ -131,7 +132,9 @@ function ScanTab() {
                             onChange={(e) => setPath(e.target.value)}
                             placeholder="Enter filesystem path"
                         />
-                        <button onClick={() => handleScanClick(path)}>Scan</button>
+                        <button onClick={() => handleScanClick(path)}>
+                            <DirectionsRunIcon style={{ fontSize: 15 }}/>
+                        </button>
                     </td>
                     <td>Status</td>
                     <td>{scanStatus} {scanStatus === 'Scanning' ? formatElapsedTime() : ''}</td>

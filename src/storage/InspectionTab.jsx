@@ -145,7 +145,7 @@ function InspectionTab({setActions}) {
                     <span style={{display: "block", textAlign: "right"}}>Read</span>
                     <span style={{display: "block", textAlign: "right"}}>Days</span>
                 </th>
-                <th style={{textAlign: "left"}}>Type</th>
+                <th style={{textAlign: "center"}}>Type</th>
                 <th style={{textAlign: "left"}}>Path</th>
             </tr>
             </thead>
