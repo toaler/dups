@@ -124,7 +124,8 @@ function ScanTab() {
     return (
         <div>
             <p>Scan filesystem</p>
-            <ScanHeader></ScanHeader>
+            <ScanHeader resources={resources} directories={directories} files={files} size={size}></ScanHeader>
+
             <table>
                 <tr>
                     <td>

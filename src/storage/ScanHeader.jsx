@@ -2,12 +2,7 @@ import React, {useState} from 'react';
 import styled from "styled-components"
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 
-function ScanHeader() {
-
-    const [resources, setResources] = useState(0);
-    const [directories, setDirectories] = useState(0);
-    const [files, setFiles] = useState(0);
-    const [size, setSize] = useState(0);
+function ScanHeader({resources, directories, files, size}) {
 
     return <ScanHeaderContainer>
         <ScanHeaderLeft>
