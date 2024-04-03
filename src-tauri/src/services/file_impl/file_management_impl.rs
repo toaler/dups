@@ -10,7 +10,7 @@ impl FileManagement for FileManagementImpl {
             Ok(_) => {
                 info!("Successfully deleted file: {}", file_path);
                 DeletionStatus::Success
-            },
+            }
             Err(e) => {
                 error!("Failed to delete file: {}. Error: {}", file_path, e);
                 DeletionStatus::Failure(e.to_string())

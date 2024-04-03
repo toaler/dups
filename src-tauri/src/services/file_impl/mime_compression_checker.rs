@@ -1,4 +1,5 @@
 use crate::services::file_api::compression_checker::CompressionChecker;
+
 pub(crate) struct MimeCompressionChecker;
 
 impl CompressionChecker for MimeCompressionChecker {
