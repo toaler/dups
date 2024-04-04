@@ -2,34 +2,45 @@ use std::fs::File;
 use std::io;
 use log::info;
 use crate::services::file_api::compressor::Compressor;
-use std::io::{Read, Write};
-use zip::write::FileOptions;
+use std::io::{self, Read, Write};
+use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 use zip::ZipWriter;
 
 struct ZipCompressor;
+
+
 
 impl Compressor for ZipCompressor {
     fn compress(&self, files: &[&str]) -> Vec<io::Result<String>> {
         files.iter().map(|&file_path| {
             info!("Compressing file: {}", file_path);
             let compressed_file_name = format!("{}.zip", file_path);
-            let file = File::create(&compressed_file_name);
-            match file {
+            match File::create(&compressed_file_name) {
                 Ok(file) => {
                     let mut zip = ZipWriter::new(file);
                     let options = FileOptions::default()
-                        .compression_method(zip::CompressionMethod::Stored); // Using stored for simplicity; change as needed
-                    let mut buffer = Vec::new();
-                    {
-                        // Scope to ensure file is closed and all writes are flushed before we read
-                        let mut f = File::open(file_path)?;
-                        f.read_to_end(&mut buffer)?;
+                        .compression_method(CompressionMethod::Stored); // Using stored for simplicity; change as needed
+                    
+                    match zip.start_file(file_path, options) {
+                        Ok(_) => {
+                            let mut f = match File::open(file_path) {
+                                Ok(f) => f,
+                                Err(e) => return Err(e),
+                            };
+                            
+                            // Stream the file content directly into the zip
+                            if let Err(e) = io::copy(&mut f, &mut zip) {
+                                return Err(e);
+                            }
+
+                            match zip.finish() {
+                                Ok(_) => Ok(compressed_file_name),
+                                Err(e) => Err(e),
+                            }
+                        },
+                        Err(e) => Err(e),
                     }
-                    zip.start_file(file_path, options)?;
-                    zip.write_all(&buffer)?;
-                    zip.finish()?;
-                    Ok(compressed_file_name)
-                }
+                },
                 Err(e) => Err(e),
             }
         }).collect()
