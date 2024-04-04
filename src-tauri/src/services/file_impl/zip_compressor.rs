@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io;
 use log::info;
 use crate::services::file_api::compressor::Compressor;
-use std::io::{self, Read, Write};
 use zip::{write::FileOptions, CompressionMethod, ZipWriter};
 use zip::ZipWriter;
 
