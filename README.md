@@ -13,10 +13,12 @@ Turbo Tasker is a cross-platform PC task manager that strives to complete task e
 2. Fast analysis - In-memory resource hierarchy metadata allows for fast analysis. 
 3. Big files - Identifies top-k files by size
 4. Duplicate detection - Ability to identify duplicates
-5. Space Saver via Compression - identifies large infrequently updated files that are candidates for compression
+5. Space Saver via Compression - identifies large infrequently updated files that are candidates for compression. Uses common cross platform "zip" compression 
 6. Broken symlink detection - identifies dangling symbolic links
 7. Junk file cleaning
 8. Supports OSX, Linux and Windows
+9. Resource staging that allows per resource level actions (delete, compress) to be scheduled
+10. 
 
 
 ## Build
