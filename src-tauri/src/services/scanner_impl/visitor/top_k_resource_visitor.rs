@@ -41,13 +41,6 @@ impl Visitable for TopKResourceVisitor {
             let padded_bytes = format!("{:>16}", metadata.size_bytes()); // Padded to 50 characters for bytes
             write!(w, "Rank: {}, Bytes: {}, Path: {}\n", padded_ranking, padded_bytes, metadata.get_path()).expect("TODO: panic message");
 
-            if !first {
-                s.push_str(",");
-            } else {
-                first = false;
-            }
-
-
             let m = match fs::symlink_metadata(metadata.get_path()) {
                 Ok(metadata) => metadata,
                 Err(e) => {
@@ -56,6 +49,11 @@ impl Visitable for TopKResourceVisitor {
                 }
             };
 
+            if !first {
+                s.push_str(",");
+            } else {
+                first = false;
+            }
 
             let custom_format = "%y%m%d";
             let now = Utc::now();
