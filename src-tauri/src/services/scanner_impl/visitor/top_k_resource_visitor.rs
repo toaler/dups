@@ -48,10 +48,10 @@ impl Visitable for TopKResourceVisitor {
             }
 
 
-            let m = match fs::metadata(metadata.get_path()) {
+            let m = match fs::symlink_metadata(metadata.get_path()) {
                 Ok(metadata) => metadata,
                 Err(e) => {
-                    println!("Error accessing file metadata: {:?}", e);
+                    println!("Error accessing file ({}) metadata: {:?}", metadata.get_path(), e);
                     continue; // Skip this iteration of the loop
                 }
             };
