@@ -5,14 +5,26 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 function ScanHeader({resources, directories, files, size}) {
 
     return <ScanHeaderContainer>
+
         <ScanHeaderLeft>
-            <h1>{Number(resources).toLocaleString()}</h1>
-            <h1>Directories</h1>
-            <h1>{Number(directories).toLocaleString()}</h1>
-            <h1>Files</h1>
-            <h1>{Number(files).toLocaleString()}</h1>
-            <h1>Size</h1>
-            <h1>{Number(size).toLocaleString()}</h1>
+            <div className="flex-container">
+                <div className="flex-row">
+                    <div className="flex-item">Resources</div>
+                    <div className="flex-item">{Number(resources).toLocaleString()}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Directories</div>
+                    <div className="flex-item">{Number(directories).toLocaleString()}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Files</div>
+                    <div className="flex-item">{Number(files).toLocaleString()}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Size</div>
+                    <div className="flex-item">{Number(size).toLocaleString()}</div>
+                </div>
+            </div>
         </ScanHeaderLeft>
     </ScanHeaderContainer>
 }

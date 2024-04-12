@@ -1,0 +1,15 @@
+.flex-container {
+    display: flex;
+    flex-direction: column; /* stack flex rows vertically */
+}
+
+.flex-row {
+    display: flex;
+    justify-content: space-between; /* distribute space between items */
+    margin-bottom: 0px; /* margin below each row for spacing */
+}
+
+.flex-item {
+    padding: 8px; /* padding inside each flex item */
+    margin-right: 64px; /* adds margin to the right of each flex item, except the last one in a row */
+}

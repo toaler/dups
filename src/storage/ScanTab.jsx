@@ -3,6 +3,7 @@ import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import ScanHeader from "./ScanHeader.jsx";
+import "./ScanTab.css";
 
 function ScanTab() {
     const ScanStatus = {
@@ -116,42 +117,25 @@ function ScanTab() {
         setDirectories(0);
         setFiles(0);
 
-
         scanFilesystem(path);
     };
 
 
     return (
         <div>
-            <p>Scan filesystem</p>
+
+            <input
+                type="text"
+                value={path}
+                onChange={(e) => setPath(e.target.value)}
+                placeholder="Enter filesystem path"
+            />
+            <button onClick={() => handleScanClick(path)}>
+                <DirectionsRunIcon style={{fontSize: 15}}/>
+            </button>
+
+            {scanStatus} {formatElapsedTime()}
             <ScanHeader resources={resources} directories={directories} files={files} size={size}></ScanHeader>
-
-            <table>
-                <tr>
-                    <td>
-                        <input
-                            type="text"
-                            value={path}
-                            onChange={(e) => setPath(e.target.value)}
-                            placeholder="Enter filesystem path"
-                        />
-                        <button onClick={() => handleScanClick(path)}>
-                            <DirectionsRunIcon style={{ fontSize: 15 }}/>
-                        </button>
-                    </td>
-                    <td>Status</td>
-                    <td>{scanStatus} {scanStatus === 'Scanning' ? formatElapsedTime() : ''}</td>
-                    <td>Resources</td>
-                    <td>{Number(resources).toLocaleString()}</td>
-                    <td>Directories</td>
-                    <td>{Number(directories).toLocaleString()}</td>
-                    <td>Files</td>
-                    <td>{Number(files).toLocaleString()}</td>
-                    <td>Size</td>
-                    <td>{Number(size).toLocaleString()}</td>
-                </tr>
-            </table>
-
 
             <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
                 {logs.map((log, index) => (<div key={index}>{log}</div>))}
