@@ -2,12 +2,20 @@ import React, {useState} from 'react';
 import styled from "styled-components"
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 
-function ScanHeader({resources, directories, files, size}) {
+function ScanHeader({status, elapsed, resources, directories, files, size}) {
 
     return <ScanHeaderContainer>
 
         <ScanHeaderLeft>
             <div className="flex-container">
+                <div className="flex-row">
+                    <div className="flex-item">Status</div>
+                    <div className="flex-item">{status}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Elapsed</div>
+                    <div className="flex-item">{elapsed}</div>
+                </div>
                 <div className="flex-row">
                     <div className="flex-item">Resources</div>
                     <div className="flex-item">{Number(resources).toLocaleString()}</div>

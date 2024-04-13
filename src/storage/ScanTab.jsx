@@ -123,7 +123,6 @@ function ScanTab() {
 
     return (
         <div>
-
             <input
                 type="text"
                 value={path}
@@ -134,8 +133,7 @@ function ScanTab() {
                 <DirectionsRunIcon style={{fontSize: 15}}/>
             </button>
 
-            {scanStatus} {formatElapsedTime()}
-            <ScanHeader resources={resources} directories={directories} files={files} size={size}></ScanHeader>
+            <ScanHeader status={scanStatus} elapsed={formatElapsedTime()} resources={resources} directories={directories} files={files} size={size}></ScanHeader>
 
             <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
                 {logs.map((log, index) => (<div key={index}>{log}</div>))}
