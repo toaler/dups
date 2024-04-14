@@ -10,6 +10,7 @@ function ScanTab() {
         Stopped: "Stopped", Scanning: "Scanning", Completed: "Completed", Failed: "Failed",
     };
 
+    const startTimeRef = useRef(0);
     const endOfLogsRef = useRef(null);
     const inputRef = useRef(null);
     const [path, setPath] = useState('');
@@ -34,9 +35,9 @@ function ScanTab() {
         let interval = null;
 
         if (scanStatus === ScanStatus.Scanning && !timer) {
-            setStartTime(Date.now());
+            startTimeRef.current = Date.now();
             interval = setInterval(() => {
-                setElapsedTime(oldElapsedTime => Math.floor((Date.now() - startTime)));
+                setElapsedTime(oldElapsedTime => Math.floor((Date.now() - startTimeRef.current)));
             }, 100);
             setTimer(interval);
         } else if (scanStatus !== ScanStatus.Scanning && timer) {
@@ -87,22 +88,9 @@ function ScanTab() {
     }, []);
 
 
-// Effect to scroll to the bottom whenever logs update
     useEffect(() => {
         endOfLogsRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [logs]); // Dependency array, this effect runs when `logs` changes
-
-
-    const formatElapsedTime = () => {
-        // Convert elapsed time to hours, minutes, and milliseconds
-        const hours = Math.floor(elapsedTime / 3600000); // Total hours
-        const minutes = Math.floor((elapsedTime % 3600000) / 60000); // Remaining minutes
-        const seconds = Math.floor((elapsedTime % 60000) / 1000); // Convert remainder to seconds
-        const milliseconds = elapsedTime % 1000; // Milliseconds are the remainder of elapsed time divided by 1000
-
-        // Format milliseconds to ensure it's always displayed as a three-digit number
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
-    };
 
     async function scanFilesystem(path) {
         try {
@@ -142,7 +130,7 @@ function ScanTab() {
                 <DirectionsRunIcon style={{fontSize: 15}}/>
             </button>
 
-            <ScanHeader status={scanStatus} elapsed={formatElapsedTime()} resources={resources} directories={directories} files={files} size={size}></ScanHeader>
+            <ScanHeader status={scanStatus} elapsedTime={elapsedTime} resources={resources} directories={directories} files={files} size={size}></ScanHeader>
 
             <div className="log-container" style={{height: '300px', overflowY: 'auto'}}>
                 {logs.map((log, index) => (<div key={index}>{log}</div>))}

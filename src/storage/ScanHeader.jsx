@@ -2,10 +2,21 @@ import React, {useState} from 'react';
 import styled from "styled-components"
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 
-function ScanHeader({status, elapsed, resources, directories, files, size}) {
+const formatElapsedTime = (elapsedTime) => {
+    // Convert elapsed time to hours, minutes, and milliseconds
+    const hours = Math.floor(elapsedTime / 3600000); // Total hours
+    const minutes = Math.floor((elapsedTime % 3600000) / 60000); // Remaining minutes
+    const seconds = Math.floor((elapsedTime % 60000) / 1000); // Convert remainder to seconds
+    const milliseconds = elapsedTime % 1000; // Milliseconds are the remainder of elapsed time divided by 1000
+
+    // Format milliseconds to ensure it's always displayed as a three-digit number
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+};
+
+function ScanHeader({status, elapsedTime, resources, directories, files, size}) {
 
     return <ScanHeaderContainer>
-
+        {console.log(elapsedTime)}
         <ScanHeaderLeft>
             <div className="flex-container">
                 <div className="flex-row">
@@ -14,7 +25,7 @@ function ScanHeader({status, elapsed, resources, directories, files, size}) {
                 </div>
                 <div className="flex-row">
                     <div className="flex-item">Elapsed</div>
-                    <div className="flex-item">{elapsed}</div>
+                    <div className="flex-item">{formatElapsedTime(elapsedTime)}</div>
                 </div>
                 <div className="flex-row">
                     <div className="flex-item">Resources</div>
