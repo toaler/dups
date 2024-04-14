@@ -11,6 +11,7 @@ function ScanTab() {
     };
 
     const endOfLogsRef = useRef(null);
+    const inputRef = useRef(null);
     const [path, setPath] = useState('');
     const [logs, setLogs] = useState([]);
     const [resources, setResources] = useState(0);
@@ -21,6 +22,13 @@ function ScanTab() {
     const [scanStatus, setScanStatus] = useState(ScanStatus.Stopped);
     const [startTime, setStartTime] = useState(0);
     const [timer, setTimer] = useState(null);
+
+    // Focus on the input when component mounts
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, []);
 
     useEffect(() => {
         let interval = null;
@@ -124,6 +132,7 @@ function ScanTab() {
     return (
         <div>
             <input
+                ref={inputRef}
                 type="text"
                 value={path}
                 onChange={(e) => setPath(e.target.value)}
