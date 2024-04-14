@@ -3,8 +3,9 @@ import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import ScanStats from "./ScanStats.jsx";
-import "./ScanTab.css";
+import "./ScanStats.css";
 import ScanLog from "./ScanLog.jsx";
+import styled from "styled-components";
 
 function ScanTab() {
     const ScanStatus = {
@@ -96,19 +97,42 @@ function ScanTab() {
 
     return (
         <div>
-            <input
-                ref={inputRef}
-                type="text"
-                value={path}
-                onChange={(e) => setPath(e.target.value)}
-                placeholder="Enter filesystem path"
-            />
-            <button onClick={() => handleScanClick(path)}>
-                <DirectionsRunIcon style={{fontSize: 15}}/>
-            </button>
+            <div className="scantab-input">
+                <StyledInput
+                    type="text"
+                    value={path}
+                    onChange={(e) => setPath(e.target.value)}
+                    placeholder="Enter filesystem path"
+                />
+                <StyledButton onClick={() => handleScanClick(path)}>
+                    <ScanRunIcon/>
+                </StyledButton>
+            </div>
             <ScanStats status={scanStatus} elapsedTime={elapsedTime} resources={resources} directories={directories} files={files} size={size}></ScanStats>
             <ScanLog logs={logs}/>
         </div>);
 }
 
 export default ScanTab;
+
+const ScanRunIcon = styled(DirectionsRunIcon)`
+`;
+
+const StyledInput = styled.input`
+  height: 40px; // Specify your desired height
+  padding: 0 12px; // Adjust padding as needed
+  border: 1px solid #ccc; // Add border styling as required
+  font-size: 16px; // Adjust font size as needed
+  vertical-align: middle;
+`;
+
+const StyledButton = styled.button`
+  height: 40px; // Match input height
+  padding: 0 20px; // Padding can be adjusted
+  border: 1px solid #ccc; // Border to match input
+  background-color: #007BFF; // Add background color
+  color: white; // Text color
+  font-size: 12px; // Match the input's font size
+  cursor: pointer;
+  vertical-align: middle;
+`;

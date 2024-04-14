@@ -16,7 +16,6 @@ const formatElapsedTime = (elapsedTime) => {
 function ScanStats({status, elapsedTime, resources, directories, files, size}) {
 
     return <ScanStatsContainer>
-        <ScanStatsLeft>
             <div className="flex-container">
                 <div className="flex-row">
                     <div className="flex-item">Status</div>
@@ -43,7 +42,6 @@ function ScanStats({status, elapsedTime, resources, directories, files, size}) {
                     <div className="flex-item">{Number(size).toLocaleString()}</div>
                 </div>
             </div>
-        </ScanStatsLeft>
     </ScanStatsContainer>
 }
 
@@ -54,20 +52,5 @@ const ScanStatsContainer = styled.div`
     line-height: 24px;
     font-weight: 400;
     color: #FFFFFF;
-`;
-
-const ScanStatsLeft = styled.div`
-    display: flex;
-    align-items: center; // Adjust vertical alignment as needed
-    justify-content: space-between; // Spread out the children to use available space
-    flex-wrap: wrap; // Allow items to wrap to a new line if needed
-    gap: 20px; // Creates space between items
-`;
-
-const ScanRunIcon = styled(DirectionsRunIcon)`
-    display: flex;
-    font-size: 4rem !important; // Adjust the size as needed
-    margin-left: auto;
-    margin-right: 30px;
-    color: inherit; // Or specify a color
+    overflow-y: hidden; 
 `;

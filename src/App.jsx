@@ -71,7 +71,7 @@ function App() {
                     </Tab>
                 </TabList>
                 <TabPanel>
-                    <div className="scrollable-content">
+                    <div>
                         <ScanTab></ScanTab>
                     </div>
                 </TabPanel>
