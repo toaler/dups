@@ -48,7 +48,7 @@ function ScanLog({ logs }) {
                     <th className="right-align">Files</th>
                     <th className="right-align">Size (GB)</th>
                     <th className="right-align">Wall Time (s)</th>
-                    <th className="right-align">Resource Throughput (units/s)</th>
+                    <th className="right-align">Resource Throughput (resources/s)</th>
                     <th className="right-align">Throughput (GB/sec)</th>
                 </tr>
                 </thead>
