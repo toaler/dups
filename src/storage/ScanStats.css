@@ -1,16 +1,20 @@
 .flex-container {
     display: flex;
-    flex-direction: column; /* stack flex rows vertically */
+    flex-direction: column;
 }
 
 .flex-row {
     display: flex;
-    justify-content: space-between; /* distribute space between items */
-    margin-bottom: 0px; /* margin below each row for spacing */
+    justify-content: space-between;
+    margin-bottom: 8px; /* Adds space between rows */
 }
 
-.flex-item {
-    padding: 8px; /* padding inside each flex item */
-    margin-right: 64px; /* adds margin to the right of each flex item, except the last one in a row */
+.flex-item:first-child {
+    width: 150px; /* Width of the attribute column */
+    font-weight: bold; /* Optional: to distinguish attribute names */
 }
 
+.flex-item:last-child {
+    width: 200px; /* Width of the value column */
+    text-align: right; /* Aligns the text to the right */
+}

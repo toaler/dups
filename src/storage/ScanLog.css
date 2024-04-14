@@ -1,0 +1,45 @@
+.log-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.log-container th, .log-container td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    overflow: hidden;  /* Ensures content doesn't force the cell to expand */
+}
+
+.log-container th {
+    background-color: #007BFF;
+    text-align: right;
+}
+
+/* Adjusted widths for each column */
+.log-container th:nth-child(1), .log-container td:nth-child(1) {
+    width: 27%;  /* Increased for Timestamp */
+}
+
+.log-container th:nth-child(2), .log-container td:nth-child(2) {
+    width: 15%;  /* Kept the same for Resources */
+}
+
+.log-container th:nth-child(3), .log-container td:nth-child(3) {
+    width: 15%;  /* Kept the same for Directories */
+}
+
+.log-container th:nth-child(4), .log-container td:nth-child(4) {
+    width: 3%;  /* Reduced for Size */
+}
+
+.log-container th:nth-child(5), .log-container td:nth-child(5) {
+    width: 29%;  /* Adjusted for Wall Time to balance the total to 100% */
+}
+
+.log-container th:nth-child(6), .log-container td:nth-child(6) {
+    width: 11%;  /* Adjusted for Files */
+}
+
+.log-container table td.right-align, .log-container table th.right-align {
+    text-align: right;
+}

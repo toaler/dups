@@ -1,12 +1,13 @@
 use std::io;
 use crate::{Visitable};
 use std::time::{Instant};
+use chrono::Utc;
 use lazy_static::lazy_static;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::{add_groupings_u64, add_groupings_usize};
 use crate::services::scanner_api::event_handler::EventHandler;
 
-const RECAP_THRESHOLD: usize = 100000;
+const RECAP_THRESHOLD: usize = 10000;
 
 pub struct ProgressVisitor {
     total_files_scanned: usize,
@@ -67,17 +68,17 @@ impl ProgressVisitor {
             add_groupings_usize(self.files_scanned_since_last_recap),
             elapsed_time
         ).expect("TODO: panic message");
-        
+
         writer.flush().expect("TODO: panic message");
 
-
         let json_payload = format!(
-            r#"{{"resources": {}, "directories": {}, "files": {}, "size": {}, "wall_time_ms" : "{:?}"}}"#,
+            r#"{{"timestamp": {:?},"resources": {}, "directories": {}, "files": {}, "size": {}, "wall_time_nanos" : "{:?}"}}"#,
+            Utc::now().to_rfc3339(),
             self.files_scanned_since_last_recap + self.dirs_scanned_since_last_recap,
             self.dirs_scanned_since_last_recap,
             self.files_scanned_since_last_recap,
             self.total_size_scanned_since_last_recap,
-            elapsed_time
+            elapsed_time.as_nanos()
         );
 
         let _message = format!(
@@ -86,7 +87,7 @@ impl ProgressVisitor {
             add_groupings_usize(self.dirs_scanned_since_last_recap),
             add_groupings_usize(self.files_scanned_since_last_recap),
             add_groupings_u64(self.total_size_scanned_since_last_recap),
-            elapsed_time
+            elapsed_time.as_nanos()
         );
 
         // Use the logger
