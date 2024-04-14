@@ -13,11 +13,10 @@ const formatElapsedTime = (elapsedTime) => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
 };
 
-function ScanHeader({status, elapsedTime, resources, directories, files, size}) {
+function ScanStats({status, elapsedTime, resources, directories, files, size}) {
 
-    return <ScanHeaderContainer>
-        {console.log(elapsedTime)}
-        <ScanHeaderLeft>
+    return <ScanStatsContainer>
+        <ScanStatsLeft>
             <div className="flex-container">
                 <div className="flex-row">
                     <div className="flex-item">Status</div>
@@ -44,29 +43,26 @@ function ScanHeader({status, elapsedTime, resources, directories, files, size}) 
                     <div className="flex-item">{Number(size).toLocaleString()}</div>
                 </div>
             </div>
-        </ScanHeaderLeft>
-    </ScanHeaderContainer>
+        </ScanStatsLeft>
+    </ScanStatsContainer>
 }
 
-export default ScanHeader
+export default ScanStats
 
-const ScanHeaderContainer = styled.div`
+const ScanStatsContainer = styled.div`
     display: flex;
-    font-family: San Francisco;
-    font-size: 12px;
     line-height: 24px;
     font-weight: 400;
     color: #FFFFFF;
 `;
 
-const ScanHeaderLeft = styled.div`
+const ScanStatsLeft = styled.div`
     display: flex;
     align-items: center; // Adjust vertical alignment as needed
     justify-content: space-between; // Spread out the children to use available space
     flex-wrap: wrap; // Allow items to wrap to a new line if needed
     gap: 20px; // Creates space between items
 `;
-
 
 const ScanRunIcon = styled(DirectionsRunIcon)`
     display: flex;
