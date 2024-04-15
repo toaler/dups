@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
 .log-container table {
     width: 100%;
     border-collapse: collapse;
+    font-family: 'Roboto Mono', monospace; /* Apply Roboto Mono to the entire table */
 }
 
 .log-container th, .log-container td {

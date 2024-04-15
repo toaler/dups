@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -17,4 +19,8 @@
 .flex-item:last-child {
     width: 200px; /* Width of the value column */
     text-align: right; /* Aligns the text to the right */
+}
+
+.flex-row .flex-item:nth-child(2) {
+    font-family: 'Roboto Mono', monospace;
 }

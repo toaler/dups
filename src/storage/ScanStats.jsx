@@ -44,7 +44,7 @@ function ScanStats({status, elapsedTime, resources, directories, files, size}) {
             </div>
             <div className="flex-row">
                 <div className="flex-item">Resources/sec</div>
-                <div className="flex-item">{resourcesPerSecond}</div>
+                <div className="flex-item">{Number(resourcesPerSecond).toLocaleString()}</div>
             </div>
             <div className="flex-row">
                 <div className="flex-item">Throughput (GB/sec)</div>
