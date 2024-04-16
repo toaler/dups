@@ -8,12 +8,26 @@ function StagingHeader({ totalBytes }) {
     const filesCompressed = 0;
 
     return <StagingHeaderContainer>
-        <StagingHeaderLeft>
-            <h1>Bytes in scope : {totalBytes.toLocaleString("en-US")}</h1>
-            <h1>Bytes reclaimed : {bytesReclaimed.toLocaleString("en-US")}</h1>
-            <h1>Files deleted : {filesDeleted.toLocaleString("en-US")}</h1>
-            <h1>Bytes compressed : {filesCompressed.toLocaleString("en-US")}</h1>
-        </StagingHeaderLeft>
+            <div className="flex-container">
+                <div className="flex-row">
+                    <div className="flex-item">Bytes in scope </div>
+                    <div className="flex-item">{totalBytes.toLocaleString("en-US")}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Bytes reclaimed</div>
+                    <div className="flex-item">{bytesReclaimed.toLocaleString("en-US")}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Files deleted</div>
+                    <div className="flex-item">{filesDeleted.toLocaleString("en-US")}</div>
+                </div>
+                <div className="flex-row">
+                    <div className="flex-item">Bytes compressed</div>
+                    <div className="flex-item">{filesCompressed.toLocaleString("en-US")}</div>
+                </div>
+            </div>
+
+
         <StagingCommit>
             // TODO : add onclick
         </StagingCommit>
@@ -26,20 +40,12 @@ export default StagingHeader
 
 const StagingHeaderContainer = styled.div`
     display: flex;
-    font-family: San Francisco;
-    font-size: 12px;
     line-height: 24px;
     font-weight: 400;
     color: #FFFFFF;
+    overflow-y: hidden;
 `;
 
-const StagingHeaderLeft = styled.div`
-    display: flex;
-    align-items: center; // Adjust vertical alignment as needed
-    justify-content: space-between; // Spread out the children to use available space
-    flex-wrap: wrap; // Allow items to wrap to a new line if needed
-    gap: 20px; // Creates space between items
-`;
 
 
 const StagingCommit = styled(CommitIcon)`
