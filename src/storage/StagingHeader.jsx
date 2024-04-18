@@ -1,11 +1,26 @@
-import React from 'react'
-import styled from "styled-components"
+import React, {useState} from 'react'
+import styled, { css } from "styled-components";
 import CommitIcon from '@mui/icons-material/Commit';
+
+
+function IconButton({ icon, onClick, pressed, ...props }) {
+    return (
+        <button onClick={onClick} {...props}>
+            <Icon type={icon} pressed={pressed}/>
+        </button>
+    );
+}
 
 function StagingHeader({ totalBytes }) {
     const bytesReclaimed = 0.0;
     const filesDeleted = 0;
     const filesCompressed = 0;
+    const [isPressed, setIsPressed] = useState(false);
+
+    const handleCommitClick = () => {
+        setIsPressed(!isPressed);  // Toggle the pressed state
+        console.log('Commit button clicked!');
+    };
 
     return <StagingHeaderContainer>
             <div className="flex-container">
@@ -28,8 +43,12 @@ function StagingHeader({ totalBytes }) {
             </div>
 
 
-        <StagingCommit>
-            // TODO : add onclick
+        <StagingCommit
+            as="button"  // Treat the StagingCommit as a button
+            onClick={handleCommitClick}
+            pressed={isPressed}
+        >
+            <CommitIcon/>
         </StagingCommit>
 
 
@@ -46,12 +65,26 @@ const StagingHeaderContainer = styled.div`
     overflow-y: hidden;
 `;
 
-
-
-const StagingCommit = styled(CommitIcon)`
+const StagingCommit = styled.button`
     display: flex;
-    font-size: 4rem !important; // Adjust the size as needed
+    justify-content: center;  // Center the icon horizontally inside the button
+    align-items: center;      // Center the icon vertically inside the button
+    font-size: 4rem;          // Adjust the icon size as needed, consider increasing if necessary
+    padding: 20px;            // Increase padding to provide more space around the icon
     margin-left: auto;
     margin-right: 30px;
-    color: inherit; // Or specify a color
+    color: inherit;           // Use the inherited color
+    background: none;         // No background
+    border: none;             // No border
+    ${({ pressed }) => pressed && css`
+        color: #BBBBBB; // Change color when pressed
+        transform: translateY(2px); // Move down to simulate button press
+    `}
 `;
+
+// Icon component remains unchanged, assuming the sizing of the icon should also increase if needed
+const Icon = ({ type, pressed }) => {
+    const IconComponent = type === "commit" ? CommitIcon : null;
+    // Setting fontSize directly as a prop
+    return <IconComponent style={{ color: pressed ? '#BBBBBB' : undefined }} />;
+};
