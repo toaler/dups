@@ -2,15 +2,6 @@ import React, {useState} from 'react'
 import styled, { css } from "styled-components";
 import CommitIcon from '@mui/icons-material/Commit';
 
-
-function IconButton({ icon, onClick, pressed, ...props }) {
-    return (
-        <button onClick={onClick} {...props}>
-            <Icon type={icon} pressed={pressed}/>
-        </button>
-    );
-}
-
 function StagingHeader({ totalBytes }) {
     const bytesReclaimed = 0.0;
     const filesDeleted = 0;
@@ -48,7 +39,8 @@ function StagingHeader({ totalBytes }) {
             onClick={handleCommitClick}
             pressed={isPressed}
         >
-            <CommitIcon/>
+            <CommitIcon fontSize="large" style={{ fontSize: '60px' }} /> {/* Method 1: Direct fontSize setting */}
+
         </StagingCommit>
 
 
@@ -70,7 +62,6 @@ const StagingCommit = styled.button`
     justify-content: center;  // Center the icon horizontally inside the button
     align-items: center;      // Center the icon vertically inside the button
     font-size: 4rem;          // Adjust the icon size as needed, consider increasing if necessary
-    padding: 20px;            // Increase padding to provide more space around the icon
     margin-left: auto;
     margin-right: 30px;
     color: inherit;           // Use the inherited color
