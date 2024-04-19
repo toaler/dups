@@ -7,7 +7,7 @@ use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::{add_groupings_u64, add_groupings_usize};
 use crate::services::scanner_api::event_handler::EventHandler;
 
-const RECAP_THRESHOLD: usize = 10000;
+const RECAP_THRESHOLD: usize = 100000;
 
 pub struct ProgressVisitor {
     total_files_scanned: usize,

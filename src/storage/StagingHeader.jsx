@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
-import styled, { css } from "styled-components";
+import styled, {css} from "styled-components";
 import CommitIcon from '@mui/icons-material/Commit';
+import {invoke} from "@tauri-apps/api/tauri";
 
 function StagingHeader({ totalBytes }) {
     const bytesReclaimed = 0.0;
@@ -8,10 +9,34 @@ function StagingHeader({ totalBytes }) {
     const filesCompressed = 0;
     const [isPressed, setIsPressed] = useState(false);
 
-    const handleCommitClick = () => {
+    const handleScanClick = () => {
         setIsPressed(!isPressed);  // Toggle the pressed state
         console.log('Commit button clicked!');
+        // Reset states
+        scanFilesystem()
+            .then(result => {
+                if (result !== undefined) {
+                    console.log("Scan successful, result:", result.toLocaleString());
+                } else {
+                    console.log("Scan successful, but no data returned");
+                }
+                // Additional logic for successful scan can go here
+            })
+            .catch(error => {
+                console.error("Scan failed with error:", error);
+                // Additional error handling logic can go here
+            });
     };
+
+    async function scanFilesystem() {
+        try {
+            let path = "foo";
+            return await invoke('commit', {path});
+        } catch (error) {
+            console.error(error); // Handle error
+            throw error;
+        }
+    }
 
     return <StagingHeaderContainer>
             <div className="flex-container">
@@ -36,7 +61,7 @@ function StagingHeader({ totalBytes }) {
 
         <StagingCommit
             as="button"  // Treat the StagingCommit as a button
-            onClick={handleCommitClick}
+            onClick={handleScanClick}
             pressed={isPressed}
         >
             <CommitIcon fontSize="large" style={{ fontSize: '60px' }} /> {/* Method 1: Direct fontSize setting */}

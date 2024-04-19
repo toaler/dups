@@ -5,6 +5,7 @@ mod ui;
 mod services;
 
 use crate::ui::command::scan_filesystem::scan_filesystem;
+use crate::ui::command::staged_resource_manager::commit;
 use log::{error, info, LevelFilter};
 use std::{env, io};
 use std::collections::HashMap;
@@ -21,7 +22,7 @@ fn main() {
     env_logger::builder().filter_level(LevelFilter::Info).init();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![scan_filesystem])
+        .invoke_handler(tauri::generate_handler![scan_filesystem, commit])
         .run(generate_context!())
         .expect("error while running tauri application");
 }
