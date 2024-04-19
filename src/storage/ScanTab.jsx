@@ -2,9 +2,9 @@ import React, {useEffect, useRef, useState} from 'react';
 import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
-import ScanStats from "./ScanStats.jsx";
+import ScanTabStats from "./ScanTabStats.jsx";
 import './ScanTab.css';
-import ScanLog from "./ScanLog.jsx";
+import ScanTabLog from "./ScanTabLog.jsx";
 import styled from "styled-components";
 
 function ScanTab() {
@@ -111,9 +111,9 @@ function ScanTab() {
                     <DirectionsRunIcon/>
                 </button>
             </div>
-            <ScanStats status={scanStatus} elapsedTime={elapsedTime} resources={resources} directories={directories}
-                       files={files} size={size}></ScanStats>
-            <ScanLog logs={logs}/>
+            <ScanTabStats status={scanStatus} elapsedTime={elapsedTime} resources={resources} directories={directories}
+                          files={files} size={size}></ScanTabStats>
+            <ScanTabLog logs={logs}/>
         </div>);
 }
 

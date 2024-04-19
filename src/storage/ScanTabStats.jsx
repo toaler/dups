@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from "styled-components";
-import "./ScanStats.css";
+import "./ScanTabStats.css";
 
 const formatElapsedTime = (elapsedTime) => {
     const hours = Math.floor(elapsedTime / 3600000);
@@ -11,7 +11,7 @@ const formatElapsedTime = (elapsedTime) => {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
 };
 
-function ScanStats({status, elapsedTime, resources, directories, files, size}) {
+function ScanTabStats({status, elapsedTime, resources, directories, files, size}) {
     const sizeInGB = (size / 1073741824).toFixed(2); // Convert size from bytes to GB
     const throughput = elapsedTime > 0 ? (size / 1073741824 / (elapsedTime / 1000)).toFixed(2) : 0; // Calculate throughput in GB/sec
     const resourcesPerSecond = elapsedTime > 0 ? (resources / (elapsedTime / 1000)).toFixed(2) : 0; // Calculate resources per second
@@ -54,7 +54,7 @@ function ScanStats({status, elapsedTime, resources, directories, files, size}) {
     </ScanStatsContainer>
 }
 
-export default ScanStats;
+export default ScanTabStats;
 
 const ScanStatsContainer = styled.div`
     display: flex;

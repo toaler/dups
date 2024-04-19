@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import "./ScanLog.css"; // Ensure this path is correct
+import "./ScanTabLog.css"; // Ensure this path is correct
 
-function ScanLog({ logs }) {
+function ScanTabLog({ logs }) {
     const tableRef = useRef(null);
 
     useEffect(() => {
@@ -74,4 +74,4 @@ function ScanLog({ logs }) {
     );
 }
 
-export default ScanLog;
+export default ScanTabLog;

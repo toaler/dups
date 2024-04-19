@@ -63,15 +63,11 @@ fn save_registry(registry: &mut HashMap<String, ResourceMetadata>, file_path: &P
 fn load_registry(registry: &mut HashMap<String, ResourceMetadata>, file_path: &PathBuf) -> Result<HashMap<String, ResourceMetadata>, Box<dyn Error>> {
     // TODO : Filter what is loaded to match the root dir that was passed in
     // Open the file using BufReader for efficiency
-    info!("Incremental scan detected");
     let file = File::open(file_path)?;
-    info!("Incremental scan detected");
     let reader = BufReader::new(file);
 
     // Create a CSV reader
-    info!("Incremental scan detected");
     let mut csv_reader = ReaderBuilder::new().has_headers(false).from_reader(reader);
-    info!("Incremental scan detected");
     // Iterate over CSV records
     for record in csv_reader.records() {
 
