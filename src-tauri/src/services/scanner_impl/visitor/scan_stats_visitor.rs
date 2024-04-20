@@ -24,7 +24,7 @@ impl Visitable for ScanStatsVisitor {
         // Format the string using the write! macro and write it to the writer
         write!(
             w,
-            "Scanning stats: directories={} files={}",
+            "\nScanning stats: directories={} files={}",
             add_groupings_u32(self.get_stats().get_directory_count()),
             add_groupings_u32(self.get_stats().get_file_count())
         ).expect("TODO: panic message");
