@@ -1,6 +1,8 @@
-use log::{info};
+use log::{error, info};
 use serde::Deserialize;
 use tauri::{command, Window};
+use crate::services::file_api::file_management::{DeletionStatus, FileManagement};
+use crate::services::file_impl::file_management_impl::FileManagementImpl;
 
 #[derive(Deserialize, Debug)]
 pub struct Action {
@@ -11,14 +13,34 @@ pub struct Action {
 
 #[command]
 pub async fn commit(_w: Window, actions: Vec<Action>) -> Result<String, String> {
-    // Now use path_owned inside your async block
     tauri::async_runtime::spawn(async move {
-
         // Enumerate and log each action
         for action in actions {
-            info!("Action: {}, Path: {}, Bytes: {}", action.action, action.path, action.bytes);
+            info!("Processing Action: {}, Path: {}, Bytes: {}", action.action, action.path, action.bytes);
+
+            match action.action.as_str() {
+                "delete" => {
+                    // Here, implement what should happen when the action is "upload"
+                    info!("Deleting from path: {}", action.path);
+
+                    let deleter = FileManagementImpl;
+                    match deleter.delete_file(&action.path) {
+                        DeletionStatus::Success => info!("Deleted {}", action.path),
+                        DeletionStatus::Failure(msg) => error!("Deletion failed with error: {}", msg),
+                    }
+                },
+                "compressing" => {
+                    // Implement the download action
+                    info!("Compressing file at path: {}", action.path);
+                    // A function to handle download could be called here
+                },
+                _ => {
+                    info!("Unknown action: {}", action.action);
+                    // Handle unknown or unsupported actions
+                }
+            }
         }
 
-        Ok(format!("Hello from commit! You've been greeted from Rust asynchronously!"))
+        Ok("Hello from commit! You've been greeted from Rust asynchronously!".to_string())
     }).await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)))
 }
