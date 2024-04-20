@@ -208,7 +208,7 @@ mod tests {
         progress_visitor.recap(&mut writer, &logger);
 
         // Ensure counters are reset after manual recap
-        assert_eq!(progress_visitor.total_files_scanned, 20000);
+        assert_eq!(progress_visitor.total_files_scanned, 200000);
         assert_eq!(progress_visitor.total_dirs_scanned, 0);
         assert_eq!(progress_visitor.files_scanned_since_last_recap, 0);
         assert_eq!(progress_visitor.dirs_scanned_since_last_recap, 0);

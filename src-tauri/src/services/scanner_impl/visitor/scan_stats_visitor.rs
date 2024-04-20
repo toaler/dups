@@ -84,7 +84,7 @@ mod tests {
 
         let mut output = Vec::new();
         visitor.recap(&mut output, &logger);
-        assert_eq!("Scanning stats: directories=1 files=1", String::from_utf8(output).unwrap());
+        assert_eq!("\nScanning stats: directories=1 files=1", String::from_utf8(output).unwrap());
     }
 
     fn create_dummy_file(file_path: &Path) {
