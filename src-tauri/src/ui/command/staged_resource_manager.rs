@@ -3,6 +3,8 @@ use serde::Deserialize;
 use tauri::{command, Window};
 use crate::services::file_api::file_management::{DeletionStatus, FileManagement};
 use crate::services::file_impl::file_management_impl::FileManagementImpl;
+use crate::services::scanner_api::event_handler::EventHandler;
+use crate::ui::handler::tauri_event_handler::TauriEventHandler;
 
 #[derive(Deserialize, Debug)]
 pub struct Action {
@@ -12,7 +14,9 @@ pub struct Action {
 }
 
 #[command]
-pub async fn commit(_w: Window, actions: Vec<Action>) -> Result<String, String> {
+pub async fn commit(w: Window, actions: Vec<Action>) -> Result<String, String> {
+    let eventHandler = TauriEventHandler {window: w};
+
     tauri::async_runtime::spawn(async move {
         // Enumerate and log each action
         for action in actions {
@@ -25,8 +29,14 @@ pub async fn commit(_w: Window, actions: Vec<Action>) -> Result<String, String> 
 
                     let deleter = FileManagementImpl;
                     match deleter.delete_file(&action.path) {
-                        DeletionStatus::Success => info!("Deleted {}", action.path),
-                        DeletionStatus::Failure(msg) => error!("Deletion failed with error: {}", msg),
+                        DeletionStatus::Success => {
+                            info!("Deleted {}", action.path);
+                            eventHandler.publish("commit-event", format!("'status' : 'success', 'path', {:?}", action.path))
+                        },
+                        DeletionStatus::Failure(msg) => {
+                            error!("Deletion failed with error: {}", msg);
+                            eventHandler.publish("commit-event", format!("'status' : 'failed', 'path', {:?}", action.path))
+                        },
                     }
                 },
                 "compressing" => {

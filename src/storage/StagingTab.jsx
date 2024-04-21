@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styled, { css } from "styled-components";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
 import { invoke } from "@tauri-apps/api/tauri";
+import {listen} from "@tauri-apps/api/event";
 
 const StagingTab = ({ actions, setActions }) => {
     const [isPressed, setIsPressed] = useState(false);
@@ -42,6 +43,24 @@ const StagingTab = ({ actions, setActions }) => {
         }
     }
 
+    const handleCommitEvent = (event) => {
+        try {
+            console.log(event);
+            const data = JSON.parse(event.payload);
+        } catch (e) {
+            console.error(`Error JSON encoded event ${event}, with error ${e}`);
+        }
+    };
+
+    useEffect(() => {
+        const unsubscribe = listen("commit-event", handleCommitEvent);
+
+        // Cleanup the listener when the component unmounts
+        return () => {
+            unsubscribe.then((unsub) => unsub());
+        };
+    }, []);
+
     return (
         <div>
             <StagingHeaderContainer>
@@ -62,6 +81,7 @@ const StagingTab = ({ actions, setActions }) => {
             <table>
                 <thead>
                 <tr>
+                    <th style={{textAlign: "left"}}>Status</th>
                     <th style={{textAlign: "center"}}>Remove</th>
                     <th style={{textAlign: "left"}}>Action</th>
                     <th style={{textAlign: "left"}}>Resource</th>
@@ -71,6 +91,7 @@ const StagingTab = ({ actions, setActions }) => {
                 <tbody>
                 {actions.map((actionObj, index) => (
                     <tr key={index}>
+                        <td>Pending</td>
                         <td>
                             <DeleteIcon style={{padding: 0, textAlign: "center"}} onClick={() => handleDelete(index)} />
                         </td>
