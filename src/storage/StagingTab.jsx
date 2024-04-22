@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { css } from "styled-components";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
 import { invoke } from "@tauri-apps/api/tauri";
-import {listen} from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 
 const StagingTab = ({ actions, setActions }) => {
     const [isPressed, setIsPressed] = useState(false);
@@ -45,8 +45,10 @@ const StagingTab = ({ actions, setActions }) => {
 
     const handleCommitEvent = (event) => {
         try {
-            console.log(event);
-            const data = JSON.parse(event.payload);
+            const { path } = JSON.parse(event.payload); // Assuming path is directly available in the event payload
+            setActions(currentActions => currentActions.map(action =>
+                action.path === path ? { ...action, status: 'X' } : action
+            ));
         } catch (e) {
             console.error(`Error JSON encoded event ${event}, with error ${e}`);
         }
@@ -91,7 +93,7 @@ const StagingTab = ({ actions, setActions }) => {
                 <tbody>
                 {actions.map((actionObj, index) => (
                     <tr key={index}>
-                        <td>Pending</td>
+                        <td>{actionObj.status || 'Pending'}</td>
                         <td>
                             <DeleteIcon style={{padding: 0, textAlign: "center"}} onClick={() => handleDelete(index)} />
                         </td>

@@ -15,7 +15,7 @@ pub struct Action {
 
 #[command]
 pub async fn commit(w: Window, actions: Vec<Action>) -> Result<String, String> {
-    let eventHandler = TauriEventHandler {window: w};
+    let event_handler = TauriEventHandler {window: w};
 
     tauri::async_runtime::spawn(async move {
         // Enumerate and log each action
@@ -31,11 +31,11 @@ pub async fn commit(w: Window, actions: Vec<Action>) -> Result<String, String> {
                     match deleter.delete_file(&action.path) {
                         DeletionStatus::Success => {
                             info!("Deleted {}", action.path);
-                            eventHandler.publish("commit-event", format!("'status' : 'success', 'path', {:?}", action.path))
+                            event_handler.publish("commit-event", format!("{{\"status\" : \"success\", \"path\": {:?}}}", action.path))
                         },
                         DeletionStatus::Failure(msg) => {
                             error!("Deletion failed with error: {}", msg);
-                            eventHandler.publish("commit-event", format!("'status' : 'failed', 'path', {:?}", action.path))
+                            event_handler.publish("commit-event", format!("'status' : 'failed', 'path', {:?}", action.path))
                         },
                     }
                 },
