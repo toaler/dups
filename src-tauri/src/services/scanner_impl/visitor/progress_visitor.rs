@@ -3,6 +3,7 @@ use crate::{Visitable};
 use std::time::{Instant};
 use chrono::Utc;
 use lazy_static::lazy_static;
+use log::info;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::util::util::{add_groupings_u64, add_groupings_usize};
 use crate::services::scanner_api::event_handler::EventHandler;

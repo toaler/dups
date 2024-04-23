@@ -2,6 +2,7 @@ use std::collections::BinaryHeap;
 use std::cmp::Reverse;
 use std::{fs, io};
 use chrono::{DateTime, Utc};
+use log::info;
 use crate::services::file_api::compression_checker::CompressionChecker;
 use crate::services::file_api::file_type_detector::FileTypeDetector;
 use crate::services::file_impl::mime_compression_checker::MimeCompressionChecker;
@@ -29,6 +30,7 @@ impl Visitable for TopKResourceVisitor {
     }
 
     fn recap(&mut self, w: &mut dyn io::Write, logger: &dyn EventHandler) {
+        info!("Starting recap");
         let reversed_sorted_resources: Vec<_> = self.top_resources.clone().into_sorted_vec().into_iter().collect();
 
         let mut s = String::from("[");
@@ -80,6 +82,7 @@ impl Visitable for TopKResourceVisitor {
             s.push_str(&format!("{{\"rank\": \"{}\", \"bytes\": \"{}\", \"path\": \"{}\", \"mime_type\": \"{}\", \"compressible\": \"{}\", \"modified\": {:?}, \"accessed\": {:?}, \"modified_days\": {}, \"accessed_days\": {}}}",
                                 i + 1, metadata.size_bytes(), metadata.get_path(), mimetype.clone(), compression_checker.is_compressible(&mimetype), modified_iso_string, last_access_iso_string, modified_days, last_access_days));
 
+            info!("Starting recap");
         }
 
         s.push_str("]");
