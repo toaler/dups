@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 use std::{env, io};
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 use std::time::Instant;
 use log::{debug, info};
 use tauri::{command, Window};
+use rodio::{Decoder, OutputStream, Source};
 use crate::ui::handler::tauri_event_handler::TauriEventHandler;
 use crate::{load_registry, save_registry};
 use crate::services::scanner_impl::resource_scanner::ResourceScanner;
@@ -91,6 +94,20 @@ pub async fn scan_filesystem(w: Window, path: &str) -> Result<String, String> {
         for visitable_instance in &mut visitors {
             visitable_instance.recap(&mut writer, &logger);
         }
+
+
+// Get a output stream handle to the default physical sound device
+        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+// Load a sound from a file, using a path relative to Cargo.toml
+        let file = BufReader::new(File::open("/Users/btoal/git/turbo-tasker/src-tauri/sounds/notification_decorative-01.wav").unwrap());
+// Decode that sound file into a source
+        let source = Decoder::new(file).unwrap();
+// Play the sound directly on the device
+        stream_handle.play_raw(source.convert_samples());
+
+// The sound plays in a separate audio thread,
+// so we need to keep the main thread alive while it's playing.
+        std::thread::sleep(std::time::Duration::from_secs(5));
 
         // Since path_owned is owned by the block, there's no issue with lifetimes
         Ok(format!("Hello, {}! You've been greeted from Rust asynchronously!", path_owned))
