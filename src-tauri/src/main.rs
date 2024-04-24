@@ -6,7 +6,7 @@ mod services;
 
 use crate::ui::command::scan_filesystem::scan_filesystem;
 use crate::ui::command::staged_resource_manager::commit;
-use log::{error, info, LevelFilter};
+use log::{debug, error, info};
 use std::{env, io};
 use std::collections::HashMap;
 use std::fs::File;
@@ -19,7 +19,9 @@ use state::resource_metadata::ResourceMetadata;
 use services::scanner_api::visitable::Visitable;
 
 fn main() {
-    env_logger::builder().filter_level(LevelFilter::Info).init();
+    env_logger::builder().init();
+    info!("Starting Turbo Tasker");
+    debug!("Debug mode enabled");
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![scan_filesystem, commit])

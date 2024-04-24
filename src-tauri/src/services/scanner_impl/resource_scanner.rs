@@ -9,7 +9,6 @@ use crate::services::scanner_api::visitable::Visitable;
 
 pub struct ResourceScanner {
     added_files: u64,
-    added_dirs: u64,
     deleted_files: u64,
     deleted_dirs: u64,
     updated_files: u64,
@@ -20,20 +19,12 @@ impl ResourceScanner {
     pub fn new() -> ResourceScanner {
         ResourceScanner {
             added_files: 0,
-            added_dirs: 0,
             deleted_files: 0,
             deleted_dirs: 0,
             updated_files: 0,
             updated_dirs: 0,
         }
     }
-
-    pub fn added_files(&self) -> u64 { self.added_files }
-    pub fn added_dirs(&self) -> u64 { self.added_dirs }
-    pub fn updated_files(&self) -> u64 { self.updated_files }
-    pub fn updated_dirs(&self) -> u64 { self.updated_dirs }
-    pub fn deleted_files(&self) -> u64 { self.deleted_files }
-    pub fn deleted_dirs(&self) -> u64 { self.deleted_dirs }
 
     #[warn(clippy::only_used_in_recursion)]
     pub fn full_scan(&mut self, registry: &mut HashMap<String, ResourceMetadata>, path: &String, visitors: &mut [&mut dyn Visitable], writer: &mut dyn io::Write, logger: &dyn EventHandler) {

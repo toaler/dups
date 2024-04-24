@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use std::{env, thread, time};
+use std::{env};
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter};
 use std::path::Path;
-use std::thread::sleep;
 use std::time::{Duration, Instant};
-use log::{debug, error, info};
+use log::{debug, info};
 use tauri::command;
 use rodio::{Decoder, OutputStream, Source};
 use tokio::task; // Import tokio's task for spawning async tasks
@@ -24,13 +23,11 @@ pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<String, Str
     let file_path = temp_dir.join("output.csv");
     let logger = TauriEventHandler { window: w };
     let path_owned = path.to_owned();
-    info!("path = {}", path_owned);
+    info!("Starting scan at root = {}", path_owned);
 
     let handle = tokio::spawn(async move {
-        info!("{}", path_owned);
         let root = path_owned.clone();
 
-        info!("Running Turbo Tasker (tt)!!!");
         debug!("Register visitors:");
 
         let mut scan_stats_visitor = ScanStatsVisitor::new();
