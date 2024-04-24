@@ -14,18 +14,35 @@ use std::io::{BufReader, ErrorKind};
 use std::path::{PathBuf};
 use std::error::Error;
 use csv::{ReaderBuilder, WriterBuilder};
-use tauri::{generate_context};
+use tauri::{Manager};
 use state::resource_metadata::ResourceMetadata;
 use services::scanner_api::visitable::Visitable;
 
 fn main() {
+    // Initialize the logger
     env_logger::builder().init();
     info!("Starting Turbo Tasker");
     debug!("Debug mode enabled");
 
     tauri::Builder::default()
+        .setup(|app| {
+            let splash_window = app.get_window("splashscreen").expect("Failed to find splash window");
+            splash_window.center().expect("TODO: panic message");
+
+            let main_window = app.get_window("main").expect("Failed to find main window");
+            main_window.hide().expect("Failed to hide main window");
+
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(2));
+                splash_window.close().expect("Failed to close splash window");
+                main_window.show().expect("Failed to show main window");
+                main_window.center().expect("TODO: panic message");
+            });
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![scan_filesystem, commit])
-        .run(generate_context!())
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 

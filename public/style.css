@@ -1,0 +1,28 @@
+body, html {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black; /* Just in case there's an issue with the image covering fully */
+    overflow: hidden; /* Ensures no scroll bars appear */
+}
+
+.splash-container {
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed; /* Makes the container fixed position covering the entire viewport */
+    top: 0; /* Align top edge with viewport */
+    left: 0; /* Align left edge with viewport */
+}
+
+.splash-container img {
+    width: 100%; /* Full width of the container */
+    height: 100%; /* Full height of the container */
+    object-fit: cover; /* Ensures the image covers the entire area, may be clipped to maintain aspect ratio */
+}
