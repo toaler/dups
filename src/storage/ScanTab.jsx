@@ -6,15 +6,17 @@ import ScanTabStats from "./ScanTabStats.jsx";
 import './ScanTab.css';
 import ScanTabLog from "./ScanTabLog.jsx";
 import styled from "styled-components";
+import {homeDir} from "@tauri-apps/api/path";
 
-function ScanTab({homePath}) {
+function ScanTab() {
+
     const ScanStatus = {
         Stopped: "Stopped", Scanning: "Scanning", Completed: "Completed", Failed: "Failed",
     };
 
     const startTimeRef = useRef(0);
     const inputRef = useRef(null);
-    const [path, setPath] = useState(homePath);
+    const [path, setPath] = useState();
     const [logs, setLogs] = useState([]);
     const [resources, setResources] = useState(0);
     const [directories, setDirectories] = useState(0);
@@ -28,6 +30,14 @@ function ScanTab({homePath}) {
         if (inputRef.current) {
             inputRef.current.focus();
         }
+    }, []);
+
+    useEffect(() => {
+        homeDir().then((dir) => {
+            setPath(dir);
+        }).catch((error) => {
+            console.error('Failed to get home directory', error);
+        });
     }, []);
 
     useEffect(() => {

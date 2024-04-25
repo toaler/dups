@@ -1,5 +1,4 @@
-import {useEffect, useState} from "react";
-import { homeDir } from "@tauri-apps/api/path";
+import {useState} from "react";
 import "./App.css";
 import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -20,16 +19,6 @@ import Co2Icon from '@mui/icons-material/Co2';
 
 function App() {
     const [actions, setActions] = useState([]);
-
-    const [homePath, setHomePath] = useState("");
-
-    useEffect(() => {
-        homeDir().then(setHomePath).catch(error => {
-            console.error('Error fetching home directory:', error);
-        });
-
-        console.log("home path = " + homePath);
-    }, []);
 
     return (<Tabs forceRenderTabPanel defaultIndex={0}>
         <TabList>
@@ -83,7 +72,7 @@ function App() {
                 </TabList>
                 <TabPanel>
                     <div>
-                        <ScanTab homePath={homePath}/>
+                        <ScanTab></ScanTab>
                     </div>
                 </TabPanel>
                 <TabPanel>
