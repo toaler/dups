@@ -7,14 +7,14 @@ import './ScanTab.css';
 import ScanTabLog from "./ScanTabLog.jsx";
 import styled from "styled-components";
 
-function ScanTab() {
+function ScanTab({homePath}) {
     const ScanStatus = {
         Stopped: "Stopped", Scanning: "Scanning", Completed: "Completed", Failed: "Failed",
     };
 
     const startTimeRef = useRef(0);
     const inputRef = useRef(null);
-    const [path, setPath] = useState('');
+    const [path, setPath] = useState(homePath);
     const [logs, setLogs] = useState([]);
     const [resources, setResources] = useState(0);
     const [directories, setDirectories] = useState(0);

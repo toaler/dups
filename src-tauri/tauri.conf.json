@@ -12,6 +12,28 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "path": {
+        "all": true,
+        "appDir": true,
+        "audioDir": false,
+        "cacheDir": false,
+        "configDir": false,
+        "dataDir": false,
+        "desktopDir": false,
+        "documentDir": false,
+        "downloadDir": false,
+        "executableDir": false,
+        "fontDir": false,
+        "homeDir": true,
+        "localDataDir": false, 
+        "pictureDir": false,
+        "publicDir": false,
+        "runtimeDir": false,
+        "templateDir": false,
+        "videoDir": false,
+        "resourceDir": false,
+        "resolvePath": false
+      },
       "shell": {
         "all": false,
         "open": true
