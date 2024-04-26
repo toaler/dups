@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import logger from "../logger.jsx";
 import {listen} from "@tauri-apps/api/event";
 
 import Tooltip from '@mui/material/Tooltip';
@@ -75,14 +76,12 @@ function InspectionTab({reset, setActions}) {
         // Function to handle incoming log events
         const handleTopKEvent = (event) => {
 
-            console.log(event.payload);
 
             try {
                 const data = JSON.parse(event.payload);
-                console.log(data); // Now `data` is a JavaScript object.
                 setTopKFiles(data);
             } catch (e) {
-                console.error(`Error parsing JSON: ${e}`);
+                logger.error(`Error parsing JSON:`, e);
             }
         };
 
@@ -97,7 +96,7 @@ function InspectionTab({reset, setActions}) {
 
     const handleIconClick = (event, action, path, bytes) => {
         event.stopPropagation(); // Prevent the click event from bubbling up
-        console.log(`${action} action for path: ${path} with bytes: ${bytes}`);
+        logger.info(`${action} action for path: ${path} with bytes: ${bytes}`);
 
         setActions(prevActions => {
             // Determine if the path already exists in the actions array

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import logger from '../logger.jsx';
 import styled, { css } from "styled-components";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
@@ -26,16 +27,16 @@ const StagingTab = ({ reset, actions, setActions }) => {
 
     const handleScanClick = async () => {
         setIsPressed(!isPressed);
-        console.log('Commit button clicked!');
+        logger.debug('Commit button clicked!');
         try {
             const result = await commit(actions); // Pass the current actions to commit
             if (result !== undefined) {
-                console.log("Scan successful, result:", result.toLocaleString());
+                logger.info("Scan successful, result:", result.toLocaleString());
             } else {
-                console.log("Scan successful, but no data returned");
+                logger.info("Scan successful, but no data returned");
             }
         } catch (error) {
-            console.error("Scan failed with error:", error);
+            logger.error("Scan failed with error:", error);
         }
     };
 
@@ -44,7 +45,7 @@ const StagingTab = ({ reset, actions, setActions }) => {
             let path = "foo";  // Path might be dynamically set based on your application's needs
             return await invoke('commit', { actions: actionsToSend });
         } catch (error) {
-            console.error(error);
+            logger.error(`Exception occured during commit`, error);
             throw error;
         }
     }
@@ -56,7 +57,7 @@ const StagingTab = ({ reset, actions, setActions }) => {
                 action.path === path ? { ...action, status: 'X' } : action
             ));
         } catch (e) {
-            console.error(`Error JSON encoded event ${event}, with error ${e}`);
+            logger.error(`Error JSON encoded event ${event}`, e);
         }
     };
 
@@ -124,7 +125,10 @@ const StagingHeaderContainer = styled.div`
     overflow-y: hidden;
 `;
 
-const StagingCommit = styled.button`
+const StagingCommit = styled.button.attrs(props => ({
+    // Conditionally apply the 'pressed' attribute as a string if true, otherwise omit it
+    pressed: props.pressed ? "true" : undefined
+}))`
     display: flex;
     justify-content: center;
     align-items: center;
@@ -134,7 +138,9 @@ const StagingCommit = styled.button`
     color: inherit;
     background: none;
     border: none;
-    ${({pressed}) => pressed && css`
+
+    // Use the 'pressed' prop to apply CSS conditionally
+    ${({pressed}) => pressed === "true" && css`
         color: #BBBBBB;
         transform: translateY(2px);
     `}

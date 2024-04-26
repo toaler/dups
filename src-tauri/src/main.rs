@@ -19,7 +19,7 @@ use state::resource_metadata::ResourceMetadata;
 use services::scanner_api::visitable::Visitable;
 
 fn main() {
-    // Initialize the logger
+    // Initialize the logger.jsx
     env_logger::builder().init();
     info!("Starting Turbo Tasker");
     debug!("Debug mode enabled");

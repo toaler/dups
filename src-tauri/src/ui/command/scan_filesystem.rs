@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::{env};
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter};
+use std::io::{self, BufReader, BufWriter, Write};
 use std::path::Path;
 use std::time::{Duration, Instant};
 use log::{debug, info};
@@ -18,7 +18,7 @@ use crate::services::scanner_api::visitable::Visitable;
 use crate::{load_registry, save_registry};
 
 #[command]
-pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<String, String> {
+pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<&'static str, String> {
     let temp_dir = env::temp_dir();
     let file_path = temp_dir.join("output.csv");
     let logger = TauriEventHandler { window: w };
@@ -27,7 +27,6 @@ pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<String, Str
 
     let handle = tokio::spawn(async move {
         let root = path_owned.clone();
-
         debug!("Register visitors:");
 
         let mut scan_stats_visitor = ScanStatsVisitor::new();
@@ -50,13 +49,11 @@ pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<String, Str
 
         if Path::new(&file_path).exists() {
             load_registry(&mut registry, &file_path).expect("Failed to load registry");
-
             if !registry.contains_key(&root) {
                 let p = Path::new(&root);
                 let m = ResourceMetadata::new(&root, p.is_dir(), p.is_symlink(), 0, 0, false);
                 registry.insert(root.clone(), m);
             }
-
             info!("Registry loaded with {} resources", registry.len());
             scanner.incremental_scan(&root, &mut registry, &mut visitors, &mut writer, &logger);
         } else {
@@ -70,13 +67,20 @@ pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<String, Str
         for visitable_instance in &mut visitors {
             info!("executing {}", visitable_instance.name());
             visitable_instance.recap(&mut writer, &logger);
+            writer.flush().unwrap();
         }
 
-        play_sound();
-        Ok(format!("Hello, {}! You've been greeted from Rust asynchronously!", path_owned))
+        Ok("Successful scan")
     });
 
-    handle.await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)))
+    info!("Waiting for handle.await");
+    let result = handle.await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)));
+
+    // Always play sound after await, regardless of result
+    play_sound();
+
+    // Return the result after sound has been played
+    result
 }
 
 fn play_sound() {

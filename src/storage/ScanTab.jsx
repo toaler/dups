@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import logger from "../logger.jsx";
 import {invoke} from "@tauri-apps/api/tauri";
 import {listen} from "@tauri-apps/api/event";
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
@@ -16,7 +17,7 @@ function ScanTab({ reset, setReset }) {
 
     const startTimeRef = useRef(0);
     const inputRef = useRef(null);
-    const [path, setPath] = useState();
+    const [path, setPath] = useState('');
     const [logs, setLogs] = useState([]);
     const [resources, setResources] = useState(0);
     const [directories, setDirectories] = useState(0);
@@ -36,7 +37,7 @@ function ScanTab({ reset, setReset }) {
         homeDir().then((dir) => {
             setPath(dir);
         }).catch((error) => {
-            console.error('Failed to get home directory', error);
+            logger.error('Failed to get home directory', error);
         });
     }, []);
 
@@ -78,17 +79,18 @@ function ScanTab({ reset, setReset }) {
             startTimeRef.current = Date.now();
             setElapsedTime(0); // Reset elapsed time
             setScanStatus(ScanStatus.Scanning);
+            logger.info("Starting scan_filesystem");
             const result = await invoke('scan_filesystem', {path});
+            logger.info("Finished scan_filesystem");
             setScanStatus(ScanStatus.Completed);
         } catch (error) {
             setScanStatus(ScanStatus.Failed);
-            console.error(error); // Handle error
+            logger.error(`Error occurred during scanFilesystem`, error);
         }
     }
 
     const handleLogEvent = (event) => {
         try {
-            console.log(event);
             const data = JSON.parse(event.payload);
             setLogs((currentLogs) => [...currentLogs, event.payload]);
             setResources((currentResources) => currentResources + data.resources);
@@ -96,7 +98,7 @@ function ScanTab({ reset, setReset }) {
             setFiles((currentFiles) => currentFiles + data.files);
             setSize((currentSize) => currentSize + data.size);
         } catch (e) {
-            console.error(`Error JSON encoded event ${event}, with error ${e}`);
+            logger.error(`Error JSON encoded event ${event}`,  e);
         }
     };
 

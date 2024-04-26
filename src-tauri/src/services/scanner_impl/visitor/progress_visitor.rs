@@ -90,7 +90,7 @@ impl ProgressVisitor {
             elapsed_time.as_nanos()
         );
 
-        // Use the logger
+        // Use the logger.jsx
         logger.publish("log-event", json_payload);
 
         // Reset counters for the next recap
