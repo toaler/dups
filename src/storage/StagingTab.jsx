@@ -5,8 +5,14 @@ import CommitIcon from '@mui/icons-material/Commit';
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
 
-const StagingTab = ({ actions, setActions }) => {
+const StagingTab = ({ reset, actions, setActions }) => {
     const [isPressed, setIsPressed] = useState(false);
+
+    useEffect(() => {
+        if (reset) {
+            setActions([]);  // Clears the table, excluding the header
+        }
+    }, [reset]);
 
     const handleDelete = async (indexToDelete) => {
         setActions(currentActions => {

@@ -19,6 +19,7 @@ import Co2Icon from '@mui/icons-material/Co2';
 
 function App() {
     const [actions, setActions] = useState([]);
+    const [reset, setReset] = useState([]);
 
     return (<Tabs forceRenderTabPanel defaultIndex={0}>
         <TabList>
@@ -72,17 +73,17 @@ function App() {
                 </TabList>
                 <TabPanel>
                     <div>
-                        <ScanTab actions={actions} setActions={setActions}></ScanTab>
+                        <ScanTab reset={reset} setReset={setReset}></ScanTab>
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="scrollable-content">
-                        <InspectionTab actions={actions}></InspectionTab>
+                        <InspectionTab reset={reset} setActions={setActions}></InspectionTab>
                     </div>
                 </TabPanel>
                 <TabPanel>
                     <div className="scrollable-content">
-                        <StagingTab actions={actions} setActions={setActions}></StagingTab>
+                        <StagingTab reset={reset} actions={actions} setActions={setActions}></StagingTab>
                     </div>
                 </TabPanel>
             </Tabs>
