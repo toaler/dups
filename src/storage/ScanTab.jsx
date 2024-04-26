@@ -67,6 +67,7 @@ function ScanTab() {
         setDirectories(0);
         setFiles(0);
         setSize(0);
+        setLogs([]);
 
         scanFilesystem(path);
     };
