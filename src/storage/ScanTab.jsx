@@ -8,7 +8,7 @@ import ScanTabLog from "./ScanTabLog.jsx";
 import styled from "styled-components";
 import {homeDir} from "@tauri-apps/api/path";
 
-function ScanTab() {
+function ScanTab({ actions, setActions }) {
 
     const ScanStatus = {
         Stopped: "Stopped", Scanning: "Scanning", Completed: "Completed", Failed: "Failed",
@@ -68,6 +68,7 @@ function ScanTab() {
         setFiles(0);
         setSize(0);
         setLogs([]);
+        setActions([]);
 
         scanFilesystem(path);
     };

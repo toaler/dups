@@ -60,9 +60,15 @@ function getMimeTypeIcon(compressible, mime_type) {
     }
 }
 
-function InspectionTab({setActions}) {
+function InspectionTab({actions}) {
 
     const [topKFiles, setTopKFiles] = useState([]);
+
+    useEffect(() => {
+        if (actions) {
+            setTopKFiles([]);  // Clears the table, excluding the header
+        }
+    }, [actions]);
 
     // Suppose you might update this data dynamically, for example, fetching from an API
     useEffect(() => {
