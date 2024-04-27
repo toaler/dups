@@ -1,3 +1,9 @@
+use std::fs::File;
+use std::io::BufReader;
+use std::time::Duration;
+use rodio::{Decoder, OutputStream, Source};
+use tokio::task;
+
 #[allow(warnings)]
 pub fn add_groupings(mut number: u64) -> String {
     let mut result = String::new();
@@ -84,6 +90,20 @@ pub fn add_groupings_u64(number: u64) -> String {
     }
 
     result.iter().rev().collect()
+}
+
+pub fn play_sound(file_path: &str, sleep_ms: u64) {
+    let file_path = file_path.to_owned();  // Clone the file_path to own it.
+
+    task::spawn_blocking(move || {  // Use `move` to take ownership of file_path and capture sleep_ms
+        let (_stream, stream_handle) = OutputStream::try_default().expect("Failed to get output stream");
+        let file = BufReader::new(File::open(&file_path).expect("Failed to open sound file"));
+        let source = Decoder::new(file).expect("Failed to decode sound file");
+        stream_handle.play_raw(source.convert_samples()).expect("Failed to play sound");
+
+        // Sleep to allow the sound to play out, using the sleep_ms parameter
+        std::thread::sleep(Duration::from_millis(sleep_ms));
+    });
 }
 
 #[cfg(test)]

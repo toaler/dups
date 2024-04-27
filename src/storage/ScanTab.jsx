@@ -8,6 +8,7 @@ import './ScanTab.css';
 import ScanTabLog from "./ScanTabLog.jsx";
 import styled from "styled-components";
 import {homeDir} from "@tauri-apps/api/path";
+import { v4 as uuidv4 } from 'uuid';
 
 function ScanTab({ reset, setReset }) {
 
@@ -79,9 +80,15 @@ function ScanTab({ reset, setReset }) {
             startTimeRef.current = Date.now();
             setElapsedTime(0); // Reset elapsed time
             setScanStatus(ScanStatus.Scanning);
-            logger.info("Starting scan_filesystem");
-            const result = await invoke('scan_filesystem', {path});
-            logger.info("Finished scan_filesystem");
+
+
+
+
+            const uid = uuidv4();
+            logger.info(`[${uid}] Rust call scan_fileystem start`);
+
+            const result = await invoke('scan_filesystem', {uid, path});
+            logger.info(`[${uid}] Rust call scan_fileystem finished`);
             setScanStatus(ScanStatus.Completed);
         } catch (error) {
             setScanStatus(ScanStatus.Failed);

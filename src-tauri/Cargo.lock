@@ -3886,6 +3886,7 @@ dependencies = [
  "tempfile",
  "time",
  "tokio",
+ "uuid",
  "xxhash-rust",
  "zip",
 ]

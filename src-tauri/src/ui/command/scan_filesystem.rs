@@ -1,29 +1,27 @@
 use std::collections::HashMap;
 use std::{env};
-use std::fs::File;
-use std::io::{self, BufReader, BufWriter, Write};
+use std::io::{self, BufWriter, Write};
 use std::path::Path;
-use std::time::{Duration, Instant};
+use std::time::{Instant};
 use log::{debug, info};
 use tauri::command;
-use rodio::{Decoder, OutputStream, Source};
-use tokio::task; // Import tokio's task for spawning async tasks
 use crate::ui::handler::tauri_event_handler::TauriEventHandler;
 use crate::state::resource_metadata::ResourceMetadata;
 use crate::services::scanner_impl::{
     resource_scanner::ResourceScanner,
-    visitor::{progress_visitor::ProgressVisitor, scan_stats_visitor::ScanStatsVisitor, top_k_resource_visitor::TopKResourceVisitor}
+    visitor::{progress_visitor::ProgressVisitor, scan_stats_visitor::ScanStatsVisitor, top_k_resource_visitor::TopKResourceVisitor},
 };
 use crate::services::scanner_api::visitable::Visitable;
 use crate::{load_registry, save_registry};
+use crate::util::util::play_sound;
 
 #[command]
-pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<&'static str, String> {
+pub async fn scan_filesystem(w: tauri::Window, uid: &str, path: &str) -> Result<&'static str, String> {
+    info!("[{}] scan_filesystem start scanning root = {}", uid, path);
     let temp_dir = env::temp_dir();
     let file_path = temp_dir.join("output.csv");
     let logger = TauriEventHandler { window: w };
     let path_owned = path.to_owned();
-    info!("Starting scan at root = {}", path_owned);
 
     let handle = tokio::spawn(async move {
         let root = path_owned.clone();
@@ -73,29 +71,8 @@ pub async fn scan_filesystem(w: tauri::Window, path: &str) -> Result<&'static st
         Ok("Successful scan")
     });
 
-    info!("Waiting for handle.await");
     let result = handle.await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)));
-
-    // Always play sound after await, regardless of result
-    play_sound();
-
-    // Return the result after sound has been played
+    play_sound("/home/btoal/git/turbo-tasker/src-tauri/sounds/notification_decorative-01.wav", 1000);
+    info!("[{}] scan_filesystem end", uid);
     result
-}
-
-fn play_sound() {
-    // Log the attempt to play the sound
-    info!("Attempting to play sound");
-    // Spawns a blocking task using tokio's spawn_blocking
-    let _ = task::spawn_blocking(|| {
-        // Assuming the sound playing logic is blocking
-        let (_stream, stream_handle) = OutputStream::try_default().expect("Failed to get output stream");
-        let file_path = "/home/btoal/git/turbo-tasker/src-tauri/sounds/notification_decorative-01.wav";
-        let file = BufReader::new(File::open(file_path).expect("Failed to open sound file"));
-        let source = Decoder::new(file).expect("Failed to decode sound file");
-        stream_handle.play_raw(source.convert_samples()).expect("Failed to play sound");
-
-        // Sleep to allow the sound to play out
-        std::thread::sleep(Duration::from_millis(1000));
-    });
 }

@@ -27,6 +27,7 @@ zip = "0.6.6"
 rodio = "0.15"
 tokio = { version = "1", features = ["full"] }
 time = "0.3.34"
+uuid = { version = "1", features = ["v4"] }
 
 [dependencies.xxhash-rust]
 version = "0.8.5"
