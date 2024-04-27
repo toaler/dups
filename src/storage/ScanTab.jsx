@@ -81,12 +81,8 @@ function ScanTab({ reset, setReset }) {
             setElapsedTime(0); // Reset elapsed time
             setScanStatus(ScanStatus.Scanning);
 
-
-
-
             const uid = uuidv4();
             logger.info(`[${uid}] Rust call scan_fileystem start`);
-
             const result = await invoke('scan_filesystem', {uid, path});
             logger.info(`[${uid}] Rust call scan_fileystem finished`);
             setScanStatus(ScanStatus.Completed);

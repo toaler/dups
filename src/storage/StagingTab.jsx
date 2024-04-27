@@ -5,6 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
+import {v4 as uuidv4} from "uuid";
 
 const StagingTab = ({ reset, actions, setActions }) => {
     const [isPressed, setIsPressed] = useState(false);
@@ -42,10 +43,13 @@ const StagingTab = ({ reset, actions, setActions }) => {
 
     async function commit(actionsToSend) {
         try {
-            let path = "foo";  // Path might be dynamically set based on your application's needs
-            return await invoke('commit', { actions: actionsToSend });
+            const uid = uuidv4();
+            logger.info(`[${uid}] Rust call commit start`);
+            let return_value = await invoke('commit', { uid: uid, actions: actionsToSend });
+            logger.info(`[${uid}] Rust call commit finished`);
+            return return_value
         } catch (error) {
-            logger.error(`Exception occured during commit`, error);
+            logger.error(`Exception occurred during commit`, error);
             throw error;
         }
     }

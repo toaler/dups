@@ -15,7 +15,8 @@ pub struct Action {
 }
 
 #[command]
-pub async fn commit(w: Window, actions: Vec<Action>) -> Result<String, String> {
+pub async fn commit(w: Window, uid: &str, actions: Vec<Action>) -> Result<String, String> {
+    info!("[{}] commit start", uid);
     let event_handler = TauriEventHandler {window: w};
 
     let result = tauri::async_runtime::spawn(async move {
@@ -56,5 +57,6 @@ pub async fn commit(w: Window, actions: Vec<Action>) -> Result<String, String> {
     }).await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)));
 
     play_sound("/home/btoal/git/turbo-tasker/src-tauri/sounds/hero_decorative-celebration-02.wav", 1750);
+    info!("[{}] commit start", uid);
     result
 }
