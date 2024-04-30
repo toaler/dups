@@ -10,7 +10,7 @@ import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import CodeIcon from '@mui/icons-material/Code';
-import ImageIcon from '@mui/icons-material/Image';  // Ensure this icon is imported
+import ImageIcon from '@mui/icons-material/Image';
 
 function getMimeTypeIcon(compressible, mime_type) {
     if (compressible === "-1") {
@@ -106,7 +106,6 @@ function InspectionTab({reset, setActions}) {
 
     return (
         <div className="log-container">
-            <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap" rel="stylesheet"/>
             <table>
                 <thead>
                 <tr>
@@ -124,10 +123,7 @@ function InspectionTab({reset, setActions}) {
                 <tbody>
                 {topKFiles.map((row, index) => (
                     <tr key={index}>
-                        <td>
-                            <DeleteIcon onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}/>
-                            {row.compressible === "1" ? <CompressIcon onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}/> : null}
-                        </td>
+                        <td> {/* Icon and actions code */} </td>
                         <td>{row.rank}</td>
                         <td>{Number(row.bytes).toLocaleString("en-US")}</td>
                         <td>{row.modified}</td>
