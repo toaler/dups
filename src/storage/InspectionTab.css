@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
+.inspect-container {
+    overflow-y: auto;
+    height: 400px;
+    font-family: 'Roboto Mono', monospace;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate; /* Handles borders in a specific manner */
+    border-spacing: 0; /* Removes space between cells for a contiguous look */
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background-color: #007BFF;
+    z-index: 10;
+    border-top: 1px solid #ccc; /* Adding left border for a symmetrical appearance */
+    border-bottom: 1px solid #ccc; /* Existing bottom border */
+    border-right: 1px solid #ccc; /* Adding right border for separation */
+    border-left: 1px solid #ccc; /* Adding left border for a symmetrical appearance */
+    color: white; /* Enhancing text visibility against blue background */
+    padding: 8px; /* Adding padding for better text alignment and spacing */
+}
+
+tbody tr th, tbody tr td {
+    border-bottom: 1px solid #ddd; /* Consistent border styling for body cells */
+    padding: 8px; /* Align padding with header cells */
+}
+
+.center-text {
+    text-align: center;
+}
+
+.right-text {
+    text-align: right;
+}
+
+.left-text {
+    text-align: left;
+}

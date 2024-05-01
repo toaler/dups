@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import "./InspectionTab.css";
 import logger from "../logger.jsx";
 import {listen} from "@tauri-apps/api/event";
 
@@ -105,33 +106,38 @@ function InspectionTab({reset, setActions}) {
     };
 
     return (
-        <div className="log-container">
+        <div className="inspect-container">
             <table>
                 <thead>
                 <tr>
-                    <th>Action</th>
-                    <th>Rank</th>
-                    <th>Bytes</th>
-                    <th>Last Write</th>
-                    <th>Last Read</th>
-                    <th>Write Days</th>
-                    <th>Read Days</th>
-                    <th>Type</th>
-                    <th>Path</th>
+                    <th className="center-text">Action</th>
+                    <th className="center-text">Rank</th>
+                    <th className="right-text">Bytes</th>
+                    <th className="center-text">Last Write</th>
+                    <th className="center-text">Last Read</th>
+                    <th className="center-text">Write Days</th>
+                    <th className="center-text">Read Days</th>
+                    <th className="center-text">Type</th>
+                    <th className="left-text">Path</th>
                 </tr>
                 </thead>
                 <tbody>
                 {topKFiles.map((row, index) => (
                     <tr key={index}>
-                        <td> {/* Icon and actions code */} </td>
-                        <td>{row.rank}</td>
-                        <td>{Number(row.bytes).toLocaleString("en-US")}</td>
-                        <td>{row.modified}</td>
-                        <td>{row.accessed}</td>
-                        <td>{row.modified_days}</td>
-                        <td>{row.accessed_days}</td>
-                        <td>{getMimeTypeIcon(row.compressible, row.mime_type)}</td>
-                        <td>{row.path}</td>
+                        <td className="center-text">
+                            <DeleteIcon
+                                onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}/>
+                            {row.compressible === "1" ? <CompressIcon
+                                onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}/> : null}
+                        </td>
+                        <td className="center-text">{row.rank}</td>
+                        <td className="right-text">{Number(row.bytes).toLocaleString("en-US")}</td>
+                        <td className="center-text">{row.modified}</td>
+                        <td className="center-text">{row.accessed}</td>
+                        <td className="center-text">{row.modified_days}</td>
+                        <td className="center-text">{row.accessed_days}</td>
+                        <td className="center-text">{getMimeTypeIcon(row.compressible, row.mime_type)}</td>
+                        <td className="left-text">{row.path}</td>
                     </tr>
                 ))}
                 </tbody>
