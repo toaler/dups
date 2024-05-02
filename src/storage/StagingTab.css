@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
+/* Apply Roboto Mono to all elements within the component */
+.staging-tab-container {
+    font-family: 'Roboto Mono', monospace;
+}
+
+.staging-header-container {
+    display: flex;
+    line-height: 24px;
+    font-weight: 400;
+    color: #FFFFFF;
+    overflow-y: hidden;
+}
+
+.staging-commit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4rem;
+    margin-left: auto;
+    margin-right: 30px;
+    color: inherit;
+    background: none;
+    border: none;
+}
+
+.staging-commit.pressed {
+    color: #BBBBBB;
+    transform: translateY(2px);
+}
+

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import logger from '../logger.jsx';
-import styled, { css } from "styled-components";
-import DeleteIcon from '@mui/icons-material/Delete';
-import CommitIcon from '@mui/icons-material/Commit';
+import logger from '../logger';
 import { invoke } from "@tauri-apps/api/tauri";
 import { listen } from "@tauri-apps/api/event";
 import {v4 as uuidv4} from "uuid";
+import DeleteIcon from '@mui/icons-material/Delete';
+import CommitIcon from '@mui/icons-material/Commit';
+import './StagingTab.css';
 
 const StagingTab = ({ reset, actions, setActions }) => {
     const [isPressed, setIsPressed] = useState(false);
@@ -47,12 +47,12 @@ const StagingTab = ({ reset, actions, setActions }) => {
             logger.info(`[${uid}] Rust call commit start`);
             let return_value = await invoke('commit', { uid: uid, actions: actionsToSend });
             logger.info(`[${uid}] Rust call commit finished`);
-            return return_value
+            return return_value;
         } catch (error) {
             logger.error(`Exception occurred during commit`, error);
             throw error;
         }
-    }
+    };
 
     const handleCommitEvent = (event) => {
         try {
@@ -68,29 +68,27 @@ const StagingTab = ({ reset, actions, setActions }) => {
     useEffect(() => {
         const unsubscribe = listen("commit-event", handleCommitEvent);
 
-        // Cleanup the listener when the component unmounts
         return () => {
             unsubscribe.then((unsub) => unsub());
         };
     }, []);
 
     return (
-        <div>
-            <StagingHeaderContainer>
+        <div className="staging-tab-container">
+            <div className="staging-header-container">
                 <div className="flex-container">
                     <div className="flex-row">
                         <div className="flex-item">Bytes in scope</div>
                         <div className="flex-item">{totalBytes.toLocaleString("en-US")}</div>
                     </div>
                 </div>
-                <StagingCommit
-                    as="button"
+                <button
+                    className={`staging-commit ${isPressed ? 'pressed' : ''}`}
                     onClick={handleScanClick}
-                    pressed={isPressed}
                 >
                     <CommitIcon fontSize="large" style={{fontSize: '60px'}}/>
-                </StagingCommit>
-            </StagingHeaderContainer>
+                </button>
+            </div>
             <table>
                 <thead>
                 <tr>
@@ -120,32 +118,3 @@ const StagingTab = ({ reset, actions, setActions }) => {
 }
 
 export default StagingTab;
-
-const StagingHeaderContainer = styled.div`
-    display: flex;
-    line-height: 24px;
-    font-weight: 400;
-    color: #FFFFFF;
-    overflow-y: hidden;
-`;
-
-const StagingCommit = styled.button.attrs(props => ({
-    // Conditionally apply the 'pressed' attribute as a string if true, otherwise omit it
-    pressed: props.pressed ? "true" : undefined
-}))`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 4rem;
-    margin-left: auto;
-    margin-right: 30px;
-    color: inherit;
-    background: none;
-    border: none;
-
-    // Use the 'pressed' prop to apply CSS conditionally
-    ${({pressed}) => pressed === "true" && css`
-        color: #BBBBBB;
-        transform: translateY(2px);
-    `}
-`;
