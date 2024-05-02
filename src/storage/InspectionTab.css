@@ -23,6 +23,7 @@ thead th {
     border-left: 1px solid #ccc; /* Adding left border for a symmetrical appearance */
     color: white; /* Enhancing text visibility against blue background */
     padding: 8px; /* Adding padding for better text alignment and spacing */
+    font-family: 'Roboto Mono Bold'
 }
 
 tbody tr th, tbody tr td {

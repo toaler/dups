@@ -16,6 +16,7 @@
     border: 1px solid #ccc;
     padding: 8px;
     text-align: left;
+    font-family: 'Roboto Mono Bold'
 }
 
 .log-container th {
@@ -25,16 +26,16 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    border-bottom: 1px solid #ccc; /* Ensure a solid bottom border */
+    border-bottom: 1px solid #ccc;
 }
 
 /* Column width adjustments */
-.log-container th:nth-child(1), .log-container td:nth-child(1) { width: 10%; }
-.log-container th:nth-child(2), .log-container td:nth-child(2) { width: 10%; }
-.log-container th:nth-child(3), .log-container td:nth-child(3) { width: 15%; }
-.log-container th:nth-child(4), .log-container td:nth-child(4) { width: 15%; }
-.log-container th:nth-child(5), .log-container td:nth-child(5) { width: 15%; }
-.log-container th:nth-child(6), .log-container td:nth-child(6) { width: 15%; }
-.log-container th:nth-child(7), .log-container td:nth-child(7) { width: 10%; }
-.log-container th:nth-child(8), .log-container td:nth-child(8) { width: 5%; }
-.log-container th:nth-child(9), .log-container td:nth-child(9) { width: 5%; }
+.log-container th:nth-child(1), .log-container td:nth-child(1) { width: 10%;  text-align: left;}
+.log-container th:nth-child(2), .log-container td:nth-child(2) { width: 10%;  text-align: right;}
+.log-container th:nth-child(3), .log-container td:nth-child(3) { width: 15%;  text-align: right;}
+.log-container th:nth-child(4), .log-container td:nth-child(4) { width: 15%; text-align: right;}
+.log-container th:nth-child(5), .log-container td:nth-child(5) { width: 15%; text-align: right;}
+.log-container th:nth-child(6), .log-container td:nth-child(6) { width: 15%; text-align: right;}
+.log-container th:nth-child(7), .log-container td:nth-child(7) { width: 10%; text-align: right;}
+.log-container th:nth-child(8), .log-container td:nth-child(8) { width: 5%; text-align: right;}
+.log-container th:nth-child(9), .log-container td:nth-child(9) { width: 5%; text-align: right;}

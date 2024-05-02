@@ -42,14 +42,14 @@ function ScanTabLog({ logs }) {
             <table ref={tableRef}>
                 <thead>
                 <tr>
-                    <th className="right-align">Timestamp</th>
-                    <th className="right-align">Resources</th>
-                    <th className="right-align">Directories</th>
-                    <th className="right-align">Files</th>
-                    <th className="right-align">Size (GB)</th>
-                    <th className="right-align">Wall Time (s)</th>
-                    <th className="right-align">Resource Throughput (resources/s)</th>
-                    <th className="right-align">Throughput (GB/sec)</th>
+                    <th>Timestamp</th>
+                    <th>Resources</th>
+                    <th>Directories</th>
+                    <th>Files</th>
+                    <th>Size (GB)</th>
+                    <th>Wall Time (s)</th>
+                    <th>Resource Throughput (resources/s)</th>
+                    <th>Throughput (GB/sec)</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -57,14 +57,14 @@ function ScanTabLog({ logs }) {
                     const logData = JSON.parse(log);
                     return (
                         <tr key={index}>
-                            <td className="right-align">{logData.timestamp}</td>
-                            <td className="right-align">{Number(logData.resources).toLocaleString()}</td>
-                            <td className="right-align">{Number(logData.directories).toLocaleString()}</td>
-                            <td className="right-align">{Number(logData.files).toLocaleString()}</td>
-                            <td className="right-align">{formatSize(logData.size)}</td>
-                            <td className="right-align">{formatWallTime(logData.wall_time_nanos)}</td>
-                            <td className="right-align">{calculateResourceThroughput(Number(logData.resources), logData.wall_time_nanos)}</td>
-                            <td className="right-align">{calculateThroughput(logData.size, logData.wall_time_nanos)}</td>
+                            <td>{logData.timestamp}</td>
+                            <td>{Number(logData.resources).toLocaleString()}</td>
+                            <td>{Number(logData.directories).toLocaleString()}</td>
+                            <td>{Number(logData.files).toLocaleString()}</td>
+                            <td>{formatSize(logData.size)}</td>
+                            <td>{formatWallTime(logData.wall_time_nanos)}</td>
+                            <td>{calculateResourceThroughput(Number(logData.resources), logData.wall_time_nanos)}</td>
+                            <td>{calculateThroughput(logData.size, logData.wall_time_nanos)}</td>
                         </tr>
                     );
                 })}

@@ -3,6 +3,7 @@
 .flex-container {
     display: flex;
     flex-direction: column;
+    font-family: 'Roboto Mono Bold';
 }
 
 .flex-row {

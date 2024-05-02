@@ -5,6 +5,10 @@
     font-family: 'Roboto Mono', monospace;
 }
 
+.staging-tab-container table th {
+    font-family: 'Roboto Mono Bold'
+}
+
 .staging-header-container {
     display: flex;
     line-height: 24px;
