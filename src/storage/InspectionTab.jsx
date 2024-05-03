@@ -126,9 +126,12 @@ function InspectionTab({reset, setActions}) {
                     <tr key={index}>
                         <td className="center-text">
                             <DeleteIcon
-                                onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}/>
-                            {row.compressible === "1" ? <CompressIcon
-                                onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}/> : null}
+                                onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}
+                            />
+                            <CompressIcon
+                                style={{color: row.compressible === "1" ? '#83f52c' : 'inherit'}}
+                                onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}
+                            />
                         </td>
                         <td className="center-text">{row.rank}</td>
                         <td className="right-text">{Number(row.bytes).toLocaleString("en-US")}</td>
