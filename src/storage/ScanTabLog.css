@@ -16,7 +16,7 @@
     border: 1px solid #ccc;
     padding: 8px;
     text-align: left;
-    font-family: 'Roboto Mono Bold'
+    font-family: 'Roboto Mono Bold', ui-monospace
 }
 
 .log-container th {
