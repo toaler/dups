@@ -5,6 +5,8 @@ import { listen } from "@tauri-apps/api/event";
 import {v4 as uuidv4} from "uuid";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
+import PendingIcon from '@mui/icons-material/Pending';
+import AddTaskIcon from '@mui/icons-material/AddTask';
 import './StagingTab.css';
 
 const StagingTab = ({ reset, actions, setActions }) => {
@@ -58,7 +60,7 @@ const StagingTab = ({ reset, actions, setActions }) => {
         try {
             const { path } = JSON.parse(event.payload); // Assuming path is directly available in the event payload
             setActions(currentActions => currentActions.map(action =>
-                action.path === path ? { ...action, status: 'X' } : action
+                action.path === path ? { ...action, icon: <AddTaskIcon /> } : action
             ));
         } catch (e) {
             logger.error(`Error JSON encoded event ${event}`, e);
@@ -92,9 +94,9 @@ const StagingTab = ({ reset, actions, setActions }) => {
             <table>
                 <thead>
                 <tr>
-                    <th style={{textAlign: "left"}}>Status</th>
+                    <th style={{textAlign: "center"}}>Status</th>
                     <th style={{textAlign: "center"}}>Remove</th>
-                    <th style={{textAlign: "left"}}>Action</th>
+                    <th style={{textAlign: "center"}}>Action</th>
                     <th style={{textAlign: "left"}}>Resource</th>
                     <th style={{textAlign: "right"}}>Bytes</th>
                 </tr>
@@ -102,11 +104,11 @@ const StagingTab = ({ reset, actions, setActions }) => {
                 <tbody>
                 {actions.map((actionObj, index) => (
                     <tr key={index}>
-                        <td>{actionObj.status || 'Pending'}</td>
-                        <td>
-                            <DeleteIcon style={{padding: 0, textAlign: "center"}} onClick={() => handleDelete(index)} />
+                        <td style={{textAlign: "center"}}>{actionObj.icon || <PendingIcon/>}</td>
+                        <td style={{textAlign: "center"}}>
+                        <DeleteIcon style={{padding: 0, textAlign: "center"}} onClick={() => handleDelete(index)} />
                         </td>
-                        <td>{actionObj.action}</td>
+                        <td style={{textAlign: "center"}}>{actionObj.action}</td>
                         <td>{actionObj.path}</td>
                         <td style={{textAlign: "right"}}>{actionObj.bytes.toLocaleString("en-US")}</td>
                     </tr>
