@@ -56,7 +56,7 @@ pub async fn commit(w: Window, uid: &str, actions: Vec<Action>) -> Result<String
         Ok("Hello from commit! You've been greeted from Rust asynchronously!".to_string())
     }).await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)));
 
-    play_sound("/home/btoal/git/turbo-tasker/src-tauri/sounds/hero_decorative-celebration-02.wav", 1750);
+    play_sound("sounds/hero_decorative-celebration-02.wav", 1750);
     info!("[{}] commit start", uid);
     result
 }

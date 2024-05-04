@@ -72,7 +72,7 @@ pub async fn scan_filesystem(w: tauri::Window, uid: &str, path: &str) -> Result<
     });
 
     let result = handle.await.unwrap_or_else(|e| Err(format!("Failed to scan filesystem: {}", e)));
-    play_sound("/home/btoal/git/turbo-tasker/src-tauri/sounds/notification_decorative-01.wav", 1000);
+    play_sound("sounds/notification_decorative-01.wav", 1000);
     info!("[{}] scan_filesystem end", uid);
     result
 }
