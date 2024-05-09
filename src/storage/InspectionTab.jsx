@@ -63,13 +63,14 @@ function getMimeTypeIcon(compressible, mime_type) {
     }
 }
 
-function InspectionTab({reset, setActions}) {
-
+function InspectionTab({ reset, setActions }) {
     const [topKFiles, setTopKFiles] = useState([]);
+    const [selected, setSelected] = useState({});
 
     useEffect(() => {
         if (reset) {
-            setTopKFiles([]);  // Clears the table, excluding the header
+            setTopKFiles([]); // Clears the table
+            setSelected({});
         }
     }, [reset]);
 
@@ -97,12 +98,17 @@ function InspectionTab({reset, setActions}) {
             const existingIndex = prevActions.findIndex(actionObj => actionObj.path === path);
             if (existingIndex !== -1) {
                 return prevActions.map((actionObj, index) =>
-                    index === existingIndex ? {...actionObj, action, bytes} : actionObj
+                    index === existingIndex ? { ...actionObj, action, bytes } : actionObj
                 );
             } else {
-                return [...prevActions, {action, path, bytes}];
+                return [...prevActions, { action, path, bytes }];
             }
         });
+        // Toggle selection state and ensure exclusivity
+        setSelected(prev => ({
+            ...prev,
+            [path]: { delete: action === 'delete' ? !(prev[path] && prev[path].delete) : false, compress: action === 'compress' ? !(prev[path] && prev[path].compress) : false }
+        }));
     };
 
     return (
@@ -126,10 +132,11 @@ function InspectionTab({reset, setActions}) {
                     <tr key={index}>
                         <td className="center-text">
                             <DeleteIcon
+                                style={{ color: selected[row.path] && selected[row.path].delete ? 'red' : 'inherit' }}
                                 onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}
                             />
                             <CompressIcon
-                                style={{color: row.compressible === "1" ? '#83f52c' : 'inherit'}}
+                                style={{ color: selected[row.path] && selected[row.path].compress ? 'blue' : (row.compressible === "1" ? '#83f52c' : 'inherit') }}
                                 onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}
                             />
                         </td>
@@ -148,5 +155,6 @@ function InspectionTab({reset, setActions}) {
         </div>
     );
 }
+
 
 export default InspectionTab;
