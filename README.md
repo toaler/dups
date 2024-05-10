@@ -15,7 +15,8 @@ Provides storage management workflow allowing users to scan, inspect, staging an
 
 1. Fast capture - persisting known resource hierarchy (files/dirs) metadata, specifically last modified allows for fast reconciliation.
 2. Fast analysis - In-memory resource hierarchy metadata allows for fast analysis. 
-3. Big files - Identifies top-k files by size
+3. Inspection View
+- Big files - Identifies top-k files by size with the option to delete or compress
 4. Duplicate detection - Ability to identify duplicates
 5. Space Saver via Compression - identifies large infrequently updated files that are candidates for compression. Uses common cross platform "zip" compression 
 6. Broken symlink detection - identifies dangling symbolic links
