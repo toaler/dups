@@ -12,6 +12,7 @@ Turbo Tasker is a cross-platform PC task manager that strives to complete task e
 ### Storage Management 
 
 Provides storage management workflow allowing users to scan, inspect, staging and commit resource management actions.
+Provides inspection analyzer for selecting operations on files.
 
 1. Fast capture - persisting known resource hierarchy (files/dirs) metadata, specifically last modified allows for fast reconciliation.
 2. Fast analysis - In-memory resource hierarchy metadata allows for fast analysis. 
