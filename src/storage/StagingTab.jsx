@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import logger from '../logger';
-import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
+import {invoke} from "@tauri-apps/api/tauri";
+import {listen} from "@tauri-apps/api/event";
 import {v4 as uuidv4} from "uuid";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CommitIcon from '@mui/icons-material/Commit';
@@ -20,15 +20,13 @@ const StagingTab = ({ reset, actions, setActions }) => {
 
     const handleDelete = async (indexToDelete) => {
         setActions(currentActions => {
-            const newActions = currentActions.filter((_, index) => index !== indexToDelete);
-            commit(newActions);  // Call commit with the updated list of actions
-            return newActions;
+            return currentActions.filter((_, index) => index !== indexToDelete);
         });
     };
 
     const totalBytes = actions.reduce((acc, action) => acc + action.bytes, 0);
 
-    const handleScanClick = async () => {
+    const handleCommit = async () => {
         setIsPressed(!isPressed);
         logger.debug('Commit button clicked!');
         try {
@@ -86,7 +84,7 @@ const StagingTab = ({ reset, actions, setActions }) => {
                 </div>
                 <button
                     className={`staging-commit ${isPressed ? 'pressed' : ''}`}
-                    onClick={handleScanClick}
+                    onClick={handleCommit}
                 >
                     <CommitIcon fontSize="large" style={{fontSize: '60px'}}/>
                 </button>

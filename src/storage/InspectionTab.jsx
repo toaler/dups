@@ -132,11 +132,11 @@ function InspectionTab({ reset, setActions }) {
                     <tr key={index}>
                         <td className="center-text">
                             <DeleteIcon
-                                style={{ color: selected[row.path] && selected[row.path].delete ? 'red' : 'inherit' }}
+                                style={{ color: selected[row.path] && selected[row.path].delete ? '#83f52c' : 'inherit' }}
                                 onClick={(event) => handleIconClick(event, 'delete', row.path, Number(row.bytes))}
                             />
                             <CompressIcon
-                                style={{ color: selected[row.path] && selected[row.path].compress ? 'blue' : (row.compressible === "1" ? '#83f52c' : 'inherit') }}
+                                style={{ color: selected[row.path] && selected[row.path].compress ? '#83f52c' : (row.compressible === "1" ? '#F7EF8A' : 'inherit') }}
                                 onClick={(event) => handleIconClick(event, 'compress', row.path, Number(row.bytes))}
                             />
                         </td>
