@@ -32,12 +32,24 @@ const StagingTab = ({ reset, actions, setActions }) => {
         try {
             const result = await commit(actions); // Pass the current actions to commit
             if (result !== undefined) {
-                logger.info("Scan successful, result:", result.toLocaleString());
+                logger.info("Commit successful, result:", result.toLocaleString());
+                // Update status to 'success' for all actions
+                setActions(currentActions =>
+                    currentActions.map(action => ({ ...action, status: 'success' }))
+                );
             } else {
-                logger.info("Scan successful, but no data returned");
+                logger.info("Commit successful, but no data returned");
+                // Optionally handle the case where no data is returned
+                setActions(currentActions =>
+                    currentActions.map(action => ({ ...action, status: 'success' }))
+                );
             }
         } catch (error) {
-            logger.error("Scan failed with error:", error);
+            logger.error("Commit failed with error:", error);
+            // Update status to 'failure' for all actions
+            setActions(currentActions =>
+                currentActions.map(action => ({ ...action, status: 'failure' }))
+            );
         }
     };
 

@@ -97,17 +97,22 @@ function InspectionTab({ reset, setActions }) {
         setActions(prevActions => {
             const existingIndex = prevActions.findIndex(actionObj => actionObj.path === path);
             if (existingIndex !== -1) {
+                // Update the existing action
                 return prevActions.map((actionObj, index) =>
-                    index === existingIndex ? { ...actionObj, action, bytes } : actionObj
+                    index === existingIndex ? { ...actionObj, action, bytes, status: 'pending' } : actionObj
                 );
             } else {
-                return [...prevActions, { action, path, bytes }];
+                // Add a new action with status 'pending'
+                return [...prevActions, { action, path, bytes, status: 'pending' }];
             }
         });
         // Toggle selection state and ensure exclusivity
         setSelected(prev => ({
             ...prev,
-            [path]: { delete: action === 'delete' ? !(prev[path] && prev[path].delete) : false, compress: action === 'compress' ? !(prev[path] && prev[path].compress) : false }
+            [path]: {
+                delete: action === 'delete' ? !(prev[path] && prev[path].delete) : false,
+                compress: action === 'compress' ? !(prev[path] && prev[path].compress) : false
+            }
         }));
     };
 
