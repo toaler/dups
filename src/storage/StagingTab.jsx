@@ -29,26 +29,39 @@ const StagingTab = ({ reset, actions, setActions }) => {
     const handleCommit = async () => {
         setIsPressed(!isPressed);
         logger.debug('Commit button clicked!');
+        // Filter to get only actions with status 'pending'
+        const actionsToCommit = actions.filter(action => action.status === 'pending');
+
+        if (actionsToCommit.length === 0) {
+            logger.info("No pending actions to commit.");
+            return; // Exit if there are no pending actions
+        }
+
         try {
-            const result = await commit(actions); // Pass the current actions to commit
+            const result = await commit(actionsToCommit);
             if (result !== undefined) {
                 logger.info("Commit successful, result:", result.toLocaleString());
-                // Update status to 'success' for all actions
+                // Update status to 'success' for all committed actions
                 setActions(currentActions =>
-                    currentActions.map(action => ({ ...action, status: 'success' }))
+                    currentActions.map(action =>
+                        action.status === 'pending' ? { ...action, status: 'success' } : action
+                    )
                 );
             } else {
                 logger.info("Commit successful, but no data returned");
-                // Optionally handle the case where no data is returned
                 setActions(currentActions =>
-                    currentActions.map(action => ({ ...action, status: 'success' }))
+                    currentActions.map(action =>
+                        action.status === 'pending' ? { ...action, status: 'success' } : action
+                    )
                 );
             }
         } catch (error) {
             logger.error("Commit failed with error:", error);
-            // Update status to 'failure' for all actions
+            // Update status to 'failure' for all actions attempted to be committed
             setActions(currentActions =>
-                currentActions.map(action => ({ ...action, status: 'failure' }))
+                currentActions.map(action =>
+                    action.status === 'pending' ? { ...action, status: 'failure' } : action
+                )
             );
         }
     };
