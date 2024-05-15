@@ -85,6 +85,7 @@ const StagingTab = ({ reset, actions, setActions }) => {
                 <button
                     className={`staging-commit ${isPressed ? 'pressed' : ''}`}
                     onClick={handleCommit}
+                    disabled={actions.length === 0}
                 >
                     <CommitIcon fontSize="large" style={{fontSize: '60px'}}/>
                 </button>
