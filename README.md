@@ -16,9 +16,9 @@ Provides storage management workflow allowing users to scan, inspect, stage and 
 Scanning
 
 - Initial Scan - must perform intrusive scan ince so the metadata of the transitive resource graph can be uncovered and cached. 
-- N+1 Scans - persisting known resource hierarchy (files/dirs) metadata, specifically last modified allows for fast reconciliation.
+- Fast Scans (N+1 Scans) - persisting known resource hierarchy (files/dirs) metadata, specifically last modified allows for fast reconciliation.
 - Fast analysis - In-memory resource hierarchy metadata allows for fast analysis. 
-
+- Scanning stats - various metrics to evalute scanning speed
 
 Inspection - Provides inspection analyzer for selecting operations on resources
 
