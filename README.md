@@ -1,7 +1,10 @@
 # Turbo Tasker (tt)
 
-Turbo Tasker is a platform agnostic PC management service that strives to simplify common housekeeping tasks efficiently.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
+Turbo Tasker is a platform agnostic PC maintenance assistant that strives to simplify common housekeeping tasks efficiently via speedy workflows.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
 
+Workflows Supported:
+1. Storage management
+2. Coming soon
 
 [![Build status](https://github.com/toaler/turbo-tasker/actions/workflows/rust.yml/badge.svg)](https://github.com/toaler/turbo-tasker/actions)
 [![Build status](https://github.com/toaler/turbo-tasker/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/toaler/turbo-tasker/actions)
