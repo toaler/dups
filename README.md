@@ -46,6 +46,8 @@ Todo
 
 ## Build
 
+This project uses the Tauri tech stack which utilizes Javascript for the frontend and Rust for the backend. The reason this technology was useful is its cross platform support.
+
 ### Tauri
 
 <p>❯ npm install 
