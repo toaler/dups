@@ -33,6 +33,9 @@ Inspection
 Staging
 
 - review pending remediation actions by resource
+- ability to unstage action
+- tracks total space to be saved
+- provides feedback on progress
 
 Todo
 
