@@ -33,9 +33,10 @@ Inspection
 Staging
 
 - review pending remediation actions by resource
-- ability to unstage action
+- ability to revert pending actions
 - tracks total space to be saved
-- provides feedback on progress
+- provides mechanism to trigger commits
+- real time feedback on commit progressing
 
 Todo
 
