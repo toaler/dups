@@ -3,7 +3,7 @@
 [![Build status](https://github.com/toaler/turbo-tasker/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/toaler/turbo-tasker/actions)
 [![Coverage Status](https://coveralls.io/repos/github/toaler/turbo-tasker/badge.svg?branch=main)](https://coveralls.io/github/toaler/turbo-tasker?branch=main)
 
-Turbo Tasker is a platform agnostic PC maintenance assistant that strives to simplify common housekeeping tasks efficiently via speedy workflows.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
+Turbo Tasker (tt) is a platform agnostic PC maintenance assistant that strives to simplify common housekeeping tasks efficiently via speedy workflows.  Turbo Tasker encodes and optimizes various tasks related to system maintenance.
 
 Workflows Supported:
 1. Storage management - Provides storage management workflow allowing users to scan, inspect, stage and commit resource management actions.
