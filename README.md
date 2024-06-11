@@ -19,7 +19,10 @@ Scanning
 - Initial Scan - must perform intrusive scan once so the metadata of the transitive resource graph can be uncovered and cached. 
 - Fast Scans (N+1 Scans) - persisting known resource hierarchy (files/dirs) metadata, specifically last modified allows for directory change detection required for fast resource analysis. 
 - Scanning stats - various metrics to evalute scanning speed
-- Inspection - Provides inspection analyzer for selecting operations on resources
+- Inspection - Provides inspection analyzer for selecting operations on 
+- Duplicate detection, Ability to identify duplicates
+- Broken symlink detection 
+- identifies dangling symbolic links
 
 Inspection
 
@@ -32,20 +35,20 @@ Inspection
 
 Staging
 
+- Resource staging that allows per resource level actions (delete, compress) to be scheduled
 - review pending remediation actions by resource
 - ability to revert pending actions
 - tracks total space to be saved
 - provides mechanism to trigger commits
 - real time feedback on commit progressing
 
+### Cross platform
+
+- Platform agnostic compatible with Linux, OSX, Windows (todo)
+
 Todo
 
-4. Duplicate detection - Ability to identify duplicates
-5. Broken symlink detection - identifies dangling symbolic links
-7. Junk file cleaning
-8. Supports OSX, Linux and Windows
-9. Resource staging that allows per resource level actions (delete, compress) to be scheduled
-
+4.  Junk file cleaning
 
 ## Build
 
